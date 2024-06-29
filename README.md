@@ -16,7 +16,7 @@ See what's new in the [changelog](CHANGELOG.md);
 ## Prerequests
 
 - QuST includes a user interface for StarDist for convenience. The user who wishes to use StarDist should download and install it separatly.
-- For cell-cell interaction, an additional file, human_lr_pair.csv, is required. The latest version of the file can be obtained from [here](https://github.com/jinworks/CellChat/tree/main). An older version can be found [here](https://github.com/jinworks/CellChat/tree/main).
+- For cell-cell interaction, an additional file, human_lr_pair.csv, is required. The latest version of the file can be obtained from [here](https://github.com/jinworks/CellChat/tree/main). An older version can be found [here](./cci_datasets/human_lr_pair.csv).
 
 ## Installing
 
