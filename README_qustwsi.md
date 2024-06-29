@@ -1,7 +1,6 @@
 [![Forum](https://img.shields.io/badge/forum-image.sc-green)](https://forum.image.sc/tag/qupath)
 
 # QuST: QuPath Extension for Integrative Whole Slide Image and Spatial Transcriptomics Analysis
-![Workflow](./artifacts/qustwsi_diagram.png)
 
 Welcome to the QuST extension for [QuPath](http://qupath.github.io)!
 
@@ -12,6 +11,9 @@ The current version is written for QuPath v0.5.1
 
 See what's new in the [changelog](CHANGELOG.md);
 
+![Workflow](./artifacts/qustwsi_diagram.png)
+
+QuST workflow includes: (a) users begin by importing ST data into QuPath using QuST. This step may require additional spatial alignment data which can be obtained via FIJI, if the user is working on 10x Xenium dataset (see text). (b) once the ST data is successfully loaded, users can perform analysis and visualization via QuPath and QuST. (c) given the biological evidences provided by ST, users can generate the training set for image based cell classification and region segmentation based on H\&E. Finally, the result generated using the DL module can be further analyzed using the functions described in (b).
 
 ## Prerequests
 
