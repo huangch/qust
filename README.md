@@ -38,7 +38,7 @@ You should also cite the QuPath publication, as described [here](https://qupath.
 
 ## Building
 
-You can build the QuPath StarDist extension from source with
+You can build the QuPath QuST extension from source with
 
 ```bash
 gradlew clean build
