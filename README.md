@@ -22,7 +22,7 @@ See what's new in the [changelog](CHANGELOG.md);
 
 [Suoqin Jin et al., Inference and analysis of cell-cell communication using CellChat, Nature Communications 2021](https://www.nature.com/articles/s41467-021-21246-9)
 
-- TBD
+- If you are using the QuST deep learning module, Linux environment with GPUs is strongly recommended for the use case.
 
 
 ## Installing
