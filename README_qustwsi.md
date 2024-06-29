@@ -1,7 +1,7 @@
 [![Forum](https://img.shields.io/badge/forum-image.sc-green)](https://forum.image.sc/tag/qupath)
 
 # QuST: QuPath Extension for Integrative Whole Slide Image and Spatial Transcriptomics Analysis
-![Workflow](./artifacts/qust_diagram.png)
+![Workflow](./artifacts/qustwsi_diagram.png)
 
 Welcome to the QuST extension for [QuPath](http://qupath.github.io)!
 
