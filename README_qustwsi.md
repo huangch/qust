@@ -42,7 +42,7 @@ You might then need to restart QuPath (but not your computer).
 
 If you use this extension, you should cite the original QuST publication
 
-- Uwe Schmidt, Martin Weigert, Coleman Broaddus, and Gene Myers.  
+- - Chao-Hui Huang.  
 [*QuST: QuPath Extension for Integrative Whole Slide Image and Spatial Transcriptomics Analysis*](https://arxiv.org/abs/2406.01613).  
 
 You should also cite the QuPath publication, as described [here](https://qupath.readthedocs.io/en/stable/docs/intro/citing.html).
