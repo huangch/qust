@@ -41,6 +41,7 @@ You should also cite the QuPath publication, as described [here](https://qupath.
 You can build the QuPath QuST extension from source with
 
 ```bash
+cd qupath-extension-qust
 gradlew clean build
 ```
 
