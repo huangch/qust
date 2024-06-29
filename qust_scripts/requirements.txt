@@ -1,0 +1,11 @@
+torch 
+torchvision
+tensorboard
+pandas
+pillow
+numpy
+tqdm
+argparse
+einops
+scikit-learn
+seaborn
