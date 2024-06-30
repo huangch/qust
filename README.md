@@ -2,6 +2,6 @@
 
 # QuST: QuPath Extension for Spatial Transcriptomics
 
-[QuST: QuPath Extension for Whole Slide Image Analysis and Spatial Transcriptomics Analysis](./artifacts/qustwsi.readme.md)
+[QuST: QuPath Extension for Whole Slide Image Analysis and Spatial Transcriptomics Analysis](./artifacts/qustwsi_readme.md)
 
-[QuST-LLM: Integrating Large Language Models for Comprehensive Spatial Transcriptomics Analysis](./artifacts/qustllm.readme.md)
+[QuST-LLM: Integrating Large Language Models for Comprehensive Spatial Transcriptomics Analysis](./artifacts/qustllm_readme.md)
