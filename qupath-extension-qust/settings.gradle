@@ -4,7 +4,7 @@ pluginManagement {
 	}
 }
 
-rootProject.name = 'qupath-extension-QuST'
+rootProject.name = 'qupath-extension-qust'
 
 gradle.ext.qupathVersion = "0.5.0"
 

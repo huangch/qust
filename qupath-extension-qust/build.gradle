@@ -6,7 +6,7 @@ plugins {
   id 'org.bytedeco.gradle-javacpp-platform'
 }
 
-ext.moduleName = 'qupath.extension.QuST'
+ext.moduleName = 'qupath.extension.qust'
 ext.qupathVersion = gradle.ext.qupathVersion
 
 compileJava.options.encoding = "UTF-8"
