@@ -62,6 +62,9 @@ import qupath.lib.plugins.TaskRunner;
 import qupath.lib.plugins.parameters.ParameterList;
 import qupath.lib.roi.interfaces.ROI;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 /**
@@ -375,6 +378,32 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 				clusterReader.close();
 				
 				final HashMap<String, String> cellToSCLabelHashMap = new HashMap<>();
+				
+				
+//				final String analysisFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "analysis.tar.gz").toString();	
+//				TarArchiveInputStream analysisTarInput = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(analysisFilePath)));
+//				TarArchiveEntry analysisCurrentEntry = analysisTarInput.getNextTarEntry();
+//				BufferedReader analysisBufferReader = null;
+//				
+//				// StringBuilder analysisStringBuilder = new StringBuilder();
+//				while (analysisCurrentEntry != null) {
+//					analysisBufferReader = new BufferedReader(new InputStreamReader(analysisTarInput)); // Read directly from tarInput
+//				    System.out.println("For File = " + analysisCurrentEntry.getName());
+//				    String line;
+//				    while ((line = analysisBufferReader.readLine()) != null) {
+//				        System.out.println("line="+line);
+//				    }
+//				    analysisCurrentEntry = analysisTarInput.getNextTarEntry(); // You forgot to iterate to the next file
+//				}
+				
+				
+				
+				
+				
+				// final String analysisFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "analysis.tar.gz").toString();
+				// final GZIPInputStream analysisGzipStream = new GZIPInputStream(new FileInputStream(analysisFilePath));
+				
+				
 				
 				final String scLabelFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "analysis", "clustering", "gene_expression_graphclust", "clusters.csv").toString();
 				final FileReader scLabelFileReader = new FileReader(new File(scLabelFilePath));
