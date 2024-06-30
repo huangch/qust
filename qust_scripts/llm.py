@@ -1,3 +1,4 @@
+import os
 import requests
 import pandas as pd
 import scanpy as sc
@@ -6,16 +7,19 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import seaborn as sns
 import textwrap
-# from goatools.base import download_go_basic_obo
+from goatools.base import download_go_basic_obo
 from goatools.base import download_ncbi_associations
 from goatools.obo_parser import GODag
 from goatools.anno.genetogo_reader import Gene2GoReader
 from goatools.goea.go_enrichment_ns import GOEnrichmentStudyNS
 from genes_ncbi_homo_sapiens_proteincoding import GENEID2NT as GeneID2nt_homo
-
+from openai import OpenAI
 import json
 import argparse
+from dotenv import load_dotenv, dotenv_values 
 
+load_dotenv() 
+ 
 # API info
 from config import *
 
@@ -23,12 +27,12 @@ sc.settings.verbosity = 3  # verbosity: errors (0), warnings (1), info (2), hint
 sc.logging.print_header()
 sc.settings.set_figure_params(dpi=80, facecolor="white")
 
-#To list config items
-verification_url = verification_url
-mulesoft_url = mulesoft_url
-
-client_id = client_id
-client_secret = client_secret
+# #To list config items
+# verification_url = verification_url
+# mulesoft_url = mulesoft_url
+#
+# client_id = client_id
+# client_secret = client_secret
 
 parser = argparse.ArgumentParser()
 parser.add_argument('action', type=str, help='action')
@@ -43,69 +47,138 @@ parser.add_argument('-t', '--topt', type=int, default=10, help='topt', required=
 
 opt = parser.parse_args()
 
-def generate_token():
-    '''
-    Generates the Bearer token needed for OpenAI API authentication. Returns the Bearer token as a string.
-    '''
-    try:
-        url = f"{verification_url}"
-        payload = f"client_id={client_id}&client_secret={client_secret}"
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = requests.request("POST", url, headers=headers, data=payload)
-        token = response.json()["access_token"]
-        return "Bearer " + token
+# def generate_token():
+#     '''
+#     Generates the Bearer token needed for OpenAI API authentication. Returns the Bearer token as a string.
+#     '''
+#     try:
+#         url = f"{verification_url}"
+#         payload = f"client_id={client_id}&client_secret={client_secret}"
+#         headers = {"Content-Type": "application/x-www-form-urlencoded"}
+#         response = requests.request("POST", url, headers=headers, data=payload)
+#         token = response.json()["access_token"]
+#         return "Bearer " + token
+#
+#     except Exception as e:
+#         return {
+#             "status": "error",
+#             "data": e,
+#             "message": e.orig.args if hasattr(e, "orig") else f"{e}",
+#         }
+#
+#
+# def generate_completion(payload, mulesoft_url, bearer_token):
+#     '''
+#     Generates a completion from the MuleSoft endpoint on the Vox platform and returns the result. 
+#     Returns the completion as a string.
+#
+#     Args:
+#         payload: (dict) payload for completion
+#         mulesoft_url: (str) url endpoint of the MuleSoft connection
+#         bearer_token: (str) authentication token generated
+#     '''
+#     url = mulesoft_url + '/chatCompletion'
+#     payload = json.dumps(payload) #needed to convert into string
+#     headers = {"Authorization": bearer_token, "Content-Type": "application/json"}
+#
+#     response = requests.request("POST", url, headers=headers, data=payload)
+#
+#     if response.status_code == 200:
+#         result = response.json()["result"]
+#         # token = response.json()["totalTokens"]
+#         return result
+#     else:
+#         print("Unable to call with status code {}".format(response.status_code))
+    
+# def llm_query(prompt, model):
+#
+#     try:
+#         text_response = ''
+#         #Generate the token, valid for 30 min    
+#         token = generate_token()
+#         assert isinstance(token,str), "Check if client_id and client_secret are passed incorrectly from the config.py file"
+#
+#         #health check
+#         url = mulesoft_url + '/health_check'
+#
+#         bearer_token = token #generate_token()
+#         headers = {"Authorization": bearer_token, "Content-Type": "application/json"}
+#         response = requests.request("GET", url, headers=headers)
+#         response_status = response.json()['status']
+#         print(f"LLM API Status: {response_status}")
+#
+#         if response_status != 'success':
+#             raise Exception("LLM API error!")
+#
+#         #Detailing models to be used during examples
+#         model = 'gpt-4'
+#
+#         prompt = f"""Identify corresponding gene ontology term IDs from below content, and return the result in json format. 
+#
+# '''{opt.prompt}'''
+#
+# """
+#
+#         #Get the completion with input parameters
+#         system_prompt = """You are a computational biologist. You are working on gene ontology related tasks."""
+#
+#         payload = {
+#         "messages": [
+#             {
+#                 "role": "system",
+#                 "content": system_prompt
+#             },
+#             {
+#                 "role": "user",
+#                 "content": prompt
+#             }
+#         ],
+#         "engine": model,
+#         "max_tokens": "4096",
+#         "temperature": 0
+#         }
+#
+#         text_response = eval(generate_completion(payload, mulesoft_url, bearer_token)).get('content')
+#
+#     except Exception as e:      # works on python 3.x
+#         print(repr(e))
+#         # result_json_data['success'] = False
+#     finally:
+#         return text_response
+            
+def llm_query(prompt, model):
+    client = OpenAI()
 
-    except Exception as e:
-        return {
-            "status": "error",
-            "data": e,
-            "message": e.orig.args if hasattr(e, "orig") else f"{e}",
-        }
-    
+    completion = client.chat.completions.create(
+      model=model,
+      messages=[
+        {"role": "system", "content": "You are a computational biologist. You are working on gene ontology related tasks."},
+        {"role": "user", "content": prompt}
+      ]
+    )
 
-def generate_completion(payload, mulesoft_url, bearer_token):
-    '''
-    Generates a completion from the MuleSoft endpoint on the Vox platform and returns the result. 
-    Returns the completion as a string.
-    
-    Args:
-        payload: (dict) payload for completion
-        mulesoft_url: (str) url endpoint of the MuleSoft connection
-        bearer_token: (str) authentication token generated
-    '''
-    url = mulesoft_url + '/chatCompletion'
-    payload = json.dumps(payload) #needed to convert into string
-    headers = {"Authorization": bearer_token, "Content-Type": "application/json"}
-    
-    response = requests.request("POST", url, headers=headers, data=payload)
+    return completion.choices[0].message.content
 
-    if response.status_code == 200:
-        result = response.json()["result"]
-        # token = response.json()["totalTokens"]
-        return result
-    else:
-        print("Unable to call with status code {}".format(response.status_code))
-    
-    
-def req(opt):
+
+def backward_analysis(opt):
     result_json_data = {"success": False}
     
     try:
-        #Generate the token, valid for 30 min    
-        token = generate_token()
-        assert isinstance(token,str), "Check if client_id and client_secret are passed incorrectly from the config.py file"
-    
-        #health check
-        url = mulesoft_url + '/health_check'
-        
-        bearer_token = token #generate_token()
-        headers = {"Authorization": bearer_token, "Content-Type": "application/json"}
-        response = requests.request("GET", url, headers=headers)
-        response_status = response.json()['status']
-        print(f"LLM API Status: {response_status}")
-    
-        if response_status != 'success':
-            raise Exception("LLM API error!")
+        # #Generate the token, valid for 30 min    
+        # token = generate_token()
+        # assert isinstance(token,str), "Check if client_id and client_secret are passed incorrectly from the config.py file"
+        #
+        # #health check
+        # url = mulesoft_url + '/health_check'
+        #
+        # bearer_token = token #generate_token()
+        # headers = {"Authorization": bearer_token, "Content-Type": "application/json"}
+        # response = requests.request("GET", url, headers=headers)
+        # response_status = response.json()['status']
+        # print(f"LLM API Status: {response_status}")
+        #
+        # if response_status != 'success':
+        #     raise Exception("LLM API error!")
         
         #Detailing models to be used during examples
         model = 'gpt-4'
@@ -116,26 +189,27 @@ def req(opt):
 
 """
 
-        #Get the completion with input parameters
-        system_prompt = """You are a computational biologist. You are working on gene ontology related tasks."""
+        # #Get the completion with input parameters
+        # system_prompt = """You are a computational biologist. You are working on gene ontology related tasks."""
+        #
+        # payload = {
+        # "messages": [
+        #     {
+        #         "role": "system",
+        #         "content": system_prompt
+        #     },
+        #     {
+        #         "role": "user",
+        #         "content": prompt
+        #     }
+        # ],
+        # "engine": model,
+        # "max_tokens": "4096",
+        # "temperature": 0
+        # }
         
-        payload = {
-        "messages": [
-            {
-                "role": "system",
-                "content": system_prompt
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        "engine": model,
-        "max_tokens": "4096",
-        "temperature": 0
-        }
-        
-        text_response = eval(generate_completion(payload, mulesoft_url, bearer_token)).get('content')
+        # text_response = eval(generate_completion(payload, mulesoft_url, bearer_token)).get('content')
+        text_response = llm_query(prompt, model)
         text_response_json = json.loads(text_response)
         go_terms = list(text_response_json.keys())
      
@@ -249,25 +323,25 @@ def req(opt):
             json.dump(result_json_data , fp)     
             
             
-def hkgh(opt):
+def forward_analysis_high_gene_expression(opt):
     result_json_data = {"success": False}
     
     try:
-        #Generate the token, valid for 30 min    
-        token = generate_token()
-        assert isinstance(token,str), "Check if client_id and client_secret are passed incorrectly from the config.py file"
-    
-        #health check
-        url = mulesoft_url + '/health_check'
-        
-        bearer_token = token #generate_token()
-        headers = {"Authorization": bearer_token, "Content-Type": "application/json"}
-        response = requests.request("GET", url, headers=headers)
-        response_status = response.json()['status']
-        print(f"LLM API Status: {response_status}")
-    
-        if response_status != 'success':
-            raise Exception("LLM API error!")
+        # #Generate the token, valid for 30 min    
+        # token = generate_token()
+        # assert isinstance(token,str), "Check if client_id and client_secret are passed incorrectly from the config.py file"
+        #
+        # #health check
+        # url = mulesoft_url + '/health_check'
+        #
+        # bearer_token = token #generate_token()
+        # headers = {"Authorization": bearer_token, "Content-Type": "application/json"}
+        # response = requests.request("GET", url, headers=headers)
+        # response_status = response.json()['status']
+        # print(f"LLM API Status: {response_status}")
+        #
+        # if response_status != 'success':
+        #     raise Exception("LLM API error!")
     
         adata = sc.read_csv(opt.data_file)
         
@@ -405,26 +479,27 @@ The paragraph is comprehensive, focus on tissue biological structure and clinica
 
 """
 
-        #Get the completion with input parameters
-        system_prompt = """You are a computational biologist. You are writing an summarization based on the given biological terms."""
-        
-        payload = {
-        "messages": [
-            {
-                "role": "system",
-                "content": system_prompt
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        "engine": model,
-        "max_tokens": "4096",
-        "temperature": 0
-        }
-        
-        text_response = eval(generate_completion(payload, mulesoft_url, bearer_token)).get('content')
+        # #Get the completion with input parameters
+        # system_prompt = """You are a computational biologist. You are writing an summarization based on the given biological terms."""
+        #
+        # payload = {
+        # "messages": [
+        #     {
+        #         "role": "system",
+        #         "content": system_prompt
+        #     },
+        #     {
+        #         "role": "user",
+        #         "content": prompt
+        #     }
+        # ],
+        # "engine": model,
+        # "max_tokens": "4096",
+        # "temperature": 0
+        # }
+        #
+        # text_response = eval(generate_completion(payload, mulesoft_url, bearer_token)).get('content')
+        text_response = llm_query(prompt, model)
         
         print('\n')
         print(text)
@@ -455,27 +530,28 @@ The paragraph is comprehensive, focus on tissue biological structure and clinica
             json.dump(result_json_data , fp)        
         
 
-def hkgd(opt):
+def forward_analysis_differential_gene_expression(opt):
     result_json_data = {"success": False}
     
     try:
         if not opt.bp and not opt.mf and not opt.cc:
             raise Exception ("all BP MF CC are missed") 
-        #Generate the token, valid for 30 min    
-        token = generate_token()
-        assert isinstance(token,str), "Check if client_id and client_secret are passed incorrectly from the config.py file"
-    
-        #health check
-        url = mulesoft_url + '/health_check'
         
-        bearer_token = token #generate_token()
-        headers = {"Authorization": bearer_token, "Content-Type": "application/json"}
-        response = requests.request("GET", url, headers=headers)
-        response_status = response.json()['status']
-        print(f"LLM API Status: {response_status}")
-    
-        if response_status != 'success':
-            raise Exception("LLM API error!")
+        # #Generate the token, valid for 30 min    
+        # token = generate_token()
+        # assert isinstance(token,str), "Check if client_id and client_secret are passed incorrectly from the config.py file"
+        #
+        # #health check
+        # url = mulesoft_url + '/health_check'
+        #
+        # bearer_token = token #generate_token()
+        # headers = {"Authorization": bearer_token, "Content-Type": "application/json"}
+        # response = requests.request("GET", url, headers=headers)
+        # response_status = response.json()['status']
+        # print(f"LLM API Status: {response_status}")
+        #
+        # if response_status != 'success':
+        #     raise Exception("LLM API error!")
     
         adata = sc.read_csv(opt.data_file)
         
@@ -650,26 +726,28 @@ The paragraph is integrative and comprehensive, focus on tissue biological struc
 
 """
 
-        #Get the completion with input parameters
-        system_prompt = """You are a computational biologist. You are writing an summarization based on the given biological terms."""
+        # #Get the completion with input parameters
+        # system_prompt = """You are a computational biologist. You are writing an summarization based on the given biological terms."""
+        #
+        # payload = {
+        # "messages": [
+        #     {
+        #         "role": "system",
+        #         "content": system_prompt
+        #     },
+        #     {
+        #         "role": "user",
+        #         "content": prompt
+        #     }
+        # ],
+        # "engine": model,
+        # "max_tokens": "4096",
+        # "temperature": 0
+        # }
+        #
+        # text_response = eval(generate_completion(payload, mulesoft_url, bearer_token)).get('content')
         
-        payload = {
-        "messages": [
-            {
-                "role": "system",
-                "content": system_prompt
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        "engine": model,
-        "max_tokens": "4096",
-        "temperature": 0
-        }
-        
-        text_response = eval(generate_completion(payload, mulesoft_url, bearer_token)).get('content')
+        text_response = llm_query(prompt, model)
         
         print('\n')
         print(text)
@@ -700,20 +778,20 @@ The paragraph is integrative and comprehensive, focus on tissue biological struc
             json.dump(result_json_data , fp)  
             
         
-def ckg(opt):
+def forward_analysis_comparative_gene_expression(opt):
     result_json_data = {"success": False}
     
-    #Generate the token, valid for 30 min    
-    token = generate_token()
-    assert isinstance(token,str), "Check if client_id and client_secret are passed incorrectly from the config.py file"
-
-    #health check
-    url = mulesoft_url + '/health_check'
-    
-    bearer_token = token #generate_token()
-    headers = {"Authorization": bearer_token, "Content-Type": "application/json"}
-    response = requests.request("GET", url, headers=headers)
-    print(response)
+    # #Generate the token, valid for 30 min    
+    # token = generate_token()
+    # assert isinstance(token,str), "Check if client_id and client_secret are passed incorrectly from the config.py file"
+    #
+    # #health check
+    # url = mulesoft_url + '/health_check'
+    #
+    # bearer_token = token #generate_token()
+    # headers = {"Authorization": bearer_token, "Content-Type": "application/json"}
+    # response = requests.request("GET", url, headers=headers)
+    # print(response)
     
     try:
         df = pd.read_csv(opt.data_file)
@@ -860,26 +938,28 @@ The paragraph must be comprehensive, focus on tissue biological structure and cl
 
 """
 
-        #Get the completion with input parameters
-        system_prompt = """You are a computational biologist. You are writing an summarization based on the given biological terms."""
+        # #Get the completion with input parameters
+        # system_prompt = """You are a computational biologist. You are writing an summarization based on the given biological terms."""
+        #
+        # payload = {
+        # "messages": [
+        #     {
+        #         "role": "system",
+        #         "content": system_prompt
+        #     },
+        #     {
+        #         "role": "user",
+        #         "content": prompt
+        #     }
+        # ],
+        # "engine": model,
+        # "max_tokens": "4096",
+        # "temperature": 0
+        # }
+        #
+        # text_response = eval(generate_completion(payload, mulesoft_url, bearer_token)).get('content')
         
-        payload = {
-        "messages": [
-            {
-                "role": "system",
-                "content": system_prompt
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        "engine": model,
-        "max_tokens": "4096",
-        "temperature": 0
-        }
-        
-        text_response = eval(generate_completion(payload, mulesoft_url, bearer_token)).get('content')
+        text_response = llm_query(prompt, model)
         
         print('\n')
         print(text)
@@ -911,11 +991,11 @@ The paragraph must be comprehensive, focus on tissue biological structure and cl
            
 if __name__ == '__main__':
     if opt.action == 'hkgh':
-        hkgh(opt)
+        forward_analysis_high_gene_expression(opt)
     elif opt.action == 'hkgd':
-        hkgd(opt)
+        forward_analysis_differential_gene_expression(opt)
     elif opt.action == 'ckg':
-        ckg(opt)
+        forward_analysis_comparative_gene_expression(opt)
     elif opt.action == 'query':
-        req(opt)
+        backward_analysis(opt)
     

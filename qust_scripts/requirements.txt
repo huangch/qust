@@ -14,3 +14,5 @@ scanpy
 goatools
 openai
 python-dotenv
+igraph
+leidenalg
