@@ -507,7 +507,7 @@ The paragraph is comprehensive, focus on tissue biological structure and clinica
         print(text_response)
         print('\n')
                 
-        fig = plt.figure(figsize = (6,6))
+        fig = plt.figure(figsize = (9,9))
         norm = plt.Normalize(vmin = df.p_corr.min(), vmax = df.p_corr.max())
         mapper = cm.ScalarMappable(norm = norm)
         ax = sns.barplot(data = df, x = 'per', y = 'term', palette = mapper.to_rgba(df.p_corr.values))
@@ -967,7 +967,7 @@ The paragraph must be comprehensive, focus on tissue biological structure and cl
         print(text_response)
         print('\n')
                 
-        fig = plt.figure(figsize = (6,6))
+        fig = plt.figure(figsize = (9,9))
         norm = plt.Normalize(vmin = df.p_corr.min(), vmax = df.p_corr.max())
         mapper = cm.ScalarMappable(norm = norm)
         ax = sns.barplot(data = df, x = 'per', y = 'term', palette = mapper.to_rgba(df.p_corr.values))
