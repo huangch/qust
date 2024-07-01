@@ -332,7 +332,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 					if(semaphore != null) semaphore.acquire();
 					// Create command to run
 			        VirtualEnvironmentRunner veRunner;
-			        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName());
+			        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
 				
 			        // This is the list of commands after the 'python' call
 			        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
@@ -604,7 +604,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 			
 			// Create command to run
 	        VirtualEnvironmentRunner veRunner;
-	        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName());
+	        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
 		
 	        // This is the list of commands after the 'python' call
 	        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
@@ -671,7 +671,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 			// Create command to run
 	        VirtualEnvironmentRunner veRunner;
 			
-			veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), ObjectClassification.class.getSimpleName());
+			veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), ObjectClassification.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
 		
 	        // This is the list of commands after the 'python' call
 	        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();

@@ -431,7 +431,7 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 	    	
 			// Create command to run
 	        VirtualEnvironmentRunner veRunner;
-	        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName());
+	        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
 		
 	        // This is the list of commands after the 'python' call
 	        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
@@ -508,7 +508,7 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 		        
 				// Create command to run
 		        VirtualEnvironmentRunner veRunner;
-		        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), ObjectClassificationImageAcquisition.class.getSimpleName());
+		        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), ObjectClassificationImageAcquisition.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
 			
 		        // This is the list of commands after the 'python' call
 		        // List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", "-m", "/workspace/QuST/qupath-QuST/qupath-extension-QuST/scripts/object_classifier"));

@@ -223,7 +223,7 @@ public class DBSCANCellX extends AbstractDetectionPlugin<BufferedImage> {
 		        
 				// Create command to run
 		        VirtualEnvironmentRunner veRunner;
-		        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), DBSCANCellX.class.getSimpleName());
+		        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), DBSCANCellX.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
 			
 		        // This is the list of commands after the 'python' call
 		        List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", "-m", "dbscan_cellx"));
