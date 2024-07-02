@@ -1,0 +1,142 @@
+\begin{thebibliography}{15}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Bankhead\emph{ et~al.}(2017)Bankhead, Loughrey, Fern\'{a}ndez,
+  Dombrowski, McArt, Dunne,\emph{ et~al.}]{Bankhead:2017}
+Peter Bankhead, Maurice~B. Loughrey, Jos\'{e}~A. Fern\'{a}ndez, Yvonne
+  Dombrowski, Darragh~G. McArt, Philip~D. Dunne,\emph{ et~al.}
+\newblock Qupath: Open source software for digital pathology image analysis.
+\newblock \emph{Scientific Reports}, 7:\penalty0 16878, 12 2017.
+\newblock ISSN 2045-2322.
+\newblock \doi{10.1038/s41598-017-17204-5}.
+
+\bibitem[Pocock\emph{ et~al.}(2022)Pocock, Graham, Vu, Jahanifar, Deshpande,
+  Hadjigeorghiou,\emph{ et~al.}]{Pocock:2022}
+Johnathan Pocock, Simon Graham, Quoc~Dang Vu, Mostafa Jahanifar, Srijay
+  Deshpande, Giorgos Hadjigeorghiou,\emph{ et~al.}
+\newblock Tiatoolbox as an end-to-end library for advanced tissue image
+  analytics.
+\newblock \emph{Communications Medicine 2022 2:1}, 2:\penalty0 1--14, 9 2022.
+\newblock ISSN 2730-664X.
+\newblock \doi{10.1038/s43856-022-00186-5}.
+
+\bibitem[Cardoso\emph{ et~al.}(2022)Cardoso, Li, Brown, Ma, Kerfoot,
+  Wang,\emph{ et~al.}]{Cardoso:2022}
+M.~Jorge Cardoso, Wenqi Li, Richard Brown, Nic Ma, Eric Kerfoot, Yiheng
+  Wang,\emph{ et~al.}
+\newblock Monai: An open-source framework for deep learning in healthcare.
+\newblock \emph{arXiv:2211.02701}, 11 2022.
+
+\bibitem[Dolezal\emph{ et~al.}(2024)Dolezal, Kochanny, Dyer, Ramesh,
+  Srisuwananukorn, Sacco,\emph{ et~al.}]{Dolezal:2024}
+James~M. Dolezal, Sara Kochanny, Emma Dyer, Siddhi Ramesh, Andrew
+  Srisuwananukorn, Matteo Sacco,\emph{ et~al.}
+\newblock Slideflow: deep learning for digital histopathology with real-time
+  whole-slide visualization.
+\newblock \emph{BMC Bioinformatics}, 25:\penalty0 1--29, 12 2024.
+\newblock ISSN 14712105.
+\newblock \doi{10.1186/S12859-024-05758-X/FIGURES/15}.
+
+\bibitem[Faust\emph{ et~al.}(2024)Faust, Chen, Zadeh, Oreopoulos, Leon,
+  Kamski-Hennekam,\emph{ et~al.}]{Faust:2024}
+Kevin Faust, Min~Li Chen, Parsa~Babaei Zadeh, Dimitrios Oreopoulos, Alberto~J.
+  Leon, Evelyn~Rose Kamski-Hennekam,\emph{ et~al.}
+\newblock Pharaoh: A collaborative crowdsourcing platform for phenotyping and
+  regional analysis of histology.
+\newblock \emph{bioRxiv}, page 2024.03.20.585977, 3 2024.
+\newblock \doi{10.1101/2024.03.20.585977}.
+
+\bibitem[Kaczmarzyk\emph{ et~al.}(2024)Kaczmarzyk, O’Callaghan, Inglis, Gat,
+  Kurc, Gupta,\emph{ et~al.}]{Kaczmarzyk:2024}
+Jakub~R. Kaczmarzyk, Alan O’Callaghan, Fiona Inglis, Swarad Gat, Tahsin Kurc,
+  Rajarsi Gupta,\emph{ et~al.}
+\newblock Open and reusable deep learning for pathology with wsinfer and
+  qupath.
+\newblock \emph{npj Precision Oncology}, 8, 12 2024.
+\newblock ISSN 2397768X.
+\newblock \doi{10.1038/s41698-024-00499-9}.
+
+\bibitem[{Nature Methods}(2021)]{NatureMethods:2021}
+{Nature Methods}.
+\newblock Method of the year 2020: spatially resolved transcriptomics.
+\newblock \emph{Nature Methods}, 18, 1 2021.
+\newblock ISSN 1548-7105.
+\newblock \doi{10.1038/s41592-020-01042-x}.
+
+\bibitem[Wood\emph{ et~al.}(2023)Wood, Pennel, Leslie, Legrini, Cameron,
+  Melissourgou-Syka,\emph{ et~al.}]{Wood:2023}
+Colin~S. Wood, Kathryn~A.F. Pennel, Holly Leslie, Assya Legrini, Andrew~J.
+  Cameron, Lydia Melissourgou-Syka,\emph{ et~al.}
+\newblock Spatially resolved transcriptomics deconvolutes prognostic
+  histological subgroups in patients with colorectal cancer and synchronous
+  liver metastases.
+\newblock \emph{Cancer Research}, 83:\penalty0 1329--1344, 4 2023.
+\newblock ISSN 0008-5472.
+\newblock \doi{10.1158/0008-5472.CAN-22-2794}.
+
+\bibitem[Tippani\emph{ et~al.}(2023)Tippani, Divecha, Catallini, Kwon, Weber,
+  Spangler,\emph{ et~al.}]{Tippani:2023}
+Madhavi Tippani, Heena~R. Divecha, Joseph~L. Catallini, Sang~H. Kwon, Lukas~M.
+  Weber, Abby Spangler,\emph{ et~al.}
+\newblock Vistoseg: Processing utilities for high-resolution images for
+  spatially resolved transcriptomics data.
+\newblock \emph{Biological Imaging}, 3:\penalty0 e23, 2023.
+\newblock ISSN 2633-903X.
+\newblock \doi{10.1017/S2633903X23000235}.
+
+\bibitem[Lowe(2004)]{Lowe:2004}
+David~G. Lowe.
+\newblock Distinctive image features from scale-invariant keypoints.
+\newblock \emph{International Journal of Computer Vision}, 60:\penalty0
+  91--110, 11 2004.
+\newblock ISSN 09205691.
+\newblock \doi{10.1023/B:VISI.0000029664.99615.94/METRICS}.
+
+\bibitem[Schindelin\emph{ et~al.}(2012)Schindelin, Arganda-Carreras, Frise,
+  Kaynig, Longair, Pietzsch,\emph{ et~al.}]{Schindelin:2012}
+Johannes Schindelin, Ignacio Arganda-Carreras, Erwin Frise, Verena Kaynig, Mark
+  Longair, Tobias Pietzsch,\emph{ et~al.}
+\newblock Fiji: an open-source platform for biological-image analysis.
+\newblock \emph{Nature Methods}, 9:\penalty0 676--682, 6 2012.
+\newblock ISSN 1548-7105.
+\newblock \doi{10.1038/nmeth.2019}.
+
+\bibitem[Shao\emph{ et~al.}(2021)Shao, Liao, Li, Lu, Cheng, and Fan]{Shao:2021}
+Xin Shao, Jie Liao, Chengyu Li, Xiaoyan Lu, Junyun Cheng, and Xiaohui Fan.
+\newblock Celltalkdb: a manually curated database of ligand-receptor
+  interactions in humans and mice.
+\newblock \emph{Briefings in bioinformatics}, 22, 7 2021.
+\newblock ISSN 1477-4054.
+\newblock \doi{10.1093/BIB/BBAA269}.
+
+\bibitem[K\"{u}chenhoff\emph{ et~al.}(2023)K\"{u}chenhoff, Lukas, Metz-Zumaran,
+  Rothhaar, Ruggieri, Lohmann,\emph{ et~al.}]{Kuchenhoff:2023}
+Leonie K\"{u}chenhoff, Pascal Lukas, Camila Metz-Zumaran, Paul Rothhaar,
+  Alessia Ruggieri, Volker Lohmann,\emph{ et~al.}
+\newblock Extended methods for spatial cell classification with dbscan-cellx.
+\newblock \emph{Scientific Reports 2023 13:1}, 13:\penalty0 1--11, 11 2023.
+\newblock ISSN 2045-2322.
+\newblock \doi{10.1038/s41598-023-45190-4}.
+
+\bibitem[Ester\emph{ et~al.}(1996)Ester, Kriegel, Sander, and Xu]{Ester:1996}
+Martin Ester, Hans-Peter Kriegel, Jiirg Sander, and Xiaowei Xu.
+\newblock A density-based algorithm for discovering clusters in large spatial
+  databases with noise.
+\newblock pages 226--231. AAAI Press., 1996.
+\newblock ISBN 1-57735-004-9.
+
+\bibitem[Huang\emph{ et~al.}(2023)Huang, Bianchi, Yuksekgonul, Montine, and
+  Zou]{Huang:2023a}
+Zhi Huang, Federico Bianchi, Mert Yuksekgonul, Thomas~J. Montine, and James
+  Zou.
+\newblock A visual-language foundation model for pathology image analysis using
+  medical twitter.
+\newblock \emph{Nature Medicine}, 29:\penalty0 2307--2316, 9 2023.
+\newblock ISSN 1546170X.
+\newblock \doi{10.1038/s41591-023-02504-3}.
+
+\end{thebibliography}

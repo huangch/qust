@@ -1,0 +1,174 @@
+\begin{thebibliography}{19}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[St{\aa}hl\emph{ et~al.}(2016)St{\aa}hl, Salm\'{e}n, Vickovic,
+  Lundmark, Navarro, Magnusson,\emph{ et~al.}]{Stahl:2016}
+Patrik~L. St{\aa}hl, Fredrik Salm\'{e}n, Sanja Vickovic, Anna Lundmark,
+  Jos\'{e}~Fern\'{a}ndez Navarro, Jens Magnusson,\emph{ et~al.}
+\newblock Visualization and analysis of gene expression in tissue sections by
+  spatial transcriptomics.
+\newblock \emph{Science}, 353:\penalty0 78--82, 7 2016.
+\newblock ISSN 10959203.
+\newblock \doi{10.1126/SCIENCE.AAF2403}.
+
+\bibitem[Janesick\emph{ et~al.}(2023)Janesick, Shelansky, Gottscho, Wagner,
+  Williams, Rouault,\emph{ et~al.}]{Janesick:2023}
+Amanda Janesick, Robert Shelansky, Andrew~D. Gottscho, Florian Wagner,
+  Stephen~R. Williams, Morgane Rouault,\emph{ et~al.}
+\newblock High resolution mapping of the tumor microenvironment using
+  integrated single-cell, spatial and in situ analysis.
+\newblock \emph{Nature Communications}, 14, 12 2023.
+\newblock ISSN 2041-1723.
+\newblock \doi{10.1038/s41467-023-43458-x}.
+
+\bibitem[{Nature Methods}(2021)]{NatureMethods:2021}
+{Nature Methods}.
+\newblock Method of the year 2020: spatially resolved transcriptomics.
+\newblock \emph{Nature Methods}, 18, 1 2021.
+\newblock ISSN 1548-7105.
+\newblock \doi{10.1038/s41592-020-01042-x}.
+
+\bibitem[Bergenstr{\aa}hle\emph{ et~al.}(2022)Bergenstr{\aa}hle, He,
+  Bergenstr{\aa}hle, Abalo, Mirzazadeh, Thrane,\emph{
+  et~al.}]{Bergenstrahle:2022}
+Ludvig Bergenstr{\aa}hle, Bryan He, Joseph Bergenstr{\aa}hle, Xes\'{u}s Abalo,
+  Reza Mirzazadeh, Kim Thrane,\emph{ et~al.}
+\newblock Super-resolved spatial transcriptomics by deep data fusion.
+\newblock \emph{Nature biotechnology}, 40:\penalty0 476--479, 4 2022.
+\newblock ISSN 1546-1696.
+\newblock \doi{10.1038/S41587-021-01075-3}.
+
+\bibitem[Huang\emph{ et~al.}(2023)Huang, Park, Pang, and
+  Bienkowska]{Huang:2023b}
+Chao-Hui Huang, Yoson Park, Jincheng Pang, and Jadwiga~R. Bienkowska.
+\newblock Single-cell gene expression prediction using h\&e images based on
+  spatial transcriptomics.
+\newblock volume 12471, pages 17--25. SPIE, 4 2023.
+\newblock ISBN 9781510660472.
+\newblock \doi{10.1117/12.2654294}.
+
+\bibitem[Devlin\emph{ et~al.}(2018)Devlin, Chang, Lee, and
+  Toutanova]{Devlin:2018}
+Jacob Devlin, Ming~Wei Chang, Kenton Lee, and Kristina Toutanova.
+\newblock Bert: Pre-training of deep bidirectional transformers for language
+  understanding.
+\newblock \emph{NAACL HLT 2019 - 2019 Conference of the North American Chapter
+  of the Association for Computational Linguistics: Human Language Technologies
+  - Proceedings of the Conference}, 1:\penalty0 4171--4186, 10 2018.
+
+\bibitem[Brown\emph{ et~al.}(2020)Brown, Mann, Ryder, Subbiah, Kaplan,
+  Dhariwal,\emph{ et~al.}]{Brown:2020}
+Tom~B Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan, Prafulla
+  Dhariwal,\emph{ et~al.}
+\newblock Language models are few-shot learners.
+\newblock \emph{Advances in Neural Information Processing Systems},
+  33:\penalty0 1877--1901, 2020.
+
+\bibitem[Wang\emph{ et~al.}(2024)Wang, Zhang, Lin, Farruggio, and
+  Wang]{Wang:2024}
+Yongheng Wang, Weidi Zhang, Siyu Lin, Matthew~S. Farruggio, and Aijun Wang.
+\newblock Bioinformatics copilot 1.0: A large language model-powered software
+  for the analysis of transcriptomic data.
+\newblock \emph{bioRxiv}, 2024.04.11.588958, 4 2024.
+\newblock \doi{10.1101/2024.04.11.588958}.
+
+\bibitem[Choi\emph{ et~al.}(2024)Choi, Park, Kim, Kim, Lee, Bae,\emph{
+  et~al.}]{Choi:2024}
+Hongyoon Choi, Jeongbin Park, Sumin Kim, Jiwon Kim, Dongjoo Lee, Sungwoo
+  Bae,\emph{ et~al.}
+\newblock Cellama: Foundation model for single cell and spatial transcriptomics
+  by cell embedding leveraging language model abilities.
+\newblock \emph{bioRxiv}, page 2024.05.08.593094, 5 2024.
+\newblock \doi{10.1101/2024.05.08.593094}.
+
+\bibitem[Luo\emph{ et~al.}(2024)Luo, Teng, Tang, Chen, Qu, Liu,\emph{
+  et~al.}]{Luo:2024}
+Bingying Luo, Fei Teng, Guo Tang, Weixuan Chen, Chi Qu, Xuanzhu Liu,\emph{
+  et~al.}
+\newblock Stereomm: A graph fusion model for integrating spatial transcriptomic
+  data and pathological images.
+\newblock \emph{bioRxiv}, 2024.05.04.592486, 5 2024.
+\newblock \doi{10.1101/2024.05.04.592486}.
+
+\bibitem[Ji\emph{ et~al.}(2024)Ji, Xu, and Peng]{Ji:2024}
+Boya Ji, Liwen Xu, and Shaoliang Peng.
+\newblock Spaccc: Large language model-based cell-cell communication inference
+  for spatially resolved transcriptomic data.
+\newblock \emph{bioRxiv}, page 2024.02.21.581369, 2 2024.
+\newblock \doi{10.1101/2024.02.21.581369}.
+
+\bibitem[Cui\emph{ et~al.}(2024)Cui, Wang, Maan, Pang, Luo, Duan,\emph{
+  et~al.}]{Cui:2024}
+Haotian Cui, Chloe Wang, Hassaan Maan, Kuan Pang, Fengning Luo, Nan Duan,\emph{
+  et~al.}
+\newblock scgpt: toward building a foundation model for single-cell multi-omics
+  using generative ai.
+\newblock \emph{Nature Methods}, 2 2024.
+\newblock ISSN 1548-7105.
+\newblock \doi{10.1038/s41592-024-02201-0}.
+
+\bibitem[Ashburner\emph{ et~al.}(2000)Ashburner, Ball, Blake, Botstein, Butler,
+  Cherry,\emph{ et~al.}]{Ashburner:2000}
+Michael Ashburner, Catherine~A. Ball, Judith~A. Blake, David Botstein, Heather
+  Butler, J.~Michael Cherry,\emph{ et~al.}
+\newblock Gene ontology: tool for the unification of biology. the gene ontology
+  consortium.
+\newblock \emph{Nature genetics}, 25:\penalty0 25--29, 5 2000.
+\newblock ISSN 1061-4036.
+\newblock \doi{10.1038/75556}.
+
+\bibitem[Bankhead\emph{ et~al.}(2017)Bankhead, Loughrey, Fern\'{a}ndez,
+  Dombrowski, McArt, Dunne,\emph{ et~al.}]{Bankhead:2017}
+Peter Bankhead, Maurice~B. Loughrey, Jos\'{e}~A. Fern\'{a}ndez, Yvonne
+  Dombrowski, Darragh~G. McArt, Philip~D. Dunne,\emph{ et~al.}
+\newblock Qupath: Open source software for digital pathology image analysis.
+\newblock \emph{Scientific Reports}, 7:\penalty0 16878, 12 2017.
+\newblock ISSN 2045-2322.
+\newblock \doi{10.1038/s41598-017-17204-5}.
+
+\bibitem[Huang(2024)]{Huang:2024}
+Chao-Hui Huang.
+\newblock Qust: Qupath extension for integrative whole slide image and spatial
+  transcriptomics analysis.
+\newblock \emph{arXiv:2406.01613 [q-bio.QM]}, 5 2024.
+\newblock URL \url{https://arxiv.org/abs/2406.01613}.
+
+\bibitem[Wolf\emph{ et~al.}(2018)Wolf, Angerer, and Theis]{Wolf:2018}
+F.~Alexander Wolf, Philipp Angerer, and Fabian~J. Theis.
+\newblock Scanpy: Large-scale single-cell gene expression data analysis.
+\newblock \emph{Genome Biology}, 19:\penalty0 1--5, 2 2018.
+\newblock ISSN 1474760X.
+\newblock \doi{10.1186/S13059-017-1382-0/FIGURES/1}.
+
+\bibitem[Klopfenstein\emph{ et~al.}(2018)Klopfenstein, Zhang, Pedersen,
+  Ram\'{i}rez, Vesztrocy, Naldi,\emph{ et~al.}]{Klopfenstein:2018}
+D.~V. Klopfenstein, Liangsheng Zhang, Brent~S. Pedersen, Fidel Ram\'{i}rez,
+  Alex~Warwick Vesztrocy, Aur\'{e}lien Naldi,\emph{ et~al.}
+\newblock Goatools: A python library for gene ontology analyses.
+\newblock \emph{Scientific Reports 2018 8:1}, 8:\penalty0 1--17, 7 2018.
+\newblock ISSN 2045-2322.
+\newblock \doi{10.1038/s41598-018-28948-z}.
+
+\bibitem[Lowe(2004)]{Lowe:2004}
+David~G. Lowe.
+\newblock Distinctive image features from scale-invariant keypoints.
+\newblock \emph{International Journal of Computer Vision}, 60:\penalty0
+  91--110, 11 2004.
+\newblock ISSN 09205691.
+\newblock \doi{10.1023/B:VISI.0000029664.99615.94/METRICS}.
+
+\bibitem[Sorzano\emph{ et~al.}(2005)Sorzano, Th\'{e}venaz, and
+  Unser]{Sorzano:2005}
+Carlos \'{O}~S. Sorzano, Philippe Th\'{e}venaz, and Michael Unser.
+\newblock Elastic registration of biological images using vector-spline
+  regularization.
+\newblock \emph{IEEE Transactions on Biomedical Engineering}, 52:\penalty0
+  652--663, 4 2005.
+\newblock ISSN 00189294.
+\newblock \doi{10.1109/TBME.2005.844030}.
+
+\end{thebibliography}
