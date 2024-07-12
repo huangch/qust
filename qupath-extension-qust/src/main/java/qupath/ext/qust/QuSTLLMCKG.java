@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -155,7 +156,9 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 		final String negClsList = String.join(",", availPathClassList);
 		
         params = new ParameterList()
-			.addTitleParameter("Contrative Gene Expression LLM Analysis")		
+			.addTitleParameter("Contrative Gene Expression LLM Analysis")	
+			.addStringParameter("resLoc", "Result Location", "", "Result Location")
+			.addStringParameter("resName", "Report Name", "", "Report Name")
 			.addBooleanParameter("bp", "include Biological Processes?", true)
 			.addBooleanParameter("mf", "include Molecular Functions?", true)
 			.addBooleanParameter("cc", "include Cellular Components?", true)
@@ -170,66 +173,66 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 	
 	class AnnotationLoader implements ObjectDetector<BufferedImage> {
 		
-		private static Window getDefaultOwner() {
-			List<Stage> modalStages = Window.getWindows().stream()
-					.filter(w -> w.isShowing() && w instanceof Stage)
-					.map(w -> (Stage)w)
-					.filter(s -> s.getModality() != Modality.NONE)
-					.collect(Collectors.toList());
-			if (modalStages.isEmpty()) {
-				var qupath = QuPathGUI.getInstance();
-				if (qupath != null)
-					return qupath.getStage();
-				return null;
-			}
-			var focussedStages = modalStages.stream()
-					.filter(s -> s.isFocused())
-					.collect(Collectors.toList());
-			if (focussedStages.size() == 1)
-				return focussedStages.get(0);
-			return null;
-		}
-		
-		public void showResultWindow(final Window owner, final String title, final String contents, final String resultImagePath, final Modality modality, final boolean isEditable) {
-			if (!Platform.isFxApplicationThread()) {
-				Platform.runLater(() -> showResultWindow(owner, title, contents, resultImagePath, modality, isEditable));
-				return;
-			}
-//			logDeprecated();
-			logger.info("{}\n{}", title, contents);
-			Stage dialog = new Stage();
-			if (owner == null)
-				dialog.initOwner(getDefaultOwner());
-			else
-				dialog.initOwner(owner);
-			
-			dialog.initModality(modality);
-			dialog.setTitle(title);
-			dialog.setResizable(false);
-			TextArea textArea = new TextArea();
-			textArea.setPrefColumnCount(60);
-			textArea.setPrefRowCount(25);
-
-			textArea.setText(contents);
-			textArea.setWrapText(true);
-			textArea.positionCaret(0);
-			textArea.setEditable(isEditable);
-			
-			final Image image = new Image("file:"+resultImagePath, true);
-			final ImageView pic = new ImageView(image);
-			pic.setFitHeight(600);
-			pic.setFitWidth(600);
-			
-			GridPane grid = new GridPane();
-			grid.add(pic, 1, 1);
-			grid.add(textArea, 2, 1);
-			
-			dialog.setScene(new Scene(grid));
-			dialog.showAndWait();
-			dialog.close();
-			
-			new File(resultImagePath+".png").delete();
-		}
+//		private static Window getDefaultOwner() {
+//			List<Stage> modalStages = Window.getWindows().stream()
+//					.filter(w -> w.isShowing() && w instanceof Stage)
+//					.map(w -> (Stage)w)
+//					.filter(s -> s.getModality() != Modality.NONE)
+//					.collect(Collectors.toList());
+//			if (modalStages.isEmpty()) {
+//				var qupath = QuPathGUI.getInstance();
+//				if (qupath != null)
+//					return qupath.getStage();
+//				return null;
+//			}
+//			var focussedStages = modalStages.stream()
+//					.filter(s -> s.isFocused())
+//					.collect(Collectors.toList());
+//			if (focussedStages.size() == 1)
+//				return focussedStages.get(0);
+//			return null;
+//		}
+//		
+//		public void showResultWindow(final Window owner, final String title, final String contents, final String resultImagePath, final Modality modality, final boolean isEditable) {
+//			if (!Platform.isFxApplicationThread()) {
+//				Platform.runLater(() -> showResultWindow(owner, title, contents, resultImagePath, modality, isEditable));
+//				return;
+//			}
+////			logDeprecated();
+//			logger.info("{}\n{}", title, contents);
+//			Stage dialog = new Stage();
+//			if (owner == null)
+//				dialog.initOwner(getDefaultOwner());
+//			else
+//				dialog.initOwner(owner);
+//			
+//			dialog.initModality(modality);
+//			dialog.setTitle(title);
+//			dialog.setResizable(false);
+//			TextArea textArea = new TextArea();
+//			textArea.setPrefColumnCount(60);
+//			textArea.setPrefRowCount(25);
+//
+//			textArea.setText(contents);
+//			textArea.setWrapText(true);
+//			textArea.positionCaret(0);
+//			textArea.setEditable(isEditable);
+//			
+//			final Image image = new Image("file:"+resultImagePath, true);
+//			final ImageView pic = new ImageView(image);
+//			pic.setFitHeight(600);
+//			pic.setFitWidth(600);
+//			
+//			GridPane grid = new GridPane();
+//			grid.add(pic, 1, 1);
+//			grid.add(textArea, 2, 1);
+//			
+//			dialog.setScene(new Scene(grid));
+//			dialog.showAndWait();
+//			dialog.close();
+//			
+//			new File(resultImagePath+".png").delete();
+//		}
 		
 		@Override
 		public Collection<PathObject> runDetection(final ImageData<BufferedImage> imageData, final ParameterList params, final ROI pathROI) throws IOException {
@@ -358,7 +361,7 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 
 				// Create command to run
 		        VirtualEnvironmentRunner veRunner;
-		        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), QuSTLLMCKG.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
+		        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), QuSTLLMCKG.class.getSimpleName());
 			
 		        // This is the list of commands after the 'python' call
 		        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "llm.py").toString();
@@ -392,8 +395,17 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 				final String ve_text_response = gson.fromJson(jsonObject.get("text_response"), new TypeToken<String>(){}.getType());
 				if(ve_text_response == null) throw new Exception("classification.py returned null");
 				
+				Files.copy(
+						new File(resultPathString+".png").toPath(), 
+						new File(
+								Paths.get(params.getStringParameterValue("resLoc"), params.getStringParameterValue("resLoc")+".png").toString()
+								).toPath());
 				
-		        showResultWindow(null, "Results", String.join("\n", logs), resultPathString+".png", Modality.WINDOW_MODAL, false);
+				final PrintWriter resultText = new PrintWriter("filename.txt");
+				resultText.println(String.join("\n", logs));
+				resultText.close();
+				
+//		        showResultWindow(null, "Results", String.join("\n", logs), resultPathString+".png", Modality.WINDOW_MODAL, false);
 //		        showResultWindow(null, "Results", ve_text_response, resultPathString+".png", Modality.APPLICATION_MODAL, false);
 			}
 			catch(Exception e) {
