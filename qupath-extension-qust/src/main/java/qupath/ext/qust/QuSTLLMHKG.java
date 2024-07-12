@@ -449,6 +449,7 @@ public class QuSTLLMHKG extends AbstractDetectionPlugin<BufferedImage> {
 		textArea.setWrapText(true);
 		textArea.positionCaret(0);
 		textArea.setEditable(false);
+		textArea.setScrollTop(Double.MAX_VALUE); 
 		
 		final Image image = new Image("file:"+resultImagePath, true);
 		final ImageView pic = new ImageView(image);
