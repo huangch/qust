@@ -51,6 +51,7 @@ import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 import qupath.lib.plugins.AbstractDetectionPlugin;
 import qupath.lib.plugins.DetectionPluginTools;
 import qupath.lib.plugins.ObjectDetector;
+import qupath.lib.plugins.TaskRunner;
 import qupath.lib.plugins.parameters.ParameterList;
 import qupath.lib.images.ImageData;
 import qupath.lib.roi.interfaces.ROI;
@@ -67,6 +68,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -85,6 +88,9 @@ public class QuSTLLMHKG extends AbstractDetectionPlugin<BufferedImage> {
 	private static String lastResults = null;
 	private static QuSTSetup qustSetup = QuSTSetup.getInstance();
 	private static final AtomicInteger hackDigit = new AtomicInteger(0);
+
+	private static String resultImagePath;
+	private static String resultContent;
 	
 	/**
 	 * Constructor.
@@ -109,6 +115,7 @@ public class QuSTLLMHKG extends AbstractDetectionPlugin<BufferedImage> {
 			.addTitleParameter("High Gene Expression LLM Analysis")		
 			.addStringParameter("resLoc", "Result Location", "", "Result Location")
 			.addStringParameter("resName", "Report Name", "", "Report Name")
+			.addBooleanParameter("display", "Show results on the screen after the process is finished?", true)
 			.addBooleanParameter("bp", "include Biological Processes?", true)
 			.addBooleanParameter("mf", "include Molecular Functions?", true)
 			.addBooleanParameter("cc", "include Cellular Components?", true)
@@ -322,17 +329,21 @@ public class QuSTLLMHKG extends AbstractDetectionPlugin<BufferedImage> {
 				final String ve_text_response = gson.fromJson(jsonObject.get("text_response"), new TypeToken<String>(){}.getType());
 				if(ve_text_response == null) throw new Exception("classification.py returned null");
 				
-				Files.copy(
-						new File(resultPathString+".png").toPath(), 
-						new File(
-								Paths.get(params.getStringParameterValue("resLoc"), params.getStringParameterValue("resLoc")+".png").toString()
-								).toPath());
+				resultImagePath = resultPathString+".png";
+				resultContent = String.join("\n", logs);
 				
-				final PrintWriter resultText = new PrintWriter("filename.txt");
-				resultText.println(String.join("\n", logs));
-				resultText.close();
+				if(!params.getStringParameterValue("resLoc").isBlank() || !params.getStringParameterValue("resName").isBlank()) {
+					Files.copy(
+							new File(resultPathString+".png").toPath(), 
+							new File(Paths.get(params.getStringParameterValue("resLoc"), params.getStringParameterValue("resName")+".png").toString()).toPath()
+							);
+					
+					final PrintWriter resultText = new PrintWriter(Paths.get(params.getStringParameterValue("resLoc"), params.getStringParameterValue("resName")+".txt").toString());
+					
+					resultText.println(String.join("\n", logs));
+					resultText.close();
+				}
 				
-//		        showResultWindow(null, "Results", String.join("\n", logs), resultPathString+".png", Modality.WINDOW_MODAL, false);
 			}
 			catch(Exception e) {
 				Dialogs.showErrorMessage("Error", e.getMessage());
@@ -364,9 +375,101 @@ public class QuSTLLMHKG extends AbstractDetectionPlugin<BufferedImage> {
 //		
 //	}
 //	
-//	@Override
-//	protected void postprocess(final TaskRunner taskRunner, final ImageData<BufferedImage> imageData) {
-//	}
+	private static Window getDefaultOwner() {
+		List<Stage> modalStages = Window.getWindows().stream()
+				.filter(w -> w.isShowing() && w instanceof Stage)
+				.map(w -> (Stage)w)
+				.filter(s -> s.getModality() != Modality.NONE)
+				.collect(Collectors.toList());
+		if (modalStages.isEmpty()) {
+			var qupath = QuPathGUI.getInstance();
+			if (qupath != null)
+				return qupath.getStage();
+			return null;
+		}
+		var focussedStages = modalStages.stream()
+				.filter(s -> s.isFocused())
+				.collect(Collectors.toList());
+		if (focussedStages.size() == 1)
+			return focussedStages.get(0);
+		return null;
+	}
+	
+	private static void showResultBrowser() {
+		if (!Platform.isFxApplicationThread()) {
+			Platform.runLater(() -> showResultBrowser());
+			return;
+		}
+//		logDeprecated();
+//		logger.info("{}\n{}", title, contents);
+		Stage stage = new Stage();
+		
+		Window owner = getDefaultOwner();
+		
+		if (owner == null)
+			stage.initOwner(getDefaultOwner());
+		else
+			stage.initOwner(owner);
+		
+		stage.initModality(Modality.APPLICATION_MODAL);
+		
+		stage.setTitle("JavaFX WebView Example");
+
+        WebView webView = new WebView();
+
+        webView.getEngine().load("file:///homeh/huangc78/ttt.html");
+
+        VBox vBox = new VBox(webView);
+        Scene scene = new Scene(vBox, 960, 600);
+
+        stage.setScene(scene);
+        stage.show();
+		
+	}
+
+	
+	private static void showResultWindow(final String title, final String contents, final String resultImagePath) {
+		if (!Platform.isFxApplicationThread()) {
+			Platform.runLater(() -> showResultWindow(title, contents, resultImagePath));
+			return;
+		}
+	//	logDeprecated();
+		logger.info("{}\n{}", title, contents);
+		Stage dialog = new Stage();
+		dialog.initOwner(getDefaultOwner());
+		
+		dialog.initModality(Modality.APPLICATION_MODAL);
+		dialog.setTitle(title);
+		dialog.setResizable(false);
+		TextArea textArea = new TextArea();
+		textArea.setPrefColumnCount(60);
+		textArea.setPrefRowCount(25);
+	
+		textArea.setText(contents);
+		textArea.setWrapText(true);
+		textArea.positionCaret(0);
+		textArea.setEditable(false);
+		
+		final Image image = new Image("file:"+resultImagePath, true);
+		final ImageView pic = new ImageView(image);
+		pic.setFitHeight(600);
+		pic.setFitWidth(600);
+		
+		GridPane grid = new GridPane();
+		grid.add(pic, 1, 1);
+		grid.add(textArea, 2, 1);
+		
+		dialog.setScene(new Scene(grid));
+		dialog.showAndWait();
+		dialog.close();
+		
+		new File(resultImagePath+".png").delete();
+	}
+	
+	@Override
+	protected void postprocess(final TaskRunner taskRunner, final ImageData<BufferedImage> imageData) {
+		if(params.getBooleanParameterValue("display")) showResultWindow("Result", resultContent, resultImagePath);
+	}
 	
 	@Override
 	public ParameterList getDefaultParameterList(final ImageData<BufferedImage> imageData) {
