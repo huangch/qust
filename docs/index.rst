@@ -16,5 +16,6 @@ Contents:
    .. toctree::
     :maxdepth: 2
 
-    intro
+    installing
+    building
 
