@@ -17,6 +17,4 @@ Aye ooaa
 ..   :caption: Contents:
 
    intro
-   All about strings <strings>
-   datatypes
 
