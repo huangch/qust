@@ -12,9 +12,9 @@ documentation for details.
 
 Aye ooaa
 
-.. toctree::
-   :maxdepth: 2
-..   :caption: Contents:
+Contents:
+   .. toctree::
+    :maxdepth: 2
 
-   intro
+    intro
 
