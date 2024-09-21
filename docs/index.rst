@@ -15,3 +15,7 @@ documentation for details.
    :maxdepth: 2
    :caption: Contents:
 
+   intro
+   All about strings <strings>
+   datatypes
+
