@@ -7,8 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'qust'
-copyright = '2024, Chao-Hui Huang'
-author = 'Chao-Hui Huang'
+copyright = '2024, huangch'
+author = 'haungch'
 release = '0.1.0'
 
 # -- General configuration ---------------------------------------------------
