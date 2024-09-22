@@ -1,4 +1,4 @@
-qust Installing
+QuST Installing
 ===============
 
 **Better extension support in QuPath v0.5!**

@@ -1,4 +1,4 @@
-qust Building
+QuST Building
 =============
 
 You can build the QuPath QuST extension from source with
