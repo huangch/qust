@@ -2,7 +2,7 @@
 
 # QuST: QuPath Extension for Integrative Whole Slide Image and Spatial Transcriptomics Analysis
 
-### Our work of QuST-Copilit - Integrating Large Language Models for Comprehensive Spatial Transcriptomics Analysis can be found [here](./README_qustllm.md).
+### [Our work of QuST-Copilot can be found here](./README_qustllm.md).
 
 Welcome to the QuST extension for [QuPath](http://qupath.github.io)!
 
