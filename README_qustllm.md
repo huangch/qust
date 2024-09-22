@@ -10,11 +10,11 @@ The current version is written for QuPath v0.5.1
 
 See what's new in the [changelog](CHANGELOG.md);
 
-![Forward Analysis](./qustllm_diagram1.png)
+![Forward Analysis](./artifacts/qustllm_diagram1.png)
 
 The QuST-LLM workflow for forward analysis includes the following steps: (a), users begin by importing ST data into QuPath using QuST. This step may require additional spatial alignment data, which can be obtained via FIJI if the user is working with a 10x Xenium dataset (see text for more details). Once the ST data is successfully loaded, users can perform analysis and visualization using QuPath and QuST. (b), QuST-LLM takes the objects selected by the user, including single-cell clusters or regions, performs a series of single-cell data preprocessing steps and then obtains a list of GO terms based on GOEA. (c), the spatial data and GO terms are integrated as biological evidence, which can be interpreted using an LLM service. The final outcomes is presented to the users.
 
-![Backword Analysis](./qustllm_diagram2.png)
+![Backword Analysis](./artifacts/qustllm_diagram2.png)
 
 The QuST-LLM workflow for backward analysis includes the following steps: (a), users begin by providing languages describing the required biological evidences. A LLM service is then interpreting the inputs and obtains the the key terms which may be used to isolate the sub-graph of the GO. (b), QuST-LLM identifies the key genes by using GOEA based on the obtained GO terms. (c), given the ST data which has been loaded into QuST, the users can then identify the cells which may highly relevant to the sentences provided by the users.
 
