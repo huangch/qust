@@ -11,10 +11,11 @@ Add your content using ``reStructuredText`` syntax. See the
 documentation for details.
 
 Contents:
-   .. toctree::
-    :maxdepth: 2
+    .. toctree::
+     :maxdepth: 2
 
     prerequests
     installing
     building
+    alignments
 
