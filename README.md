@@ -2,7 +2,7 @@
 
 # QuST: QuPath Extension for Integrative Whole Slide Image and Spatial Transcriptomics Analysis
 
-[Click here for QuST-Copilot](./README_qustllm.md)
+## [Click here for QuST-Copilot](./README_qustllm.md)
 
 Welcome to the QuST extension for [QuPath](http://qupath.github.io)!
 
