@@ -1,4 +1,4 @@
-QuST Prerequests
+QuST Prerequisites
 ================
 
 - QuST includes a user interface for StarDist for convenience. The user who wishes to use StarDist should download and install it separatly.
