@@ -14,8 +14,9 @@ Contents:
    .. toctree::
     :maxdepth: 2
 
-    prerequests
+    prerequisites
     installing
     building
     alignments
+    tutorial
 
