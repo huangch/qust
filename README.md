@@ -2,7 +2,17 @@
 
 # QuST: QuPath Extension for Integrative Whole Slide Image and Spatial Transcriptomics Analysis
 
+## Table of Contents
+- Introduction
+- Prerequisites
+- Installing
+- Citing
+- Building
+- Tutorial
+
 ### Our work of QuST-Copilot can be found [here](./README_qustllm.md).
+
+## Introduction
 
 Welcome to the QuST extension for [QuPath](http://qupath.github.io)!
 
@@ -17,7 +27,7 @@ See what's new in the [changelog](CHANGELOG.md);
 
 QuST workflow includes: (a) users begin by importing ST data into QuPath using QuST. This step may require additional spatial alignment data which can be obtained via FIJI, if the user is working on 10x Xenium dataset (see text). (b) once the ST data is successfully loaded, users can perform analysis and visualization via QuPath and QuST. (c) given the biological evidences provided by ST, users can generate the training set for image based cell classification and region segmentation based on H\&E. Finally, the result generated using the DL module can be further analyzed using the functions described in (b).
 
-## Prerequests
+## Prerequisites
 
 - QuST includes a user interface for StarDist for convenience. The user who wishes to use StarDist should download and install it separatly.
 - For cell-cell interaction, an additional file, human_lr_pair.csv, is required. The latest version of the file can be obtained from [CellChatDB](https://github.com/jinworks/CellChat/tree/main). An older version can be found [here](./cci_datasets/human_lr_pair.csv). Please cite below publications if you are using their works.
@@ -65,3 +75,7 @@ The output will be under `build/libs`.
 
 * `clean` removes anything old
 * `build` builds the QuPath extension as a *.jar* file and adds it to `libs`
+
+## Tutorial
+
+For a detailed tutorial on how to use QuST, please refer to the Tutorial (./tutorial.md).
