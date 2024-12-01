@@ -18,12 +18,12 @@ Load H&E Images into FIJI
 
 First, click "File -> Import -> Bio-Formats" and select the corresponding H&E image file.
 
-.. image:: fiji-file-import-bioformats.png
+.. image:: artifacts/fiji-file-import-bioformats.png
    :width: 800pt
 
 In Bio-Formats Import Options, using options as showing below.
 
-.. image:: fiji-bioformats-import-options.png
+.. image:: artifacts/fiji-bioformats-import-options.png
    :width: 800pt
 
 
