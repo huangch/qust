@@ -72,3 +72,6 @@ The hematoxylin has to be inverted as showning below:
 
 .. image:: artifacts/fiji-wsi-hematoxylin-invteted.png
    :width: 400pt
+
+    Additional process which may not applicable for all cases:
+    The user may have to remove the strips on the edges of the image if you are using H&E images provided by 10x Genomics. 
