@@ -32,11 +32,14 @@ Next, select the Series Number. The higher series number, e.g., Series 1, the hi
 
 Click Ok button, the chosen H&E whoile slide image will be loas as a RGB stack in FIJI. Note that in this example, we used `FFPE Human Breast with Custom Add-on Panel
 provided by 10x Genomics
-<https://www.10xgenomics.com/datasets/ffpe-human-breast-with-custom-add-on-panel-1-standard>`_. Currently, 10x Genomics has performmed image registration for all of the H&E images in their database. Thus, if the user is using their image as the example, some unexpected noises (e.g., black strip at the edge of the H*E image) have to be removed beforehand.
+<https://www.10xgenomics.com/datasets/ffpe-human-breast-with-custom-add-on-panel-1-standard>`_. Currently, 10x Genomics has performmed image registration for all of the H&E images in their database. Thus, if the user is using their image as the example, some unexpected noises (e.g., black strips at the edges of the H*E image) have to be removed beforehand.
 
 .. image:: artifacts/fiji-wsi-he-stack.png
    :width: 400pt
  
+The type of the loaded H&E image is RGB stack. It is necessary to convert the type to RGB Color by selecting Image->Type->RGB Color.
 
+.. image:: artifacts/fiji-image-type-rgb-color.png
+   :width: 400pt
 
 
