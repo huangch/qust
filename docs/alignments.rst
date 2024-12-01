@@ -70,5 +70,5 @@ Since only the hematoxylin channel is needed, the rest images can be closed. Her
 
 The hematoxylin has to be inverted as showning below:
 
-.. image:: artifacts/fiji-wsi-hematoxylin-inverted.png
+.. image:: artifacts/fiji-wsi-hematoxylin-invteted.png
    :width: 400pt
