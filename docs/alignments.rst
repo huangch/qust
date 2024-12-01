@@ -47,12 +47,28 @@ The type of the loaded H&E image is RGB stack. It is necessary to convert the ty
 H&E Color Deconvolution
 =======================
 
-AT this step, we will perform color deconvolution for extracting nuiclei signals (which is highly related to hematoxylin staing of an H&E image). First, use Image->Colod->Color Deconvolution function in FIJI:
+AT this step, we will perform color deconvolution for extracting nuiclei signals (which is highly related to hematoxylin staing of an H&E image). First, use Image->Colod->Color Deconvolution function in FIJI...
 
 .. image:: artifacts/fiji-image-color-color-deconvolution.png
    :width: 400pt
 
-And select the desired color space. the vector of the chosen color space should be selected accordingly. In this case, we used "H&E 2".
+...and select the desired color space. the vector of the chosen color space should be selected accordingly. In this case, we used "H&E".
 
 .. image:: artifacts/fiji-color-deconvolution-options.png
+   :width: 400pt
+
+
+The RGB Color image is deconvoluted. 3 additional 8 bit images are generated.
+
+.. image:: artifacts/fiji-wsi-he-deconvoluted.png
+   :width: 400pt
+
+Since only the hematoxylin channel is needed, the rest images can be closed. Here the LUT is also replaced by Gray for better visually investigation.
+
+.. image:: artifacts/fiji-wsi-hematoxylin.png
+   :width: 400pt
+
+The hematoxylin has to be inverted as showning below:
+
+.. image:: artifacts/fiji-wsi-hematoxylin-inverted.png
    :width: 400pt
