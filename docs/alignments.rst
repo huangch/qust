@@ -48,7 +48,7 @@ The type of the loaded H&E image is RGB stack. It is necessary to convert the ty
 
 
 H&E Color Deconvolution
-=======================
+***********************
 
 AT this step, we will perform color deconvolution for extracting nuiclei signals (which is highly related to hematoxylin staing of an H&E image). First, use Image->Colod->Color Deconvolution function in FIJI...
 
