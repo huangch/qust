@@ -9,8 +9,11 @@
 :Version: 1.0 of 2024/10/24
 :Dedication: To Everyone contribution to QuST
 
+Image Alignment
+===============
+
 Load H&E Images into FIJI
-=========================
+*************************
 
 First, click "File -> Import -> Bio-Formats" and select the corresponding H&E image file.
 
@@ -96,7 +99,7 @@ Hit the Auto button, the histogram equalization will be executed accordingly.
 Hit "Apply" and then hit "Ok" to save the equalized signal. The nuclei signal obtained from H&E image thus is ready at this stage.
 
 Load DAPI Images into FIJI
-==========================
+**************************
 
 Click "File -> Import -> Bio-Formats" and select the corresponding DAPI image file. The corresponding MIP (maximum intensity projection) is used in this case.
 
