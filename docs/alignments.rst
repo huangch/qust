@@ -103,3 +103,12 @@ Click "File -> Import -> Bio-Formats" and select the corresponding DAPI image fi
 .. image:: artifacts/fiji-file-import-bioformats-dapi.png
    :width: 400pt
 
+Using below options to load DAPI image.
+
+.. image:: artifacts/fiji-bioformats-import-options-dapi.png
+   :width: 400pt
+
+Select the series number same as when loading the corresponding H&E image.
+
+.. image:: artifacts/fiji-bioformats-series-options-dapi.png
+   :width: 400pt
