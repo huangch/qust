@@ -133,5 +133,11 @@ We also convert the LUT to gray in order to perform better visual investigation.
 .. image:: artifacts/fiji-wsi-dapi-equalized-gray.png
    :width: 400pt
 
+In most cases, DAPI image is stored in 16-bit format. The image has to be converted into 8-bit format by clicking Image->Type->8-bit.
+
+
+.. image:: artifacts/fiji-wsi-dapi-8bit.png
+   :width: 400pt
+
 
 
