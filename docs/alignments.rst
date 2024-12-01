@@ -78,3 +78,7 @@ Below is an additional process which may not applicable for all cases. The user 
 .. image:: artifacts/fiji-wsi-hematoxylin-invteted-cleaned.png
    :width: 400pt
 
+The residual signal in the background needs to be remove. This step can be done by performming Process->Substrate background...
+
+.. image:: artifacts/fiji-wsi-hematoxylin-inverted-cleaned-background-removed.png
+   :width: 400pt
