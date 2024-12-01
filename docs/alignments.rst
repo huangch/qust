@@ -36,7 +36,8 @@ provided by 10x Genomics
 
 .. image:: artifacts/fiji-wsi-he-stack.png
    :width: 400pt
- 
+
+
 The type of the loaded H&E image is RGB stack. It is necessary to convert the type to RGB Color by selecting Image->Type->RGB Color.
 
 .. image:: artifacts/fiji-image-type-rgb-color.png
