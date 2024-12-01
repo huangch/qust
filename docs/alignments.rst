@@ -98,5 +98,8 @@ Hit "Apply" and then hit "Ok" to save the equalized signal. The nuclei signal ob
 Load DAPI Images into FIJI
 ==========================
 
+Click "File -> Import -> Bio-Formats" and select the corresponding DAPI image file. The corresponding MIP (maximum intensity projection) is used in this case.
 
+.. image:: artifacts/fiji-file-import-bioformats-dapi.png
+   :width: 400pt
 
