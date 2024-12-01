@@ -73,11 +73,10 @@ The hematoxylin has to be inverted as showning below:
 .. image:: artifacts/fiji-wsi-hematoxylin-invteted.png
    :width: 400pt
 
-..
-    Below is an additional process which may not applicable for all cases. The user may have to remove the strips on the edges of the image if you are using H&E images provided by 10x Genomics, since 10x Genomics have performmed alignment for all of the H&E images in their dataset. This won't be the case for most of the users.
+Below is an additional process which may not applicable for all cases. The user may have to remove the strips on the edges of the image if you are using H&E images provided by 10x Genomics, since 10x Genomics have performmed alignment for all of the H&E images in their dataset. This won't be the case for most of the users.
 
-    .. image:: artifacts/fiji-wsi-hematoxylin-invteted-cleaned.png
-       :width: 400pt
+.. image:: artifacts/fiji-wsi-hematoxylin-invteted-cleaned.png
+   :width: 400pt
 
 The residual signal in the background needs to be remove. This step can be done by performming Process->Substrate background...
 
