@@ -82,3 +82,16 @@ The residual signal in the background needs to be remove. This step can be done 
 
 .. image:: artifacts/fiji-wsi-hematoxylin-inverted-cleaned-background-removed.png
    :width: 400pt
+
+Then, we perform histogram equalization by using Image->Adjust->Brightness/Contrast
+
+.. image:: artifacts/fiji-image-adjust-brightness-contrast.png
+   :width: 400pt
+
+Hit the Auto button, the histogram equalization will be executed accordingly. 
+
+.. image:: artifacts/fiji-wsi-hematoxylin-inverted-cleaned-background-removed-equalized.png
+   :width: 400pt
+
+Hit "Apply" and then hit "Ok" to save the equalized signal. The nuclei signal obtained from H&E image thus is ready at this stage.
+
