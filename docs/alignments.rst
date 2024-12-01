@@ -123,7 +123,7 @@ Perform histogram equalization by Image->Adjust->Brightness/Contrast, and click 
 .. image:: artifacts/fiji-wsi-dapi-brightnesscontrast.png
    :width: 400pt
 
-Perform histogram equalization by Image->Adjust->Brightness/Contrast, and click Auto.
+Perform histogram equalization by Image->Adjust->Brightness/Contrast, and click Auto, then hit Apply.
 
 .. image:: artifacts/fiji-wsi-dapi-brightnesscontrast.png
    :width: 400pt
