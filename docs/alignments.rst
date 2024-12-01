@@ -112,3 +112,23 @@ Select the series number same as when loading the corresponding H&E image.
 
 .. image:: artifacts/fiji-bioformats-series-options-dapi.png
    :width: 400pt
+
+It is normal if you see a whole black image right after loading the chosen DAPI. 
+
+.. image:: artifacts/fiji-wsi-dapi.png
+   :width: 400pt
+
+Perform histogram equalization by Image->Adjust->Brightness/Contrast, and click Auto.
+
+.. image:: artifacts/fiji-wsi-dapi-brightnesscontrast.png
+   :width: 400pt
+
+Perform histogram equalization by Image->Adjust->Brightness/Contrast, and click Auto.
+
+.. image:: artifacts/fiji-wsi-dapi-brightnesscontrast.png
+   :width: 400pt
+
+We also convert the LUT to gray in order to perform better visual investigation.
+
+.. image:: artifacts/fiji-wsi-dapi-equalized-gray.png
+   :width: 400pt
