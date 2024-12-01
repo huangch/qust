@@ -95,7 +95,8 @@ Hit the Auto button, the histogram equalization will be executed accordingly.
 
 Hit "Apply" and then hit "Ok" to save the equalized signal. The nuclei signal obtained from H&E image thus is ready at this stage.
 
-
+Load DAPI Images into FIJI
+==========================
 
 
 
