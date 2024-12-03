@@ -250,3 +250,13 @@ You can zoom-in into the same spot when inspecting the linear registration outco
 
 .. image:: artifacts/nonlinear_registration_results.gif
    :width: 400pt
+
+Load Xenium data into QuST
+**************************
+
+Switch back to QuPath. First, we have to perform nuclei detection using the approach you prefer.
+
+.. image:: artifacts/qupath-cell-detection.gif
+   :width: 400pt
+
+
