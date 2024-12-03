@@ -173,6 +173,10 @@ If the above hematoxylin and DAPI channels have different dimension, it is neces
 
 Once the rectangular annotation is generated, click Image->Crop to crop the image stack so that the dimension of the image stack is restored.
 
-
 .. image:: artifacts/fiji-align-stack-results-annotated-cropped.png
+   :width: 400pt
+
+Now, switch to the Log window, click on the obtained transformation matrix, hit right mouse button and hit "Copy".
+
+.. image:: artifacts/fiji-align-stack-transformation-matrix.png
    :width: 400pt
