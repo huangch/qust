@@ -121,11 +121,6 @@ It is normal if you see a whole black image right after loading the chosen DAPI.
 .. image:: artifacts/fiji-wsi-dapi.png
    :width: 400pt
 
-Perform histogram equalization by Image->Adjust->Brightness/Contrast, and click Auto.
-
-.. image:: artifacts/fiji-wsi-dapi-brightnesscontrast.png
-   :width: 400pt
-
 Perform histogram equalization by Image->Adjust->Brightness/Contrast, and click Auto, then hit Apply.
 
 .. image:: artifacts/fiji-wsi-dapi-brightnesscontrast.png
@@ -138,9 +133,16 @@ We also convert the LUT to gray in order to perform better visual investigation.
 
 In most cases, DAPI image is stored in 16-bit format. The image has to be converted into 8-bit format by clicking Image->Type->8-bit.
 
-
 .. image:: artifacts/fiji-wsi-dapi-8bit.png
    :width: 400pt
+
+At this stage, DAPI image is loaded. 
+
+.. image:: artifacts/fiji-hne-dapi-loaded.png
+   :width: 400pt
+
+Linear Image Alignment (Linear Imagew Stack Alignment)
+******************************************************
 
 
 
