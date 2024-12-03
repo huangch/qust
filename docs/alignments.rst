@@ -144,5 +144,12 @@ At this stage, DAPI image is loaded.
 Linear Image Alignment (Linear Imagew Stack Alignment)
 ******************************************************
 
+First, generate a image stack using the above obtained hematoxylin and DAPI channels by clicking Image->Stacks->Image to Stack.
+
+In most cases, the obtained H&E image (here, the hematoxylin channel) and the DAPI image havve different dimension. In this case, the stacking method needs to be "Copy (top-left)". In addition, you may want to enable "keep source images" since you may need image dimension.
+
+.. image:: artifacts/fiji-image-to-stack-option.png
+   :width: 400pt
+
 
 
