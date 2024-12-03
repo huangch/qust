@@ -248,5 +248,5 @@ In the result stack, frame 4 and 5 are particually useful. They give you the ide
 
 You can zoom-in into the same spot when inspecting the linear registration outcome.
 
-.. image:: artifacts/nonlinear_registration_results.png
+.. image:: artifacts/nonlinear_registration_results.gif
    :width: 400pt
