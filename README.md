@@ -79,4 +79,4 @@ The output will be under `build/libs`.
 
 ## Tutorial
 
-For a detailed tutorial on how to use QuST, please refer to the Tutorial (./tutorial.md).
+For a detailed tutorial on how to use QuST, please refer to the [Tutorial](https://github.com/huangch/qust/blob/main/tutorial.md).
