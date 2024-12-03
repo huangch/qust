@@ -161,3 +161,18 @@ Next, start SIFT process by clicking Plugins->Registration->Linear Stack Alignme
 .. image:: artifacts/fiji-align-stack-options.png
    :width: 400pt
 
+Click Ok, in a moment, the result will be generated. You can zoom-in into the detail of the image and observe the result of SIFT.
+
+.. image:: artifacts/fiji-align-stack-results.png
+   :width: 400pt
+
+If the above hematoxylin and DAPI channels have different dimension, it is necessary to crop the image. This step can be done by making an rectangular annotation. The top-left of the rectangular annotation is aligned to the top-left of the image stack. The width and weight of the rectangular annotation are the same as the hematoxylin channel. The trick is, using the mouse creating the rectangular annotation, then, fine-tunning the width and height of the rectangular annotation by holding ALT key and pressing top-down/left-right keys.
+
+.. image:: artifacts/fiji-align-stack-results-annotated.png
+   :width: 400pt
+
+Once the rectangular annotation is generated, click Image->Crop to crop the image stack so that the dimension of the image stack is restored.
+
+
+.. image:: artifacts/fiji-align-stack-results-annotated-cropped.png
+   :width: 400pt
