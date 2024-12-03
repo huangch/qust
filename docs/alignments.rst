@@ -212,3 +212,41 @@ Switch back to FIJI at the result of linear image registration, click Image->Sta
 
 .. image:: artifacts/fiji-stack-to-images.png
    :width: 400pt
+
+Once the two images are splitted from the image stack, go to Plugins->Registration->bUnwrapJ.
+
+In the bUnwrapJ options, 
+
+Source Image: select the hematoxylin channel 
+Target Image: select the aligned DAPI channel
+Registration Mode: Mono
+Initial Deformation: Very Fine (this option might be veriate but personally I use Very Fine).
+Final Deformation: Super Fine (this option might be veriate but personally I use Super Fine).
+Verbose: checked (for observing the further details of the registration outcome)
+Save Transformation: checked
+
+.. image:: artifacts/fiji-bunwrapj-options.png
+   :width: 400pt
+
+Click "OK", and observe the Log window. After a while, a "Save_direct_transformation" File Dialog showed. Name the file as "direct_transf.txt" and save the file to the "outs" folder.
+
+.. image:: artifacts/fiji-bunwrapj-save-direct-transf.png
+   :width: 400pt
+
+At this stage, the nonlinear registration is completedtack of 5 images will be shown on the screen. Note that the author has experienced a bug in FIJI when flipping between the frames in the image stack. You may want to switch the resulted ime stack into 8-bit for cancelling the bug.
+
+.. image:: artifacts/fiji-bunwrapj-results.png
+   :width: 400pt
+
+In the result stack, frame 4 and 5 are particually useful. They give you the idea how the bUnwrap decided the transformation over the whole slide.
+
+.. image:: artifacts/fiji-bunwrapj-results-vectors.png
+   :width: 400pt
+
+.. image:: artifacts/fiji-bunwrapj-results-grids.png
+   :width: 400pt
+
+You can zoom-in into the same spot when inspecting the linear registration outcome.
+
+.. image:: artifacts/nonlinear_registration_results.png
+   :width: 400pt
