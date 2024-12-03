@@ -207,3 +207,8 @@ Then, hit "Run" button. The corresponding pixel size and affine matrix for linea
 
 Non-linear Image Stack Alignment using bUnwrap
 **********************************************
+
+Switch back to FIJI at the result of linear image registration, click Image->Stacks->Stack to Images, in order to split the stack. You may have to record the order of the images. Note that the first image is hematoxylin channel obtained from H&E, and the second image is DAPI aligned to hematoxylin channel.
+
+.. image:: artifacts/fiji-stack-to-images.png
+   :width: 400pt
