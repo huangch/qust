@@ -176,12 +176,17 @@ Once the rectangular annotation is generated, click Image->Crop to crop the imag
 .. image:: artifacts/fiji-align-stack-results-annotated-cropped.png
    :width: 400pt
 
+You can zoom-in and inspect the result of linear image registration 
+
+.. image:: artifacts/linear_registration_results.gif
+   :width: 400pt
+
 Now, switch to the Log window, click on the obtained transformation matrix, hit right mouse button and hit "Copy".
 
 .. image:: artifacts/fiji-align-stack-transformation-matrix.png
    :width: 400pt
 
-NAt this stage, the linear transformation matrix is obtained.
+At this stage, the linear transformation matrix is obtained.
 
 Now, let's import the transformation matrix to QuST environment. Start QuPath, and open the corresponding H&E image.
 
