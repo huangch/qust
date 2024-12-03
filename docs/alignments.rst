@@ -180,3 +180,10 @@ Now, switch to the Log window, click on the obtained transformation matrix, hit 
 
 .. image:: artifacts/fiji-align-stack-transformation-matrix.png
    :width: 400pt
+
+NAt this stage, the linear transformation matrix is obtained.
+
+Now, let's import the transformation matrix to QuST environment. Start QuPath, and open the corresponding H&E image.
+
+.. image:: artifacts/quipath-hne.png
+   :width: 400pt
