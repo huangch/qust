@@ -26,8 +26,6 @@ Create a new QuPath project. If you have any issues creating a project, feel fre
 
 Image alignment and Xenium single cell data loading can be found [Here](https://github.com/huangch/qust/blob/main/docs/alignments.rst).
 
-To perform Image Registration, follow the official tutorial provided by 10X here. If you have any questions, see Chao-Hui Huang (Chao-Hui.Huang@pfizer.com).
-
 ## Sample Preparation
 
 ### Tissue and Nucleus Segmentation
