@@ -141,8 +141,8 @@ At this stage, DAPI image is loaded.
 .. image:: artifacts/fiji-hne-dapi-loaded.png
    :width: 400pt
 
-Linear Image Alignment (Linear Imagew Stack Alignment)
-******************************************************
+Linear Image Stack Alignment using SIFT
+***************************************
 
 First, generate a image stack using the above obtained hematoxylin and DAPI channels by clicking Image->Stacks->Image to Stack.
 
@@ -195,10 +195,10 @@ In a QuPath environment with QuST, click Extension->QuST Analysis Toolbox->Pixel
 * Image series: using the image series id used when processing H&E and DAPI images.
 * Affine Matrix: paste the affine matrix obtained in the previous step.
 
-Then, hit "Run" button. The corresponding pixel size and affine matrix for linear registration will be saved.
+Then, hit "Run" button. The corresponding pixel size and affine matrix for linear registration will be saved. 
 
 .. image:: artifacts/qupath-hne-pixel-size-calibration.png
    :width: 400pt
 
-
-qupath-hne-pixel-size-calibration.png
+Non-linear Image Stack Alignment using bUnwrap
+**********************************************
