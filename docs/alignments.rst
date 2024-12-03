@@ -151,5 +151,13 @@ In most cases, the obtained H&E image (here, the hematoxylin channel) and the DA
 .. image:: artifacts/fiji-image-to-stack-option.png
    :width: 400pt
 
+Make sure the hematoxylin channel is at the first position of the generated image stack.
 
+.. image:: artifacts/fiji-hematoxylin-DAPI-stack.png
+   :width: 400pt
+
+Next, start SIFT process by clicking Plugins->Registration->Linear Stack Alignment SIFT. Select "Affine" in the "expect transformation" option, and enable "show transformation matrix".
+
+.. image:: artifacts/fiji-align-stack-options.png
+   :width: 400pt
 
