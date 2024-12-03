@@ -259,4 +259,18 @@ Switch back to QuPath. First, we have to perform nuclei detection using the appr
 .. image:: artifacts/qupath-cell-detection.gif
    :width: 400pt
 
+Go to Extension->QuST Analysis Toolbox->10x Xenium Annotation for loading the xenium data. Give the correct "outs" folder in the Xenium directory. Leave the rest parameters as default unless you know what do they mean. 
+
+.. image:: artifacts/qupath-xenium-loader.gif
+   :width: 400pt
+
+Click "Run"...
+
+Finally the xenoium single cell data, including their transcriptomics and the subtypes will be loaded.
+
+.. image:: artifacts/qupath-xenium-loader-results.gif
+   :width: 400pt
+
+
+
 
