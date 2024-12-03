@@ -187,3 +187,18 @@ Now, let's import the transformation matrix to QuST environment. Start QuPath, a
 
 .. image:: artifacts/quipath-hne.png
    :width: 400pt
+
+In a QuPath environment with QuST, click Extension->QuST Analysis Toolbox->Pixel Size Calibration by Xenium Affine Matrix, fill the fields as following:
+
+* Xenium outout folder: the "outs" folder that was delivered by the vendor.
+* DAPI image pixel size: currently this value is 0.2125, which may or may not consist with your data. Please consult your vendor.
+* Image series: using the image series id used when processing H&E and DAPI images.
+* Affine Matrix: paste the affine matrix obtained in the previous step.
+
+Then, hit "Run" button. The corresponding pixel size and affine matrix for linear registration will be saved.
+
+.. image:: artifacts/qupath-hne-pixel-size-calibration.png
+   :width: 400pt
+
+
+qupath-hne-pixel-size-calibration.png
