@@ -22,7 +22,7 @@ If you have any issues creating a project, feel free to reference this tutorial.
 Image Registration
 ------------------
 
-To perform Image Registration, follow the official tutorial provided by 10X here. If you have any questions, see Chao-Hui Huang (Chao-Hui.Huang@pfizer.com).
+:doc:`./alignment.rst`
 
 Sample prep
 -----------

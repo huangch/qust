@@ -56,7 +56,8 @@ You might then need to restart QuPath (but not your computer).
 
 If you use this extension, you should cite the original QuST publication
 
-- - Chao-Hui Huang.  
+- Chao-Hui Huang, Sara Lichtarge, Diane Fernandez.
+
 [*QuST: QuPath Extension for Integrative Whole Slide Image and Spatial Transcriptomics Analysis*](https://arxiv.org/abs/2406.01613).  
 
 You should also cite the QuPath publication, as described [here](https://qupath.readthedocs.io/en/stable/docs/intro/citing.html).
@@ -78,4 +79,4 @@ The output will be under `build/libs`.
 
 ## Tutorial
 
-For a detailed tutorial on how to use QuST, please refer to the Tutorial (./tutorial.md).
+For a detailed tutorial on how to use QuST, please refer to the [Tutorial](https://github.com/huangch/qust/blob/main/tutorial.md).
