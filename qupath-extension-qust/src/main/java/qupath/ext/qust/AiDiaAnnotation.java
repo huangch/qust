@@ -37,7 +37,10 @@ import org.slf4j.LoggerFactory;
 
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Point2D;
-import qupath.lib.gui.dialogs.Dialogs;
+
+import qupath.fx.dialogs.Dialogs;
+import qupath.fx.dialogs.FileChoosers;
+
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
@@ -62,9 +65,9 @@ import qupath.lib.roi.interfaces.ROI;
  */
 public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	
-	final private static Logger logger = LoggerFactory.getLogger(AiDiaAnnotation.class);
+	private static Logger logger = LoggerFactory.getLogger(AiDiaAnnotation.class);
 	
-	final private StringProperty aidiaDataFileProp = PathPrefs.createPersistentPreference("aidiaDataFile", ""); 
+	private StringProperty aidiaDataFileProp = PathPrefs.createPersistentPreference("aidiaDataFile", ""); 
 	
 	private ParameterList params;
 
@@ -88,39 +91,37 @@ public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	class AnnotationLoader implements ObjectDetector<BufferedImage> {
 		/* --------------------------------------------------------------------*/
 		@Override
-		public Collection<PathObject> runDetection(final ImageData<BufferedImage> imageData, final ParameterList params, final ROI pathROI) throws IOException {
-//			aidiaDataFileProp.set(params.getStringParameterValue("aidiaDataFile"));
-			
-			final ImageServer<BufferedImage> server = imageData.getServer();				
-			final PathObjectHierarchy hierarchy = imageData.getHierarchy();
-			final ArrayList<PathObject> resultPathObjectList = new ArrayList<PathObject>(hierarchy.getRootObject().getChildObjects());
+		public Collection<PathObject> runDetection(ImageData<BufferedImage> imageData, ParameterList params, ROI pathROI) throws IOException {
+			ImageServer<BufferedImage> server = imageData.getServer();				
+			PathObjectHierarchy hierarchy = imageData.getHierarchy();
+			ArrayList<PathObject> resultPathObjectList = new ArrayList<PathObject>(hierarchy.getRootObject().getChildObjects());
 			
 			try {
-				final double pixelSizeMicrons = server.getPixelCalibration().getAveragedPixelSizeMicrons();
+				double pixelSizeMicrons = server.getPixelCalibration().getAveragedPixelSizeMicrons();
 				/*
 	             * Generate cell masks with their labels
 	             */
 				
-				final List<PathObject> selectedAnnotationPathObjectList = hierarchy.getSelectionModel().getSelectedObjects().stream().filter(e -> e.isAnnotation() && e.hasChildObjects()).collect(Collectors.toList());
+				List<PathObject> selectedAnnotationPathObjectList = hierarchy.getSelectionModel().getSelectedObjects().stream().filter(e -> e.isAnnotation() && e.hasChildObjects()).collect(Collectors.toList());
 				
 				if(selectedAnnotationPathObjectList.isEmpty()) throw new Exception("Missed selected annotations");
-				final int maskDownsampling = params.getIntParameterValue("maskDownsampling");;
-				final int maskWidth = (int)Math.round(server.getWidth()/maskDownsampling);
-				final int maskHeight = (int)Math.round(server.getHeight()/maskDownsampling);	
-				final BufferedImage annotPathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_INT_RGB);
-				final List<PathObject> annotPathObjectList = new ArrayList<PathObject>();						
+				int maskDownsampling = params.getIntParameterValue("maskDownsampling");;
+				int maskWidth = (int)Math.round(server.getWidth()/maskDownsampling);
+				int maskHeight = (int)Math.round(server.getHeight()/maskDownsampling);	
+				BufferedImage annotPathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_INT_RGB);
+				List<PathObject> annotPathObjectList = new ArrayList<PathObject>();						
 				
-				final Graphics2D annotPathObjectG2D = annotPathObjectImageMask.createGraphics();				
+				Graphics2D annotPathObjectG2D = annotPathObjectImageMask.createGraphics();				
 				annotPathObjectG2D.setBackground(new Color(0, 0, 0));
 				annotPathObjectG2D.clearRect(0, 0, maskWidth, maskHeight);
 				
 				annotPathObjectG2D.setClip(0, 0, maskWidth, maskHeight);
 				annotPathObjectG2D.scale(1.0/maskDownsampling, 1.0/maskDownsampling);					    
 				
-				final BufferedImage pathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_INT_RGB);
-				final List<PathObject> pathObjectList = new ArrayList<PathObject>();						
+				BufferedImage pathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_INT_RGB);
+				List<PathObject> pathObjectList = new ArrayList<PathObject>();						
 				
-				final Graphics2D pathObjectG2D = pathObjectImageMask.createGraphics();				
+				Graphics2D pathObjectG2D = pathObjectImageMask.createGraphics();				
 				pathObjectG2D.setBackground(new Color(0, 0, 0));
 				pathObjectG2D.clearRect(0, 0, maskWidth, maskHeight);
 				
@@ -134,13 +135,13 @@ public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 					for(PathObject p: selectedAnnotationPathObjectList) {
 						annotPathObjectList.add(p);
 					    
-					    final int pb0 = (annotPathObjectCount & 0xff) >> 0; // b
-					    final int pb1 = (annotPathObjectCount & 0xff00) >> 8; // g
-					    final int pb2 = (annotPathObjectCount & 0xff0000) >> 16; // r
-					    final Color pMaskColor = new Color(pb2, pb1, pb0); // r, g, b
+					    int pb0 = (annotPathObjectCount & 0xff) >> 0; // b
+					    int pb1 = (annotPathObjectCount & 0xff00) >> 8; // g
+					    int pb2 = (annotPathObjectCount & 0xff0000) >> 16; // r
+					    Color pMaskColor = new Color(pb2, pb1, pb0); // r, g, b
 				    
-					    final ROI pRoi = p.getROI();
-						final Shape pShape = pRoi.getShape();
+					    ROI pRoi = p.getROI();
+						Shape pShape = pRoi.getShape();
 						
 						annotPathObjectG2D.setColor(pMaskColor);
 						annotPathObjectG2D.fill(pShape);
@@ -153,13 +154,13 @@ public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 						for(PathObject c: p.getChildObjects()) {
 							pathObjectList.add(c);
 						    
-						    final int b0 = (pathObjectCount & 0xff) >> 0; // b
-						    final int b1 = (pathObjectCount & 0xff00) >> 8; // g
-						    final int b2 = (pathObjectCount & 0xff0000) >> 16; // r
-						    final Color maskColor = new Color(b2, b1, b0); // r, g, b
+						    int b0 = (pathObjectCount & 0xff) >> 0; // b
+						    int b1 = (pathObjectCount & 0xff00) >> 8; // g
+						    int b2 = (pathObjectCount & 0xff0000) >> 16; // r
+						    Color maskColor = new Color(b2, b1, b0); // r, g, b
 					    
-						    final ROI roi = c.getROI();
-							final Shape shape = roi.getShape();
+						    ROI roi = c.getROI();
+							Shape shape = roi.getShape();
 							
 							pathObjectG2D.setColor(maskColor);
 							pathObjectG2D.fill(shape);
@@ -186,53 +187,53 @@ public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 
 				if(aidiaDataFileProp.get().isBlank()) throw new Exception("AI-DIA Data File is blank");
 				
-				final HashMap<String, PathObject> cellToPathObjHashMap = new HashMap<>();
+				HashMap<String, PathObject> cellToPathObjHashMap = new HashMap<>();
 			
-				final String singleCellFilePath = java.nio.file.Paths.get(aidiaDataFileProp.get()).toString();
-				final FileReader singleCellFileReader = new FileReader(new File(singleCellFilePath));
-				final BufferedReader singleCellReader = new BufferedReader(singleCellFileReader);
+				String singleCellFilePath = java.nio.file.Paths.get(aidiaDataFileProp.get()).toString();
+				FileReader singleCellFileReader = new FileReader(new File(singleCellFilePath));
+				BufferedReader singleCellReader = new BufferedReader(singleCellFileReader);
 
 				singleCellReader.readLine();
 				String singleCellNextRecord;
 				
 		        while ((singleCellNextRecord = singleCellReader.readLine()) != null) {
-		        	final String[] singleCellNextRecordArray = singleCellNextRecord.split("\t");
-		        	final String cellId = singleCellNextRecordArray[1]; // .replaceAll("\"", "");
+		        	String[] singleCellNextRecordArray = singleCellNextRecord.split("\t");
+		        	String cellId = singleCellNextRecordArray[1]; // .replaceAll("\"", "");
 		        	
-		        	final double cx = Double.parseDouble(singleCellNextRecordArray[7])/pixelSizeMicrons;
-		        	final double cy = Double.parseDouble(singleCellNextRecordArray[8])/pixelSizeMicrons;
+		        	double cx = Double.parseDouble(singleCellNextRecordArray[7])/pixelSizeMicrons;
+		        	double cy = Double.parseDouble(singleCellNextRecordArray[8])/pixelSizeMicrons;
 		        			        	
-		        	final int fx = (int)Math.round(cx / maskDownsampling);
-		        	final int fy = (int)Math.round(cy / maskDownsampling);
+		        	int fx = (int)Math.round(cx / maskDownsampling);
+		        	int fy = (int)Math.round(cy / maskDownsampling);
 		        	
 		        	if(fx < 0 || fx >= pathObjectImageMask.getWidth() || fy < 0 || fy >=  pathObjectImageMask.getHeight()) continue;
 		        	
-		        	final int v = pathObjectImageMask.getRGB(fx, fy);
-		        	final int d0 = v&0xff;
-		        	final int d1 = (v>>8)&0xff;
-		        	final int d2 = (v>>16)&0xff;
-					final int r = d2*0x10000+d1*0x100+d0;
+		        	int v = pathObjectImageMask.getRGB(fx, fy);
+		        	int d0 = v&0xff;
+		        	int d1 = (v>>8)&0xff;
+		        	int d2 = (v>>16)&0xff;
+					int r = d2*0x10000+d1*0x100+d0;
 				    
 		        	if(r == 0) continue; // This location doesn't have a cell.
 			        	
-		        	final int pathObjectId = r - 1;  // pathObjectId starts at 1, since 0 means background
+		        	int pathObjectId = r - 1;  // pathObjectId starts at 1, since 0 means background
 			        	
-		        	final PathObject cellPathObject = pathObjectList.get(pathObjectId);
+		        	PathObject cellPathObject = pathObjectList.get(pathObjectId);
 		        	cellToPathObjHashMap.put(cellId, cellPathObject);
 	
-		        	final String scLabelId = singleCellNextRecordArray[4];
+		        	String scLabelId = singleCellNextRecordArray[4];
 		        	if(scLabelId != null) {        		
-		        		final PathClass pathCls = PathClass.fromString(scLabelId);
+		        		PathClass pathCls = PathClass.fromString(scLabelId);
 		        		cellPathObject.setPathClass(pathCls);
 		        	}
 		        	
-		        	final double roiX = cellPathObject.getROI().getCentroidX();
-		        	final double roiY = cellPathObject.getROI().getCentroidY();
-		        	final double newDist = (new Point2D(cx, cy).distance(roiX, roiY))*pixelSizeMicrons;
-		        	final MeasurementList pathObjMeasList = cellPathObject.getMeasurementList();
+		        	double roiX = cellPathObject.getROI().getCentroidX();
+		        	double roiY = cellPathObject.getROI().getCentroidY();
+		        	double newDist = (new Point2D(cx, cy).distance(roiX, roiY))*pixelSizeMicrons;
+		        	MeasurementList pathObjMeasList = cellPathObject.getMeasurementList();
 		        	
 		        	if(pathObjMeasList.containsKey("aidia:pred:displacement")) {
-		        		final double minDist = pathObjMeasList.get("aidia:pred:displacement");
+		        		double minDist = pathObjMeasList.get("aidia:pred:displacement");
 		        		if(newDist < minDist) {
 		        			if(params.getBooleanParameterValue("replaceCellId")) cellPathObject.setName(cellId);
 		        			pathObjMeasList.put("aidia:pred:displacement", newDist);
@@ -288,15 +289,14 @@ public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 		public String getLastResultsDescription() {
 			return lastResults;
 		}
-		
-		
 	}
 
 	
 	@Override
-	protected void preprocess(final TaskRunner taskRunner, final ImageData<BufferedImage> imageData) {
+	protected void preprocess(TaskRunner taskRunner, ImageData<BufferedImage> imageData) {
 		if(params.getStringParameterValue("aidiaDataFile").isBlank()) {
-			final File aidiaFileFp = Dialogs.promptForFile("AI-DIA Data File", new File(aidiaDataFileProp.get()), "QuPath detection result file (*.txt)", ".txt");
+			File aidiaFileFp = FileChoosers.promptToSaveFile("Export to file", new File(aidiaDataFileProp.get()),
+					FileChoosers.createExtensionFilter("QuPath detection result file (*.txt)", ".txt"));
 			
 			if (aidiaFileFp != null) {
 				aidiaDataFileProp.set(aidiaFileFp.toString());
@@ -314,13 +314,13 @@ public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 
 	
 	@Override
-	public ParameterList getDefaultParameterList(final ImageData<BufferedImage> imageData) {
+	public ParameterList getDefaultParameterList(ImageData<BufferedImage> imageData) {
 		return params;
 	}
 
 	@Override
 	public String getName() {
-		return "Simple tissue detection";
+		return "AI-DIA Annotation";
 	}
 
 	@Override
@@ -342,7 +342,7 @@ public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 
 
 	@Override
-	protected Collection<? extends PathObject> getParentObjects(final ImageData<BufferedImage> imageData) {	
+	protected Collection<? extends PathObject> getParentObjects(ImageData<BufferedImage> imageData) {	
 		PathObjectHierarchy hierarchy = imageData.getHierarchy();
 		if (hierarchy.getTMAGrid() == null)
 			return Collections.singleton(hierarchy.getRootObject());
@@ -353,7 +353,6 @@ public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 
 	@Override
 	public Collection<Class<? extends PathObject>> getSupportedParentObjectClasses() {
-		// TODO: Re-allow taking an object as input in order to limit bounds
 		// Temporarily disabled so as to avoid asking annoying questions when run repeatedly
 
 		return Arrays.asList(

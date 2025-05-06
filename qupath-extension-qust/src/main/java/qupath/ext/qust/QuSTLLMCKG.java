@@ -41,7 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import qupath.lib.gui.QuPathGUI;
-import qupath.lib.gui.dialogs.Dialogs;
+import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.measure.ObservableMeasurementTableData;
 import qupath.lib.objects.PathDetectionObject;
 import qupath.lib.objects.PathObject;
@@ -82,14 +83,14 @@ import javafx.stage.Window;
  */
 public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 	
-	final private static Logger logger = LoggerFactory.getLogger(QuSTLLMCKG.class);
+	private static Logger logger = LoggerFactory.getLogger(QuSTLLMCKG.class);
 	
 	private static ParameterList params;
 	
 	private static String lastResults = null;
 	private static QuSTSetup qustSetup = QuSTSetup.getInstance();
-	private static final AtomicInteger hackDigit = new AtomicInteger(0);
-	private final List<String> profilingTypeList = List.of("detection", "annotation");
+	private static AtomicInteger hackDigit = new AtomicInteger(0);
+	private List<String> profilingTypeList = List.of("detection", "annotation");
 	
 	private static String resultImagePath;
 	private static String resultContent;
@@ -101,10 +102,10 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 	 * @throws Exception 
 	 */
 	public QuSTLLMCKG() throws Exception {
-		final PathObjectHierarchy hierarchy = QP.getCurrentImageData().getHierarchy();
+		PathObjectHierarchy hierarchy = QP.getCurrentImageData().getHierarchy();
 		
-        final int sltdAnnotNum = hierarchy.getSelectionModel().getSelectedObjects().stream().filter(e -> e.isAnnotation()).collect(Collectors.toList()).size();
-        final int sltdDetNum = hierarchy.getSelectionModel().getSelectedObjects().stream().filter(e -> e.isDetection()).collect(Collectors.toList()).size();
+        int sltdAnnotNum = hierarchy.getSelectionModel().getSelectedObjects().stream().filter(e -> e.isAnnotation()).collect(Collectors.toList()).size();
+        int sltdDetNum = hierarchy.getSelectionModel().getSelectedObjects().stream().filter(e -> e.isDetection()).collect(Collectors.toList()).size();
         
         if(sltdAnnotNum > 0 && sltdDetNum == 0) {
         	profilingType = 1;
@@ -118,13 +119,13 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
         	throw new Exception("No annotations/detections are selected.");
         }
         
-        final List<String> availPathClassList = Collections.synchronizedList(new ArrayList<String>());  
-        final List<String> selectedPathClassList = Collections.synchronizedList(new ArrayList<String>());  
+        List<String> availPathClassList = Collections.synchronizedList(new ArrayList<String>());  
+        List<String> selectedPathClassList = Collections.synchronizedList(new ArrayList<String>());  
         
         hierarchy.getDetectionObjects().parallelStream().forEach(d -> {
 //    		for(PathObject d: hierarchy.getDetectionObjects()) {
     			
-    			final PathClass dpthCls = profilingType == 0? d.getPathClass():
+    			PathClass dpthCls = profilingType == 0? d.getPathClass():
     			d.getParent().isAnnotation()? d.getParent().getPathClass(): null;
     					
     			if(dpthCls != null) {
@@ -140,7 +141,7 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 		hierarchy.getSelectionModel().getSelectedObjects().parallelStream().forEach(d -> {
 //			for(PathObject d: hierarchy.getSelectionModel().getSelectedObjects()) {
 				
-				final PathClass dpthCls = d.getPathClass();
+				PathClass dpthCls = d.getPathClass();
 				
 				if(dpthCls != null) {
 					synchronized (availPathClassList) {  
@@ -158,8 +159,8 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 			});
 //			}
 			
-		final String posClsList = String.join(",", selectedPathClassList);
-		final String negClsList = String.join(",", availPathClassList);
+		String posClsList = String.join(",", selectedPathClassList);
+		String negClsList = String.join(",", availPathClassList);
 		
         params = new ParameterList()
 			.addTitleParameter("Contrative Gene Expression LLM Analysis")	
@@ -180,17 +181,17 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 	
 	class AnnotationLoader implements ObjectDetector<BufferedImage> {
 		@Override
-		public Collection<PathObject> runDetection(final ImageData<BufferedImage> imageData, final ParameterList params, final ROI pathROI) throws IOException {
-			final PathObjectHierarchy hierarchy = imageData.getHierarchy();
+		public Collection<PathObject> runDetection(ImageData<BufferedImage> imageData, ParameterList params, ROI pathROI) throws IOException {
+			PathObjectHierarchy hierarchy = imageData.getHierarchy();
 			
-			final String uuid = UUID.randomUUID().toString().replace("-", "")+hackDigit.getAndIncrement();
+			String uuid = UUID.randomUUID().toString().replace("-", "")+hackDigit.getAndIncrement();
 			
-			final Path dataPath = Files.createTempFile("qust-llm_data-" + uuid + "-", ".csv");
-            final String dataPathString = dataPath.toAbsolutePath().toString();
+			Path dataPath = Files.createTempFile("qust-llm_data-" + uuid + "-", ".csv");
+            String dataPathString = dataPath.toAbsolutePath().toString();
             dataPath.toFile().deleteOnExit();
 			
-            final Path resultPath = Files.createTempFile("qust-llm_result-" + uuid + "-", ".json");
-            final String resultPathString = resultPath.toAbsolutePath().toString();
+            Path resultPath = Files.createTempFile("qust-llm_result-" + uuid + "-", ".json");
+            String resultPathString = resultPath.toAbsolutePath().toString();
             resultPath.toFile().deleteOnExit();
           
     		
@@ -206,12 +207,12 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 				List<PathObject> allDetObjList= hierarchy.getFlattenedObjectList(null).stream().filter(p -> p.isDetection()).toList();
 
 				
-				final List<PathObject> allTgtObjList = Collections.synchronizedList(new ArrayList<>());
-				final List<PathObject> allOptObjList = Collections.synchronizedList(new ArrayList<>());
+				List<PathObject> allTgtObjList = Collections.synchronizedList(new ArrayList<>());
+				List<PathObject> allOptObjList = Collections.synchronizedList(new ArrayList<>());
 				
 				
 				
-				final List<String> tgtClsLst = 
+				List<String> tgtClsLst = 
 						Arrays.stream(params.getStringParameterValue("tgtCls").
 						split(",")).
 						// map(s -> s.replaceAll("\\s", "")).
@@ -219,7 +220,7 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 						filter(e -> !e.isEmpty()).
 						collect(Collectors.toList());
 				
-				final List<String> optClsLst = 
+				List<String> optClsLst = 
 						Arrays.stream(params.getStringParameterValue("optCls").
 						split(",")).
 						// map(s -> s.replaceAll("\\s", "")).
@@ -230,13 +231,13 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 				
 					
 				allDetObjList.parallelStream().forEach(c -> {
-					final PathClass cPthCls = ((String)params.getChoiceParameterValue("type")).equals(profilingTypeList.get(0))? c.getPathClass(): 
+					PathClass cPthCls = ((String)params.getChoiceParameterValue("type")).equals(profilingTypeList.get(0))? c.getPathClass(): 
 						c.getParent().isAnnotation()? c.getParent().getPathClass(): null;
 					
 					if(cPthCls == null) 
 						return;
 					
-					final String cCls = cPthCls.toString().strip();
+					String cCls = cPthCls.toString().strip();
 					
 					if(tgtClsLst.stream().anyMatch(cCls::equals)) {
 						allTgtObjList.add(c);
@@ -255,32 +256,32 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 				if(allTgtObjList.size() < params.getIntParameterValue("samplingNum") && params.getIntParameterValue("samplingNum") != 0) throw new Exception("Insufficient sample size.");
 				if(allOptObjList.size() < params.getIntParameterValue("samplingNum") && params.getIntParameterValue("samplingNum") != 0) throw new Exception("Insufficient sample size.");
 				
-				final List<PathObject> samplingTgtPathObjects = params.getIntParameterValue("samplingNum") == 0? allTgtObjList: allTgtObjList.subList(0, params.getIntParameterValue("samplingNum"));
-				final List<PathObject> samplingOptPathObjects = params.getIntParameterValue("samplingNum") == 0? allOptObjList: allOptObjList.subList(0, params.getIntParameterValue("samplingNum"));
+				List<PathObject> samplingTgtPathObjects = params.getIntParameterValue("samplingNum") == 0? allTgtObjList: allTgtObjList.subList(0, params.getIntParameterValue("samplingNum"));
+				List<PathObject> samplingOptPathObjects = params.getIntParameterValue("samplingNum") == 0? allOptObjList: allOptObjList.subList(0, params.getIntParameterValue("samplingNum"));
 				
-	            final ObservableMeasurementTableData measTblData = new ObservableMeasurementTableData();
+	            ObservableMeasurementTableData measTblData = new ObservableMeasurementTableData();
 	    		measTblData.setImageData(imageData, imageData == null ? Collections.emptyList() : hierarchy.getObjects(null, PathDetectionObject.class));
-	    		final List<String> geneNames = measTblData
+	    		List<String> geneNames = measTblData
 	    				.getMeasurementNames()
 	    				.stream()
 	    				.filter(e -> e.startsWith("transcript:"))
 	    				.collect(Collectors.toList());
 
-	    		final String[] geneExpList = new String[2+geneNames.size()];
+	    		String[] geneExpList = new String[2+geneNames.size()];
 	    		geneExpList[0] = "object";
 	    		geneExpList[1] = "label";
 	    		IntStream.range(0, geneNames.size()).forEach(i -> {
 	    			geneExpList[i+2] = geneNames.get(i).replaceAll("transcript:", "").trim();
 	    		});
 	    		
-	    		final CSVWriter writer = new CSVWriter(new FileWriter(dataPathString));
+	    		CSVWriter writer = new CSVWriter(new FileWriter(dataPathString));
 	    		writer.writeNext(geneExpList, false);
 	    		
 	    		samplingTgtPathObjects.forEach(o -> {
 					geneExpList[0] = o.getID().toString();
 					geneExpList[1] = "1";
 					
-					final Map<String, Number> objMeas = o.getMeasurements();
+					Map<String, Number> objMeas = o.getMeasurements();
 					
 					IntStream.range(0, geneNames.size()).parallel().forEach(i -> {
 		    			geneExpList[i+2] = objMeas.get(geneNames.get(i)).toString();
@@ -293,7 +294,7 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 					geneExpList[0] = o.getID().toString();
 					geneExpList[1] = "0";
 					
-					final Map<String, Number> objMeas = o.getMeasurements();
+					Map<String, Number> objMeas = o.getMeasurements();
 					
 					IntStream.range(0, geneNames.size()).parallel().forEach(i -> {
 		    			geneExpList[i+2] = objMeas.get(geneNames.get(i)).toString();
@@ -310,7 +311,7 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 		        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), QuSTLLMCKG.class.getSimpleName());
 			
 		        // This is the list of commands after the 'python' call
-		        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "llm.py").toString();
+		        String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "llm.py").toString();
 				
 				List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", script_path, "ckg", dataPathString, resultPathString));
 			
@@ -327,18 +328,18 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 		        veRunner.setArguments(QuSTArguments);
 		        
 		        // Finally, we can run the command
-		        final String[] logs = veRunner.runCommand();
+		        String[] logs = veRunner.runCommand();
 		        for (String log : logs) logger.info(log);
 		        
-		        final FileReader resultFileReader = new FileReader(new File(resultPathString));
-				final BufferedReader bufferedReader = new BufferedReader(resultFileReader);
-				final Gson gson = new Gson();
-				final JsonObject jsonObject = gson.fromJson(bufferedReader, JsonObject.class);
+		        FileReader resultFileReader = new FileReader(new File(resultPathString));
+				BufferedReader bufferedReader = new BufferedReader(resultFileReader);
+				Gson gson = new Gson();
+				JsonObject jsonObject = gson.fromJson(bufferedReader, JsonObject.class);
 				
-				final Boolean ve_success = gson.fromJson(jsonObject.get("success"), new TypeToken<Boolean>(){}.getType());
+				Boolean ve_success = gson.fromJson(jsonObject.get("success"), new TypeToken<Boolean>(){}.getType());
 				if(!ve_success) throw new Exception("classification.py returned failed");
 				
-				final String ve_text_response = gson.fromJson(jsonObject.get("text_response"), new TypeToken<String>(){}.getType());
+				String ve_text_response = gson.fromJson(jsonObject.get("text_response"), new TypeToken<String>(){}.getType());
 				if(ve_text_response == null) throw new Exception("classification.py returned null");
 				
 				resultImagePath = resultPathString+".png";
@@ -350,7 +351,7 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 							new File(Paths.get(params.getStringParameterValue("resLoc"), params.getStringParameterValue("resName")+".png").toString()).toPath()
 							);
 					
-					final PrintWriter resultText = new PrintWriter(Paths.get(params.getStringParameterValue("resLoc"), params.getStringParameterValue("resName")+".txt").toString());
+					PrintWriter resultText = new PrintWriter(Paths.get(params.getStringParameterValue("resLoc"), params.getStringParameterValue("resName")+".txt").toString());
 					
 					resultText.println(String.join("\n", logs));
 					resultText.close();
@@ -382,7 +383,7 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 	}
 
 //	@Override
-//	protected void preprocess(final TaskRunner taskRunner, final ImageData<BufferedImage> imageData) {
+//	protected void preprocess(TaskRunner taskRunner, ImageData<BufferedImage> imageData) {
 //		
 //	}
 //	
@@ -434,7 +435,7 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 	}
 	
 	
-	private static void showResultWindow(final String title, final String contents, final String resultImagePath) {
+	private static void showResultWindow(String title, String contents, String resultImagePath) {
 		if (!Platform.isFxApplicationThread()) {
 			Platform.runLater(() -> showResultWindow(title, contents, resultImagePath));
 			return;
@@ -457,8 +458,8 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 		textArea.setEditable(false);
 		textArea.setScrollTop(Double.MAX_VALUE);
 		
-		final Image image = new Image("file:"+resultImagePath, true);
-		final ImageView pic = new ImageView(image);
+		Image image = new Image("file:"+resultImagePath, true);
+		ImageView pic = new ImageView(image);
 		pic.setFitHeight(600);
 		pic.setFitWidth(600);
 		
@@ -476,12 +477,12 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 	
 	
 	@Override
-	protected void postprocess(final TaskRunner taskRunner, final ImageData<BufferedImage> imageData) {
+	protected void postprocess(TaskRunner taskRunner, ImageData<BufferedImage> imageData) {
 		if(params.getBooleanParameterValue("display")) showResultWindow("Result", resultContent, resultImagePath);
 	}
 	
 	@Override
-	public ParameterList getDefaultParameterList(final ImageData<BufferedImage> imageData) {
+	public ParameterList getDefaultParameterList(ImageData<BufferedImage> imageData) {
 		return params;
 	}
 
@@ -506,7 +507,7 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 	}
 
 	@Override
-	protected Collection<? extends PathObject> getParentObjects(final ImageData<BufferedImage> imageData) {	
+	protected Collection<? extends PathObject> getParentObjects(ImageData<BufferedImage> imageData) {	
 		PathObjectHierarchy hierarchy = imageData.getHierarchy();
 		if (hierarchy.getTMAGrid() == null)
 			return Collections.singleton(hierarchy.getRootObject());

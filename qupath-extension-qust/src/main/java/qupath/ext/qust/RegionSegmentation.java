@@ -69,7 +69,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
 import qupath.imagej.tools.IJTools;
-import qupath.lib.gui.dialogs.Dialogs;
+import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
@@ -332,7 +333,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 					if(semaphore != null) semaphore.acquire();
 					// Create command to run
 			        VirtualEnvironmentRunner veRunner;
-			        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
+			        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName());
 				
 			        // This is the list of commands after the 'python' call
 			        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
@@ -604,7 +605,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 			
 			// Create command to run
 	        VirtualEnvironmentRunner veRunner;
-	        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
+	        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName());
 		
 	        // This is the list of commands after the 'python' call
 	        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
@@ -671,7 +672,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 			// Create command to run
 	        VirtualEnvironmentRunner veRunner;
 			
-			veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), ObjectClassification.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
+			veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), ObjectClassification.class.getSimpleName());
 		
 	        // This is the list of commands after the 'python' call
 	        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();

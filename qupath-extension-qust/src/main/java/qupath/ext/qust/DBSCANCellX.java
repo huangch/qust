@@ -21,46 +21,34 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import qupath.lib.gui.dialogs.Dialogs;
-import qupath.lib.gui.scripting.QPEx;
-import qupath.lib.objects.PathAnnotationObject;
+import qupath.fx.dialogs.Dialogs;
 import qupath.lib.objects.PathObject;
 import qupath.lib.objects.PathRootObject;
-import qupath.lib.objects.TMACoreObject;
 import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 import qupath.lib.plugins.AbstractDetectionPlugin;
 import qupath.lib.plugins.DetectionPluginTools;
 import qupath.lib.plugins.ObjectDetector;
-import qupath.lib.plugins.TaskRunner;
 import qupath.lib.plugins.parameters.ParameterList;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.measurements.MeasurementList;
 import qupath.lib.roi.interfaces.ROI;
-import qupath.lib.scripting.QP;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
@@ -87,19 +75,19 @@ public class DBSCANCellX extends AbstractDetectionPlugin<BufferedImage> {
 	 * @throws Exception 
 	 */
 	public DBSCANCellX() throws Exception {
-		final PathObjectHierarchy hierarchy = QP.getCurrentImageData().getHierarchy();
+//		final PathObjectHierarchy hierarchy = imageData.getHierarchy();
 		
-        final int sltdAnnotNum = hierarchy.getSelectionModel().getSelectedObjects().stream().filter(e -> e.isAnnotation()).collect(Collectors.toList()).size();
-        final int sltdDetNum = hierarchy.getSelectionModel().getSelectedObjects().stream().filter(e -> e.isDetection()).collect(Collectors.toList()).size();
+//        final int sltdAnnotNum = hierarchy.getSelectionModel().getSelectedObjects().stream().filter(e -> e.isAnnotation()).collect(Collectors.toList()).size();
+//        final int sltdDetNum = hierarchy.getSelectionModel().getSelectedObjects().stream().filter(e -> e.isDetection()).collect(Collectors.toList()).size();
         
-        if(sltdAnnotNum > 0 && sltdDetNum > 0) {
-        	Dialogs.showErrorMessage("Error", "Do not select both annotations and detections.");
-        	throw new Exception("Do not select both annotations and detections.");
-        }
-        else if(sltdAnnotNum == 0 && sltdDetNum == 0) {
-        	Dialogs.showErrorMessage("Error", "No annotations/detections are selected.");
-        	throw new Exception("No annotations/detections are selected.");
-        }
+//        if(sltdAnnotNum > 0 && sltdDetNum > 0) {
+//        	Dialogs.showErrorMessage("Error", "Do not select both annotations and detections.");
+//        	throw new Exception("Do not select both annotations and detections.");
+//        }
+//        else if(sltdAnnotNum == 0 && sltdDetNum == 0) {
+//        	Dialogs.showErrorMessage("Error", "No annotations/detections are selected.");
+//        	throw new Exception("No annotations/detections are selected.");
+//        }
         
         params = new ParameterList()
 			.addTitleParameter("DBSCAN-CellX Analysis")		
@@ -172,18 +160,19 @@ public class DBSCANCellX extends AbstractDetectionPlugin<BufferedImage> {
 				
 				Collections.shuffle(allDetectionPathObjectList);
 		
-				if(allDetectionPathObjectList.size() < qustSetup.getNormalizationSampleSize()) throw new Exception("Insufficient sample size.");
+				// if(allDetectionPathObjectList.size() < qustSetup.getNormalizationSampleSize()) throw new Exception("Insufficient sample size.");
 				
 				final List<PathObject> cellSizeSamplingPathObjects = Collections.synchronizedList(allDetectionPathObjectList.subList(0, qustSetup.getNormalizationSampleSize()));
 				final double cellMax = cellSizeSamplingPathObjects.stream().map(d -> d.getMeasurementList().get("Cell: Max diameter µm")).mapToDouble(Double::doubleValue).average().getAsDouble();
 				final double cellMin = cellSizeSamplingPathObjects.stream().map(d -> d.getMeasurementList().get("Cell: Min diameter µm")).mapToDouble(Double::doubleValue).average().getAsDouble();
 				final double cellSize = 0.5*(cellMax+cellMin);
 				
-				if(allDetectionPathObjectList.size() < params.getIntParameterValue("samplingNum") && params.getIntParameterValue("samplingNum") != 0) throw new Exception("Insufficient sample size.");
+//				if(allDetectionPathObjectList.size() < params.getIntParameterValue("samplingNum") && params.getIntParameterValue("samplingNum") != 0) throw new Exception("Insufficient sample size.");
 				
-				final List<PathObject> samplingPathObjects = params.getIntParameterValue("samplingNum") == 0? allDetectionPathObjectList: allDetectionPathObjectList.subList(0, params.getIntParameterValue("samplingNum"));
+				final List<PathObject> samplingPathObjects = params.getIntParameterValue("samplingNum") == 0 || allDetectionPathObjectList.size() < params.getIntParameterValue("samplingNum")? 
+						allDetectionPathObjectList: allDetectionPathObjectList.subList(0, params.getIntParameterValue("samplingNum"));
 				
-		        final ImageServer<BufferedImage> server = QP.getCurrentImageData().getServer();
+		        final ImageServer<BufferedImage> server = imageData.getServer();
 		        final double pixelSize = server.getPixelCalibration().getAveragedPixelSize().doubleValue();
 		        final int imageHeight = server.getHeight();
 		        final int imageWidth = server.getWidth();
@@ -214,7 +203,7 @@ public class DBSCANCellX extends AbstractDetectionPlugin<BufferedImage> {
 		        
 		        
 		        if(dataPath.toFile().exists()) {
-		        	logger.error("Validing "+dataPath.toString()+" Ok!\n");
+		        	logger.info("Validing "+dataPath.toString()+" Ok!\n");
 		        }
 		        else {
 					logger.error("Missing "+dataPath.toString()+"\n");
@@ -223,7 +212,7 @@ public class DBSCANCellX extends AbstractDetectionPlugin<BufferedImage> {
 		        
 				// Create command to run
 		        VirtualEnvironmentRunner veRunner;
-		        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), DBSCANCellX.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
+		        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), DBSCANCellX.class.getSimpleName());
 			
 		        // This is the list of commands after the 'python' call
 		        List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", "-m", "dbscan_cellx"));
@@ -374,27 +363,27 @@ public class DBSCANCellX extends AbstractDetectionPlugin<BufferedImage> {
 //		        hierarchy.getSelectionModel().setSelectedObject(null);
 			}
 			catch(Exception e) {
-				Dialogs.showErrorMessage("Error", e.getMessage());
+//				Dialogs.showErrorMessage("Error", e.getMessage());
 				lastResults = e.getMessage();
 				logger.error(lastResults);
 			}	
 			finally {
 				if(new File(dataPath.toString()).exists()) {
-					logger.info("Delete "+dataPath.toString()+"\n");
+//					logger.info("Delete "+dataPath.toString()+"\n");
 					dataPath.toFile().delete();
 				}
 				if(new File(resultPath.toString()).exists()) {
-					logger.info("Delete "+resultPath.toString()+"\n");
+//					logger.info("Delete "+resultPath.toString()+"\n");
 					resultPath.toFile().delete();
 				}
 				if(new File(resultPathString+"_DBSCAN_CELLX_output.csv").exists()) {
-					logger.info("Delete "+resultPathString+"_DBSCAN_CELLX_output.csv"+"\n");
+//					logger.info("Delete "+resultPathString+"_DBSCAN_CELLX_output.csv"+"\n");
 					new File(resultPathString+"_DBSCAN_CELLX_output.csv").delete();
 				}
 			}
 			
 			if (Thread.currentThread().isInterrupted()) {
-				Dialogs.showErrorMessage("Warning", "Interrupted!");
+//				Dialogs.showErrorMessage("Warning", "Interrupted!");
 				lastResults =  "Interrupted!";
 				logger.warn(lastResults);
 			}
@@ -446,7 +435,6 @@ public class DBSCANCellX extends AbstractDetectionPlugin<BufferedImage> {
 
 	@Override
 	public Collection<Class<? extends PathObject>> getSupportedParentObjectClasses() {
-		// TODO: Re-allow taking an object as input in order to limit bounds
 		// Temporarily disabled so as to avoid asking annoying questions when run repeatedly
 		List<Class<? extends PathObject>> list = new ArrayList<>();
 //		list.add(TMACoreObject.class);

@@ -45,7 +45,8 @@ import org.slf4j.LoggerFactory;
 
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Point2D;
-import qupath.lib.gui.dialogs.Dialogs;
+import qupath.fx.dialogs.Dialogs;
+import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
@@ -62,9 +63,6 @@ import qupath.lib.plugins.TaskRunner;
 import qupath.lib.plugins.parameters.ParameterList;
 import qupath.lib.roi.interfaces.ROI;
 
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 /**
@@ -73,11 +71,11 @@ import org.json.JSONObject;
  * @author Chao Hui Huang
  *
  */
-public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
+public class XeniumAnnotation2 extends AbstractDetectionPlugin<BufferedImage> {
 	
-	final private static Logger logger = LoggerFactory.getLogger(XeniumAnnotation.class);
+	private static Logger logger = LoggerFactory.getLogger(XeniumAnnotation2.class);
 	
-	final private StringProperty xnumAntnXnumFldrProp = PathPrefs.createPersistentPreference("xnumAntnXnumFldr", ""); 
+	private StringProperty xnumAntnXnumFldrProp = PathPrefs.createPersistentPreference("xnumAntnXnumFldr", ""); 
 	
 	private ParameterList params = null;
 
@@ -86,7 +84,7 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	/**
 	 * Constructor.
 	 */
-	public XeniumAnnotation() {	
+	public XeniumAnnotation2() {	
 		params = new ParameterList()
 			.addTitleParameter("10X Xenium Data Loader")
 			.addStringParameter("xeniumDir", "Xenium directory", xnumAntnXnumFldrProp.get(), "Xenium Out Directory")
@@ -95,7 +93,10 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 			.addBooleanParameter("AffineTransformOnly", "Affine (linear) transform ONLY? (default: false)", false, "Affine (linear) transform ONLY? (default: false)")		
 			.addBooleanParameter("removeUnlabeledCells", "Remove unlabeled cells? (default: true)", true, "Remove unlabeled cells? (default: true)")		
 			.addBooleanParameter("inclGeneExpr", "Include Gene Expression? (default: true)", true, "Include Gene Expression? (default: true)")		
-			.addBooleanParameter("inclBlankCodeword", "Include Blank Codeword? (default: false)", false, "Include Blank Codeword? (default: false)")		
+			.addBooleanParameter("inclBlankCodeword", "Include Blank Codeword? (default: false)", false, "Include Blank Codeword? (default: false)")
+			.addBooleanParameter("inclUnassignedCodeword", "Include Unassigned Codeword? (default: false)", false, "Include Unassigned Codeword? (default: false)")
+			.addBooleanParameter("inclDeprecatedCodeword", "Include Deprecated Codeword? (default: false)", false, "Include Deprecated Codeword? (default: false)")
+			.addBooleanParameter("inclIntergenicRegion", "Include Intergenic Region? (default: false)", false, "Include Intergenic Region? (default: false)")
 			.addBooleanParameter("inclNegCtrlCodeword", "Include Negative Control Codeword? (default: false)", false, "Include Negative Control Codeword? (default: false)")		
 			.addBooleanParameter("inclNegCtrlProbe", "Include Negative Control Probe? (default: false)", false, "Include Negative Control Probe? (default: false)")		
 			.addEmptyParameter("")
@@ -114,8 +115,8 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 		public int numberOfIntervalsOfTransformation(String filename)
 		{
 			try {
-				final FileReader fr = new FileReader(filename);
-				final BufferedReader br = new BufferedReader(fr);
+				FileReader fr = new FileReader(filename);
+				BufferedReader br = new BufferedReader(fr);
 				String line;
 
 				// Read number of intervals
@@ -153,11 +154,11 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 		 * @param cy y- B-spline coefficients
 		 */
 		public void loadTransformation(String filename,
-				final double [][]cx, final double [][]cy)
+				double [][]cx, double [][]cy)
 		{
 			try {
-				final FileReader fr = new FileReader(filename);
-				final BufferedReader br = new BufferedReader(fr);
+				FileReader fr = new FileReader(filename);
+				BufferedReader br = new BufferedReader(fr);
 				String line;
 
 				// Read number of intervals
@@ -233,26 +234,37 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 		
 		/* --------------------------------------------------------------------*/
 		@Override
-		public Collection<PathObject> runDetection(final ImageData<BufferedImage> imageData, final ParameterList params, final ROI pathROI) throws IOException {
-			final ImageServer<BufferedImage> server = imageData.getServer();				
-			final PathObjectHierarchy hierarchy = imageData.getHierarchy();
-			final ArrayList<PathObject> resultPathObjectList = new ArrayList<PathObject>(hierarchy.getRootObject().getChildObjects());
+		public Collection<PathObject> runDetection(ImageData<BufferedImage> imageData, ParameterList params, ROI pathROI) throws IOException {
+			ImageServer<BufferedImage> server = imageData.getServer();				
+			PathObjectHierarchy hierarchy = imageData.getHierarchy();
+			ArrayList<PathObject> resultPathObjectList = new ArrayList<PathObject>(hierarchy.getRootObject().getChildObjects());
 			
 			try {
 				// Load linear transformation
 				
+				InputStream is = Paths.get(xnumAntnXnumFldrProp.get(), "registration_params.json").toFile().exists()? 
+						new FileInputStream(Paths.get(xnumAntnXnumFldrProp.get(), "registration_params.json").toString()):
+						null;
 				
-				final InputStream is = params.getBooleanParameterValue("dontTransform")? null: new FileInputStream(Paths.get(xnumAntnXnumFldrProp.get(), "affine_matrix.json").toString());
-				final String jsonTxt = params.getBooleanParameterValue("dontTransform")? null: IOUtils.toString(is, "UTF-8");
-				final JSONObject jsonObj = params.getBooleanParameterValue("dontTransform")? null: new JSONObject(jsonTxt);    
-				final double pixelSizeMicrons = server.getPixelCalibration().getAveragedPixelSizeMicrons();
-		        final double dapiImagePixelSizeMicrons = params.getBooleanParameterValue("dontTransform")? pixelSizeMicrons: jsonObj.getDouble("dapi_pixel_size");
-				final int dapiImageImageSeries = params.getBooleanParameterValue("dontTransform")? 1: jsonObj.getInt("dapi_image_series");
-				final double[] affineMtx = params.getBooleanParameterValue("dontTransform")? null: IntStream.range(0, 6).mapToDouble(i -> jsonObj.getJSONArray("affine_matrix").getDouble(i)).toArray();
+				String jsonTxt = is != null? IOUtils.toString(is, "UTF-8"): null;
+				JSONObject imgRegParamJsonObj = jsonTxt != null? new JSONObject(jsonTxt): null;   
+				
+//				double xnumAnnotImgRegParamManualScale = imgRegParamJsonObj == null? 1: imgRegParamJsonObj.getDouble("xnumAnnotImgRegParamManualScale");
+				int xnumAnnotImgRegParamSrcImgWidth = imgRegParamJsonObj == null? 1: (int)(0.5+imgRegParamJsonObj.getInt("xnumAnnotImgRegParamSrcImgWidth"));
+				int xnumAnnotImgRegParamSrcImgHeight = imgRegParamJsonObj == null? 1: (int)(0.5+imgRegParamJsonObj.getInt("xnumAnnotImgRegParamSrcImgHeight"));
+				boolean xnumAnnotImgRegParamFlipHori = imgRegParamJsonObj == null? false: imgRegParamJsonObj.getBoolean("xnumAnnotImgRegParamFlipHori");
+				boolean xnumAnnotImgRegParamFlipVert = imgRegParamJsonObj == null? false: imgRegParamJsonObj.getBoolean("xnumAnnotImgRegParamFlipVert");
+				double xnumAnnotImgRegParamDapiImgPxlSize = imgRegParamJsonObj == null? 1: imgRegParamJsonObj.getDouble("xnumAnnotImgRegParamDapiImgPxlSize");
+				String xnumAnnotImgRegParamRotation = imgRegParamJsonObj == null? null: imgRegParamJsonObj.getString("xnumAnnotImgRegParamRotation");
+				double[] xnumAnnotImgRegParamSiftMatrix = imgRegParamJsonObj == null? null: IntStream.range(0, 6).mapToDouble(i -> imgRegParamJsonObj.getJSONArray("xnumAnnotImgRegParamSiftMatrix").getDouble(i)).toArray();
+				double xnumAnnotImgRegParamSourceScale = imgRegParamJsonObj == null? 1: imgRegParamJsonObj.getDouble("xnumAnnotImgRegParamSourceScale");
+				double xnumAnnotImgRegParamTargetScale = imgRegParamJsonObj == null? 1: imgRegParamJsonObj.getDouble("xnumAnnotImgRegParamTargetScale");
+//				int xnumAnnotImgRegParamShiftX = imgRegParamJsonObj == null? 0: imgRegParamJsonObj.getInt("xnumAnnotImgRegParamShiftX");
+//				int xnumAnnotImgRegParamShiftY = imgRegParamJsonObj == null? 0: imgRegParamJsonObj.getInt("xnumAnnotImgRegParamShiftY");
 				
 				// Load nonlinear transformation
 				
-				final String transf_file = !params.getBooleanParameterValue("AffineTransformOnly")? Paths.get(xnumAntnXnumFldrProp.get(), "direct_transf.txt").toString(): null;
+				String transf_file = !params.getBooleanParameterValue("AffineTransformOnly")? Paths.get(xnumAntnXnumFldrProp.get(), "direct_transf.txt").toString(): null;
 				
 				int bspline_intervals = transf_file != null? numberOfIntervalsOfTransformation(transf_file): 0;
 				double [][]bspline_cx = new double[ bspline_intervals+3 ][ bspline_intervals+3 ];
@@ -261,14 +273,14 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 				
 				// Compute the deformation
 				// Set these coefficients to an interpolator
-				final BSplineModel bspline_swx = transf_file != null? new BSplineModel(bspline_cx): null;
-				final BSplineModel bspline_swy = transf_file != null? new BSplineModel(bspline_cy): null;
+				BSplineModel bspline_swx = transf_file != null? new BSplineModel(bspline_cx): null;
+				BSplineModel bspline_swy = transf_file != null? new BSplineModel(bspline_cy): null;
 				
 	            /*
 	             * Generate cell masks with their labels
 	             */
 				
-				final List<PathObject> selectedAnnotationPathObjectList = hierarchy
+				List<PathObject> selectedAnnotationPathObjectList = hierarchy
 						.getSelectionModel()
 						.getSelectedObjects()
 						.stream()
@@ -277,24 +289,24 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 				
 				if(selectedAnnotationPathObjectList.isEmpty()) throw new Exception("Missed selected annotations");
 				
-				final int maskDownsampling = params.getIntParameterValue("maskDownsampling");;
-				final int maskWidth = (int)Math.round(server.getWidth()/maskDownsampling);
-				final int maskHeight = (int)Math.round(server.getHeight()/maskDownsampling);	
+				int maskDownsampling = params.getIntParameterValue("maskDownsampling");;
+				int maskWidth = (int)Math.round(server.getWidth()/maskDownsampling);
+				int maskHeight = (int)Math.round(server.getHeight()/maskDownsampling);	
 				
-				final BufferedImage annotPathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_INT_RGB);
-				final List<PathObject> annotPathObjectList = new ArrayList<PathObject>();						
+				BufferedImage annotPathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_INT_RGB);
+				List<PathObject> annotPathObjectList = new ArrayList<PathObject>();						
 				
-				final Graphics2D annotPathObjectG2D = annotPathObjectImageMask.createGraphics();				
+				Graphics2D annotPathObjectG2D = annotPathObjectImageMask.createGraphics();				
 				annotPathObjectG2D.setBackground(new Color(0, 0, 0));
 				annotPathObjectG2D.clearRect(0, 0, maskWidth, maskHeight);
 				
 				annotPathObjectG2D.setClip(0, 0, maskWidth, maskHeight);
 				annotPathObjectG2D.scale(1.0/maskDownsampling, 1.0/maskDownsampling);					    
 				
-				final BufferedImage pathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_INT_RGB);
-				final List<PathObject> pathObjectList = new ArrayList<PathObject>();						
+				BufferedImage pathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_INT_RGB);
+				List<PathObject> pathObjectList = new ArrayList<PathObject>();						
 				
-				final Graphics2D pathObjectG2D = pathObjectImageMask.createGraphics();				
+				Graphics2D pathObjectG2D = pathObjectImageMask.createGraphics();				
 				pathObjectG2D.setBackground(new Color(0, 0, 0));
 				pathObjectG2D.clearRect(0, 0, maskWidth, maskHeight);
 				
@@ -308,13 +320,13 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 					for(PathObject p: selectedAnnotationPathObjectList) {
 						annotPathObjectList.add(p);
 					    
-					    final int pb0 = (annotPathObjectCount & 0xff) >> 0; // b
-					    final int pb1 = (annotPathObjectCount & 0xff00) >> 8; // g
-					    final int pb2 = (annotPathObjectCount & 0xff0000) >> 16; // r
-					    final Color pMaskColor = new Color(pb2, pb1, pb0); // r, g, b
+					    int pb0 = (annotPathObjectCount & 0xff) >> 0; // b
+					    int pb1 = (annotPathObjectCount & 0xff00) >> 8; // g
+					    int pb2 = (annotPathObjectCount & 0xff0000) >> 16; // r
+					    Color pMaskColor = new Color(pb2, pb1, pb0); // r, g, b
 				    
-					    final ROI pRoi = p.getROI();
-						final Shape pShape = pRoi.getShape();
+					    ROI pRoi = p.getROI();
+						Shape pShape = pRoi.getShape();
 						
 						annotPathObjectG2D.setColor(pMaskColor);
 						annotPathObjectG2D.fill(pShape);
@@ -327,13 +339,13 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 						for(PathObject c: p.getChildObjects()) {
 							pathObjectList.add(c);
 						    
-						    final int b0 = (pathObjectCount & 0xff) >> 0; // b
-						    final int b1 = (pathObjectCount & 0xff00) >> 8; // g
-						    final int b2 = (pathObjectCount & 0xff0000) >> 16; // r
-						    final Color maskColor = new Color(b2, b1, b0); // r, g, b
+						    int b0 = (pathObjectCount & 0xff) >> 0; // b
+						    int b1 = (pathObjectCount & 0xff00) >> 8; // g
+						    int b2 = (pathObjectCount & 0xff0000) >> 16; // r
+						    Color maskColor = new Color(b2, b1, b0); // r, g, b
 					    
-						    final ROI roi = c.getROI();
-							final Shape shape = roi.getShape();
+						    ROI roi = c.getROI();
+							Shape shape = roi.getShape();
 							
 							pathObjectG2D.setColor(maskColor);
 							pathObjectG2D.fill(shape);
@@ -360,90 +372,103 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 
 				if(xnumAntnXnumFldrProp.get().isBlank()) throw new Exception("singleCellFile is blank");
 				
-				final HashMap<String, Integer> cellToClusterHashMap = new HashMap<>();
+				HashMap<String, Integer> cellToClusterHashMap = new HashMap<>();
 				
-				final String clusterFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "analysis", "clustering", "gene_expression_graphclust", "clusters.csv").toString();
-				final FileReader clusterFileReader = new FileReader(new File(clusterFilePath));
-				final BufferedReader clusterReader = new BufferedReader(clusterFileReader);
+				String clusterFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "analysis", "clustering", "gene_expression_graphclust", "clusters.csv").toString();
+				FileReader clusterFileReader = new FileReader(new File(clusterFilePath));
+				BufferedReader clusterReader = new BufferedReader(clusterFileReader);
 				clusterReader.readLine();
 				String clusterNextRecord;
 				
 				while ((clusterNextRecord = clusterReader.readLine()) != null) {
-		        	final String[] clusterNextRecordArray = clusterNextRecord.split(",");
-		        	final String cellId = clusterNextRecordArray[0].replaceAll("\"", "");
-		        	final int clusterId = Integer.parseInt(clusterNextRecordArray[1]);
+		        	String[] clusterNextRecordArray = clusterNextRecord.split(",");
+		        	String cellId = clusterNextRecordArray[0].replaceAll("\"", "");
+		        	int clusterId = Integer.parseInt(clusterNextRecordArray[1]);
 		        	cellToClusterHashMap.put(cellId, clusterId);
 				}
 				
 				clusterReader.close();
 				
-				final HashMap<String, String> cellToSCLabelHashMap = new HashMap<>();
+				HashMap<String, String> cellToSCLabelHashMap = new HashMap<>();
 				
-				
-//				final String analysisFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "analysis.tar.gz").toString();	
-//				TarArchiveInputStream analysisTarInput = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(analysisFilePath)));
-//				TarArchiveEntry analysisCurrentEntry = analysisTarInput.getNextTarEntry();
-//				BufferedReader analysisBufferReader = null;
-//				
-//				// StringBuilder analysisStringBuilder = new StringBuilder();
-//				while (analysisCurrentEntry != null) {
-//					analysisBufferReader = new BufferedReader(new InputStreamReader(analysisTarInput)); // Read directly from tarInput
-//				    System.out.println("For File = " + analysisCurrentEntry.getName());
-//				    String line;
-//				    while ((line = analysisBufferReader.readLine()) != null) {
-//				        System.out.println("line="+line);
-//				    }
-//				    analysisCurrentEntry = analysisTarInput.getNextTarEntry(); // You forgot to iterate to the next file
-//				}
-				
-				
-				
-				
-				
-				// final String analysisFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "analysis.tar.gz").toString();
-				// final GZIPInputStream analysisGzipStream = new GZIPInputStream(new FileInputStream(analysisFilePath));
-				
-				
-				
-				final String scLabelFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "analysis", "clustering", "gene_expression_graphclust", "clusters.csv").toString();
-				final FileReader scLabelFileReader = new FileReader(new File(scLabelFilePath));
-				final BufferedReader scLabelReader = new BufferedReader(scLabelFileReader);
+				String scLabelFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "analysis", "clustering", "gene_expression_graphclust", "clusters.csv").toString();
+				FileReader scLabelFileReader = new FileReader(new File(scLabelFilePath));
+				BufferedReader scLabelReader = new BufferedReader(scLabelFileReader);
 				scLabelReader.readLine();
 				String scLabelNextRecord;
 				
 				while ((scLabelNextRecord = scLabelReader.readLine()) != null) {
-		        	final String[] scLabelNextRecordArray = scLabelNextRecord.split(",");
-		        	final String cellId = scLabelNextRecordArray[0].replaceAll("\"", "");;
-		        	final String scLabelId = scLabelNextRecordArray[1].replaceAll("\"", "");;
+		        	String[] scLabelNextRecordArray = scLabelNextRecord.split(",");
+		        	String cellId = scLabelNextRecordArray[0].replaceAll("\"", "");;
+		        	String scLabelId = scLabelNextRecordArray[1].replaceAll("\"", "");;
 		        	cellToSCLabelHashMap.put(cellId, scLabelId);
 				}
 				
 				scLabelReader.close();
 				
-				final HashMap<String, PathObject> cellToPathObjHashMap = new HashMap<>();
+				HashMap<String, PathObject> cellToPathObjHashMap = new HashMap<>();
 			
-				final String singleCellFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "cells.csv.gz").toString();
-				final GZIPInputStream singleCellGzipStream = new GZIPInputStream(new FileInputStream(singleCellFilePath));
-				final BufferedReader singleCellGzipReader = new BufferedReader(new InputStreamReader(singleCellGzipStream));
+				String singleCellFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "cells.csv.gz").toString();
+				GZIPInputStream singleCellGzipStream = new GZIPInputStream(new FileInputStream(singleCellFilePath));
+				BufferedReader singleCellGzipReader = new BufferedReader(new InputStreamReader(singleCellGzipStream));
 				singleCellGzipReader.readLine();
 				String singleCellNextRecord;
 				
 		        while ((singleCellNextRecord = singleCellGzipReader.readLine()) != null) {
-		        	final String[] singleCellNextRecordArray = singleCellNextRecord.split(",");
-		        	final String cellId = singleCellNextRecordArray[0].replaceAll("\"", "");
+		        	String[] singleCellNextRecordArray = singleCellNextRecord.split(",");
+		        	String cellId = singleCellNextRecordArray[0].replaceAll("\"", "");
 		        	
-		        	final double transcriptCounts = Double.parseDouble(singleCellNextRecordArray[3]);
-		        	final double controlProbeCounts = Double.parseDouble(singleCellNextRecordArray[4]);
-		        	final double controlCodewordCounts = Double.parseDouble(singleCellNextRecordArray[5]);
-		        	final double totalCounts = Double.parseDouble(singleCellNextRecordArray[6]);
-		        	final double cellArea = Double.parseDouble(singleCellNextRecordArray[7]);
-		        	final double nucleusArea = Double.parseDouble(singleCellNextRecordArray[8]);
+		        	double transcriptCounts = Double.parseDouble(singleCellNextRecordArray[3]);
+		        	double controlProbeCounts = Double.parseDouble(singleCellNextRecordArray[4]);
+		        	double controlCodewordCounts = Double.parseDouble(singleCellNextRecordArray[5]);
+		        	double totalCounts = Double.parseDouble(singleCellNextRecordArray[6]);
+		        	double cellArea = Double.parseDouble(singleCellNextRecordArray[7]);
+		        	double nucleusArea = Double.parseDouble(singleCellNextRecordArray[8]);
 		        	
-		        	final double cx = Double.parseDouble(singleCellNextRecordArray[1]);
-		        	final double cy = Double.parseDouble(singleCellNextRecordArray[2]);
+		        	double cx = Double.parseDouble(singleCellNextRecordArray[1]);
+		        	double cy = Double.parseDouble(singleCellNextRecordArray[2]);
 		        	
-		        	final double dx = cx/dapiImagePixelSizeMicrons;
-		        	final double dy = cy/dapiImagePixelSizeMicrons;
+		        	double dx = cx/xnumAnnotImgRegParamDapiImgPxlSize;
+		        	double dy = cy/xnumAnnotImgRegParamDapiImgPxlSize;
+		        	
+		        	
+		        	
+		        	
+			        	
+		        	if(xnumAnnotImgRegParamFlipVert) {
+						dy = xnumAnnotImgRegParamSrcImgHeight - dy;
+					}
+					
+					if(xnumAnnotImgRegParamFlipHori) {
+						dx = xnumAnnotImgRegParamSrcImgWidth - dx;
+					}
+
+					if(xnumAnnotImgRegParamRotation.equals("-90") || xnumAnnotImgRegParamRotation.equals("270")) {
+						double x1 = dx;
+						dx = dy;
+						dy = xnumAnnotImgRegParamSrcImgWidth - x1;
+					}
+					else if(xnumAnnotImgRegParamRotation.equals("-180") || xnumAnnotImgRegParamRotation.equals("180")) {
+						dx = xnumAnnotImgRegParamSrcImgWidth - dx;
+						dy = xnumAnnotImgRegParamSrcImgHeight - dy;
+					}
+					else if(xnumAnnotImgRegParamRotation.equals("-270") || xnumAnnotImgRegParamRotation.equals("90")) {
+						double x1 = dx;
+						dx = xnumAnnotImgRegParamSrcImgHeight - dy;
+						dy = x1;	
+					}
+					
+					
+					
+					dx /= xnumAnnotImgRegParamSourceScale;
+					dy /= xnumAnnotImgRegParamSourceScale;						
+					
+	        
+						
+		        	
+		        	
+		       
+		        	
 		        	
 		        	int bx = 0;
 		        	int by = 0;
@@ -453,25 +478,46 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 		        		by = (int)Math.round(dy);
 		        	}
 		        	else {
-			        	final double scale = Math.pow(2.0, (double)(dapiImageImageSeries-1.0));
-			        	final double ax = affineMtx[0] * dx + affineMtx[1] * dy + affineMtx[2] * scale;
-			        	final double ay = affineMtx[3] * dx + affineMtx[4] * dy + affineMtx[5] * scale;
+			        	double ax = xnumAnnotImgRegParamSiftMatrix[0] * dx + xnumAnnotImgRegParamSiftMatrix[1] * dy + xnumAnnotImgRegParamSiftMatrix[2];
+			        	double ay = xnumAnnotImgRegParamSiftMatrix[3] * dx + xnumAnnotImgRegParamSiftMatrix[4] * dy + xnumAnnotImgRegParamSiftMatrix[5];
 						
 			        	if(!params.getBooleanParameterValue("AffineTransformOnly")) {
-				        	final int bv = (int)Math.round(ay);
-				        	final int bu = (int)Math.round(ax);
+				        	int bv = (int)Math.round(ay);
+				        	int bu = (int)Math.round(ax);
 				        	
-							final double tu = (double)(bu * bspline_intervals) / (double)(server.getWidth() - 1) + 1.0F;
-							final double tv = (double)(bv * bspline_intervals) / (double)(server.getHeight() - 1) + 1.0F;
+							// double tu = (double)(bu * bspline_intervals) / (double)(server.getWidth() - 1) + 1.0F;
+							// double tv = (double)(bv * bspline_intervals) / (double)(server.getHeight() - 1) + 1.0F;
 							
-							bspline_swx.prepareForInterpolation(tu, tv, false);
-							final double bspline_x_bv_bu = bspline_swx.interpolateI();
+							// bspline_swx.prepareForInterpolation(tu, tv, false);
+							// double bspline_x_bv_bu = bspline_swx.interpolateI();
 				        	
-							bspline_swy.prepareForInterpolation(tu, tv, false);
-							final double bspline_y_bv_bu = bspline_swy.interpolateI();  
+							// bspline_swy.prepareForInterpolation(tu, tv, false);
+							// double bspline_y_bv_bu = bspline_swy.interpolateI();  
 				        	
-							bx = (int)Math.round(scale * bspline_x_bv_bu);
-							by = (int)Math.round(scale * bspline_y_bv_bu);
+							// bx = (int)Math.round(scale * bspline_x_bv_bu);
+							// by = (int)Math.round(scale * bspline_y_bv_bu);
+							
+							
+							
+							
+							
+							
+							
+	
+							double x1 = (double)(bu * bspline_intervals) / (double)(((int)((double)server.getWidth()/xnumAnnotImgRegParamTargetScale)+0.5) - 1) + 1.0F;
+							double y1 = (double)(bv * bspline_intervals) / (double)(((int)((double)server.getHeight()/xnumAnnotImgRegParamTargetScale)+0.5) - 1) + 1.0F;
+							
+							
+							bspline_swx.prepareForInterpolation(x1, y1, false);
+							double bspline_x_bv_bu = bspline_swx.interpolateI();
+				        	
+							bspline_swy.prepareForInterpolation(x1, y1, false);
+							double bspline_y_bv_bu = bspline_swy.interpolateI();
+							
+							 bx = (int)Math.round(bspline_x_bv_bu);
+							 by = (int)Math.round(bspline_y_bv_bu);
+							
+							
 			        	}
 			        	else {
 				        	bx = (int)Math.round(ax);
@@ -479,38 +525,46 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 			        	}
 		        	}
 		        	
-		        	final int fx = (int)Math.round(bx / maskDownsampling);
-		        	final int fy = (int)Math.round(by / maskDownsampling);
+					bx *= xnumAnnotImgRegParamTargetScale;
+					by *= xnumAnnotImgRegParamTargetScale;
+					
+//					if(params.getBooleanParameterValue("manualShift")) {
+//						bx += xnumAnnotImgRegParamShiftX;
+//						by += xnumAnnotImgRegParamShiftY;
+//					}
+		        	
+		        	int fx = (int)Math.round(bx / maskDownsampling);
+		        	int fy = (int)Math.round(by / maskDownsampling);
 		        	
 		        	if(fx < 0 || fx >= pathObjectImageMask.getWidth() || fy < 0 || fy >=  pathObjectImageMask.getHeight()) continue;
 		        	
-		        	final int v = pathObjectImageMask.getRGB(fx, fy);
-		        	final int d0 = v&0xff;
-		        	final int d1 = (v>>8)&0xff;
-		        	final int d2 = (v>>16)&0xff;
-					final int r = d2*0x10000+d1*0x100+d0;
+		        	int v = pathObjectImageMask.getRGB(fx, fy);
+		        	int d0 = v&0xff;
+		        	int d1 = (v>>8)&0xff;
+		        	int d2 = (v>>16)&0xff;
+					int r = d2*0x10000+d1*0x100+d0;
 				    
 		        	if(r == 0) continue; // This location doesn't have a cell.
 			        	
-		        	final int pathObjectId = r - 1;  // pathObjectId starts at 1, since 0 means background
+		        	int pathObjectId = r - 1;  // pathObjectId starts at 1, since 0 means background
 			        	
-		        	final PathObject cellPathObject = pathObjectList.get(pathObjectId);
+		        	PathObject cellPathObject = pathObjectList.get(pathObjectId);
 		        	cellToPathObjHashMap.put(cellId, cellPathObject);
 		        	
-		        	final String scLabelId = cellToSCLabelHashMap.get(cellId);
+		        	String scLabelId = cellToSCLabelHashMap.get(cellId);
 		        	
 		        	if(scLabelId != null) {
-		        		final PathClass pathCls = PathClass.fromString(scLabelId);
+		        		PathClass pathCls = PathClass.fromString(scLabelId);
 			        	cellPathObject.setPathClass(pathCls);
 		        	}
 		        	
-		        	final double roiX = cellPathObject.getROI().getCentroidX();
-		        	final double roiY = cellPathObject.getROI().getCentroidY();
-		        	final double newDist = (new Point2D(bx, by).distance(roiX, roiY))*pixelSizeMicrons;
-		        	final MeasurementList pathObjMeasList = cellPathObject.getMeasurementList();
+		        	double roiX = cellPathObject.getROI().getCentroidX();
+		        	double roiY = cellPathObject.getROI().getCentroidY();
+		        	double newDist = (new Point2D(bx, by).distance(roiX, roiY))*xnumAnnotImgRegParamDapiImgPxlSize;
+		        	MeasurementList pathObjMeasList = cellPathObject.getMeasurementList();
 		        	
 		        	if(pathObjMeasList.containsKey("xenium:cell:cell_id")) {
-		        		final double minDist = pathObjMeasList.get("xenium:cell:displacement");
+		        		double minDist = pathObjMeasList.get("xenium:cell:displacement");
 		        		if(newDist < minDist) {
 		        			cellPathObject.setName(cellId);
 		        			pathObjMeasList.put("xenium:cell:displacement", newDist);
@@ -546,48 +600,48 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	             * Read feature matrix data
 	             */
 					
-				final String barcodeFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix", "barcodes.tsv.gz").toString();
-				final String featureFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix", "features.tsv.gz").toString();
-				final String matrixFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix", "matrix.mtx.gz").toString();
+				String barcodeFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix", "barcodes.tsv.gz").toString();
+				String featureFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix", "features.tsv.gz").toString();
+				String matrixFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix", "matrix.mtx.gz").toString();
 				
-				final GZIPInputStream barcodeGzipStream = new GZIPInputStream(new FileInputStream(barcodeFilePath));
+				GZIPInputStream barcodeGzipStream = new GZIPInputStream(new FileInputStream(barcodeFilePath));
 				try (BufferedReader barcodeGzipReader = new BufferedReader(new InputStreamReader(barcodeGzipStream))) {
-					final List<String> barcodeList = new ArrayList<>();
+					List<String> barcodeList = new ArrayList<>();
 					
 					String barcodeNextRecord;
 					while ((barcodeNextRecord = barcodeGzipReader.readLine()) != null) {
 						barcodeList.add(barcodeNextRecord);
 					}
 					
-					final List<String> featureIdList = new ArrayList<>();
-					final List<String> featureNameList = new ArrayList<>();
-					final List<String> featureTypeList = new ArrayList<>();
+					List<String> featureIdList = new ArrayList<>();
+					List<String> featureNameList = new ArrayList<>();
+					List<String> featureTypeList = new ArrayList<>();
 					
-					final GZIPInputStream featureGzipStream = new GZIPInputStream(new FileInputStream(featureFilePath));
+					GZIPInputStream featureGzipStream = new GZIPInputStream(new FileInputStream(featureFilePath));
 					try (BufferedReader featureGzipReader = new BufferedReader(new InputStreamReader(featureGzipStream))) {
 						String featureNextRecord;
 						while ((featureNextRecord = featureGzipReader.readLine()) != null) {
-							final String[] featureNextRecordArray = featureNextRecord.split("\t");
+							String[] featureNextRecordArray = featureNextRecord.split("\t");
 							featureIdList.add(featureNextRecordArray[0]);
 							featureNameList.add(featureNextRecordArray[1]);
 							featureTypeList.add(featureNextRecordArray[2]);
 						}
 					}
 					
-					final GZIPInputStream matrixGzipStream = new GZIPInputStream(new FileInputStream(matrixFilePath));
+					GZIPInputStream matrixGzipStream = new GZIPInputStream(new FileInputStream(matrixFilePath));
 					try (BufferedReader matrixGzipReader = new BufferedReader(new InputStreamReader(matrixGzipStream), '\t')) {
 						matrixGzipReader.readLine();
 						matrixGzipReader.readLine();
 						matrixGzipReader.readLine();
 						
-						final int[][] matrix = new int[featureNameList.size()][barcodeList.size()];
+						int[][] matrix = new int[featureNameList.size()][barcodeList.size()];
 						
 						String matrixNextRecord;
 						while ((matrixNextRecord = matrixGzipReader.readLine()) != null) {
-							final String[] matrixNextRecordArray = matrixNextRecord.split(" ");
-							final int f = Integer.parseInt(matrixNextRecordArray[0])-1;
-							final int b = Integer.parseInt(matrixNextRecordArray[1])-1;
-							final int v = Integer.parseInt(matrixNextRecordArray[2]);
+							String[] matrixNextRecordArray = matrixNextRecord.split(" ");
+							int f = Integer.parseInt(matrixNextRecordArray[0])-1;
+							int b = Integer.parseInt(matrixNextRecordArray[1])-1;
+							int v = Integer.parseInt(matrixNextRecordArray[2]);
 							
 							matrix[f][b] = v;
 						}
@@ -595,14 +649,17 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 						IntStream.range(0, barcodeList.size()).parallel().forEach(b -> {
 //						for(int b = 0; b < barcodeList.size(); b ++) {
 							if(cellToPathObjHashMap.containsKey(barcodeList.get(b))) {
-						    	final PathObject c = cellToPathObjHashMap.get(barcodeList.get(b));
-						    	final MeasurementList pathObjMeasList = c.getMeasurementList();
+						    	PathObject c = cellToPathObjHashMap.get(barcodeList.get(b));
+						    	MeasurementList pathObjMeasList = c.getMeasurementList();
 						    	
 						    	for(int f = 0; f < featureNameList.size(); f ++) {	
-						    		if(!params.getBooleanParameterValue("inclBlankCodeword") && (featureTypeList.get(f).compareTo("Blank Codeword") == 0 || featureTypeList.get(f).compareTo("Unassigned Codeword") == 0)) continue;
-									if(!params.getBooleanParameterValue("inclGeneExpr") && (featureTypeList.get(f).compareTo("Gene Expression") == 0)) continue;
-									if(!params.getBooleanParameterValue("inclNegCtrlCodeword") && (featureTypeList.get(f).compareTo("Negative Control Codeword") == 0)) continue;
-									if(!params.getBooleanParameterValue("inclNegCtrlProbe") && (featureTypeList.get(f).compareTo("Negative Control Probe") == 0)) continue;
+						    		if(!params.getBooleanParameterValue("inclBlankCodeword") && featureTypeList.get(f).compareTo("Blank Codeword")==0) continue;
+						    		if(!params.getBooleanParameterValue("inclUnassignedCodeword") && featureTypeList.get(f).compareTo("Unassigned Codeword")==0) continue;
+						    		if(!params.getBooleanParameterValue("inclDeprecatedCodeword") && featureTypeList.get(f).compareTo("Deprecated Codeword")==0) continue;
+						    		if(!params.getBooleanParameterValue("inclIntergenicRegion") && featureTypeList.get(f).compareTo("Genomic Control")==0) continue;
+									if(!params.getBooleanParameterValue("inclGeneExpr") && featureTypeList.get(f).compareTo("Gene Expression")==0) continue;
+									if(!params.getBooleanParameterValue("inclNegCtrlCodeword") && featureTypeList.get(f).compareTo("Negative Control Codeword")==0) continue;
+									if(!params.getBooleanParameterValue("inclNegCtrlProbe") && featureTypeList.get(f).compareTo("Negative Control Probe")==0) continue;
 						    		
 									pathObjMeasList.put("transcript:"+featureNameList.get(f), matrix[f][b]);  
 						    			 
@@ -654,10 +711,10 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	}
 
 	@Override
-	protected void preprocess(final TaskRunner taskRunner, final ImageData<BufferedImage> imageData) {
+	protected void preprocess(TaskRunner taskRunner, ImageData<BufferedImage> imageData) {
 		if(params.getStringParameterValue("xeniumDir").isBlank()) {
 		
-			final File xnumDir = Dialogs.promptForDirectory("Xenium directory", new File(xnumAntnXnumFldrProp.get()));
+			File xnumDir = FileChoosers.promptForDirectory("Xenium directory", new File(xnumAntnXnumFldrProp.get()));
 			
 			if (xnumDir != null) {
 				xnumAntnXnumFldrProp.set(xnumDir.toString());
@@ -674,7 +731,7 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	};
 	
 	@Override
-	public ParameterList getDefaultParameterList(final ImageData<BufferedImage> imageData) {
+	public ParameterList getDefaultParameterList(ImageData<BufferedImage> imageData) {
 		return params;
 	}
 
@@ -702,7 +759,7 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 
 
 	@Override
-	protected Collection<? extends PathObject> getParentObjects(final ImageData<BufferedImage> imageData) {	
+	protected Collection<? extends PathObject> getParentObjects(ImageData<BufferedImage> imageData) {	
 		PathObjectHierarchy hierarchy = imageData.getHierarchy();
 		if (hierarchy.getTMAGrid() == null)
 			return Collections.singleton(hierarchy.getRootObject());

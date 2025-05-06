@@ -32,7 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javafx.beans.property.StringProperty;
 import qupath.lib.common.GeneralTools;
-import qupath.lib.gui.dialogs.Dialogs;
+import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
@@ -57,11 +58,11 @@ import qupath.lib.roi.interfaces.ROI;
  */
 public class PseudoVisiumSpotGeneration extends AbstractDetectionPlugin<BufferedImage> {
 	
-	final private static Logger logger = LoggerFactory.getLogger(PseudoVisiumSpotGeneration.class);
+	private static Logger logger = LoggerFactory.getLogger(PseudoVisiumSpotGeneration.class);
 	
 	private ParameterList params;
-	final private StringProperty pseVisSptVendorProp = PathPrefs.createPersistentPreference("pseVisSptVendor", "xenium"); 
-	final private List<String> vendorlList = Arrays.asList("xenium", "cosmx");
+	private StringProperty pseVisSptVendorProp = PathPrefs.createPersistentPreference("pseVisSptVendor", "xenium"); 
+	private List<String> vendorlList = Arrays.asList("xenium", "cosmx");
 	private String lastResults = null;
 	
 	/**
@@ -84,24 +85,24 @@ public class PseudoVisiumSpotGeneration extends AbstractDetectionPlugin<Buffered
 	class AnnotationLoader implements ObjectDetector<BufferedImage> {
 		
 		@Override
-		public Collection<PathObject> runDetection(final ImageData<BufferedImage> imageData, final ParameterList params, final ROI pathROI) throws IOException {
+		public Collection<PathObject> runDetection(ImageData<BufferedImage> imageData, ParameterList params, ROI pathROI) throws IOException {
 			pseVisSptVendorProp.set((String)params.getChoiceParameterValue("vendor"));
 			
-			final ImageServer<BufferedImage> server = imageData.getServer();				
-			final PathObjectHierarchy hierarchy = imageData.getHierarchy();
-			final double pixelSizeMicrons = server.getPixelCalibration().getAveragedPixelSizeMicrons();
-			final int imageHeight = server.getHeight();
-			final int imageWidth = server.getWidth();
+			ImageServer<BufferedImage> server = imageData.getServer();				
+			PathObjectHierarchy hierarchy = imageData.getHierarchy();
+			double pixelSizeMicrons = server.getPixelCalibration().getAveragedPixelSizeMicrons();
+			int imageHeight = server.getHeight();
+			int imageWidth = server.getWidth();
 			
-			final double spotDiameterMicrons = params.getDoubleParameterValue("spotDiameter");
-			final double minSpotDistMicrons = params.getDoubleParameterValue("minSpotDist");
-			final double spotDiameterPx = spotDiameterMicrons/pixelSizeMicrons;
-			final double minSpotDistPx = minSpotDistMicrons/pixelSizeMicrons;
-			
-			final ArrayList<PathObject> resultPathObjectList = new ArrayList<PathObject>();
+			double spotDiameterMicrons = params.getDoubleParameterValue("spotDiameter");
+			double minSpotDistMicrons = params.getDoubleParameterValue("minSpotDist");
+			double spotDiameterPx = spotDiameterMicrons/pixelSizeMicrons;
+			double minSpotDistPx = minSpotDistMicrons/pixelSizeMicrons;
+			double downsample = 4.0;
+			ArrayList<PathObject> resultPathObjectList = new ArrayList<PathObject>();
 			
 			try {
-				final List<PathObject> selectedAnnotationPathObjectList = new ArrayList<>();
+				List<PathObject> selectedAnnotationPathObjectList = new ArrayList<>();
 				
 				for (PathObject pathObject : hierarchy.getSelectionModel().getSelectedObjects()) {
 					if (pathObject.isAnnotation())
@@ -110,23 +111,22 @@ public class PseudoVisiumSpotGeneration extends AbstractDetectionPlugin<Buffered
 				
 				if(selectedAnnotationPathObjectList.isEmpty()) throw new Exception("Missed selected annotations");
 				
-				final int maskWidth = (int)Math.round(imageData.getServer().getWidth());
-				final int maskHeight = (int)Math.round(imageData.getServer().getHeight());
+				int maskWidth = (int)Math.ceil(imageData.getServer().getWidth()/downsample);
+				int maskHeight = (int)Math.ceil(imageData.getServer().getHeight()/downsample);
 				
-				final BufferedImage pathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_BYTE_GRAY);
-				final List<PathObject> pathObjectList = new ArrayList<PathObject>();						
-				
-				final Graphics2D pathObjectG2D = pathObjectImageMask.createGraphics();				
+				BufferedImage pathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_BYTE_GRAY);
+				Graphics2D pathObjectG2D = pathObjectImageMask.createGraphics();				
 				pathObjectG2D.setBackground(Color.BLACK);
 				pathObjectG2D.clearRect(0, 0, maskWidth, maskHeight);
-				
 				pathObjectG2D.setClip(0, 0, maskWidth, maskHeight);
+				
+				List<PathObject> pathObjectList = new ArrayList<PathObject>();						
 				
 				for(PathObject p: selectedAnnotationPathObjectList) {
 					pathObjectList.add(p);
 				    
-				    final ROI roi = p.getROI();
-					final Shape shape = roi.getShape();
+				    ROI roi = p.getROI().scale(1.0/downsample, 1.0/downsample);
+					Shape shape = roi.getShape();
 					
 					pathObjectG2D.setColor(Color.WHITE);
 					pathObjectG2D.fill(shape);
@@ -134,8 +134,8 @@ public class PseudoVisiumSpotGeneration extends AbstractDetectionPlugin<Buffered
 				
 				pathObjectG2D.dispose();	
 
-				final int halfSpotDiameterPx = (int)Math.ceil(spotDiameterPx/2.0);
-				final int y_step = params.getBooleanParameterValue("rectShapeSpot") || params.getBooleanParameterValue("rectGridArrangement")? (int)minSpotDistPx: (int)Math.round(0.5*Math.sqrt(3)*minSpotDistPx);
+				int halfSpotDiameterPx = (int)Math.ceil(spotDiameterPx/2.0);
+				int y_step = params.getBooleanParameterValue("rectShapeSpot") || params.getBooleanParameterValue("rectGridArrangement")? (int)minSpotDistPx: (int)Math.round(0.5*Math.sqrt(3)*minSpotDistPx);
 				
 				int row_count = 0;
 				int col_count = 0;
@@ -145,14 +145,14 @@ public class PseudoVisiumSpotGeneration extends AbstractDetectionPlugin<Buffered
 					int even_row_shift = even_row_flag && !params.getBooleanParameterValue("rectGridArrangement")? halfSpotDiameterPx: 0;
 					
 					for(int x = halfSpotDiameterPx+even_row_shift; x < imageWidth-halfSpotDiameterPx; x += minSpotDistPx) {
-						if(pathObjectImageMask.getRGB(x, y) == Color.WHITE.getRGB()) {
-							final ROI pathRoi = !params.getBooleanParameterValue("rectShapeSpot")? 
+						if(pathObjectImageMask.getRGB((int)Math.round(x/downsample), (int)Math.round(y/downsample)) == Color.WHITE.getRGB()) {
+							ROI pathRoi = !params.getBooleanParameterValue("rectShapeSpot")? 
 								ROIs.createEllipseROI(x, y, spotDiameterPx, spotDiameterPx, null):
 								ROIs.createRectangleROI(x-halfSpotDiameterPx, y-halfSpotDiameterPx, spotDiameterPx, spotDiameterPx, null);
 								
-							// final PathClass pathCls = PathClassFactory.getPathClass(params.getStringParameterValue("prefix")+"-"+Integer.toString(row_count)+"-"+Integer.toString(col_count));
-							final PathClass pathCls = PathClass.fromString(params.getStringParameterValue("prefix")+"-"+Integer.toString(row_count)+"-"+Integer.toString(col_count));
-							final PathAnnotationObject pathObj = (PathAnnotationObject) PathObjects.createAnnotationObject(pathRoi, pathCls);
+							// PathClass pathCls = PathClassFactory.getPathClass(params.getStringParameterValue("prefix")+"-"+Integer.toString(row_count)+"-"+Integer.toString(col_count));
+							PathClass pathCls = PathClass.fromString(params.getStringParameterValue("prefix")+"-"+Integer.toString(row_count)+"-"+Integer.toString(col_count));
+							PathAnnotationObject pathObj = (PathAnnotationObject) PathObjects.createAnnotationObject(pathRoi, pathCls);
 							resultPathObjectList.add(pathObj); 
 						}
 
@@ -191,7 +191,7 @@ public class PseudoVisiumSpotGeneration extends AbstractDetectionPlugin<Buffered
 	}
 
 	@Override
-	public ParameterList getDefaultParameterList(final ImageData<BufferedImage> imageData) {
+	public ParameterList getDefaultParameterList(ImageData<BufferedImage> imageData) {
 		return params;
 	}
 
@@ -219,7 +219,7 @@ public class PseudoVisiumSpotGeneration extends AbstractDetectionPlugin<Buffered
 
 
 	@Override
-	protected Collection<? extends PathObject> getParentObjects(final ImageData<BufferedImage> imageData) {	
+	protected Collection<? extends PathObject> getParentObjects(ImageData<BufferedImage> imageData) {	
 		PathObjectHierarchy hierarchy = imageData.getHierarchy();
 		if (hierarchy.getTMAGrid() == null)
 			return Collections.singleton(hierarchy.getRootObject());

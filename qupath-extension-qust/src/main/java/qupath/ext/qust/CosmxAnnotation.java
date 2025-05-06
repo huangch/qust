@@ -34,12 +34,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+import qupath.fx.dialogs.Dialogs;
+import qupath.fx.dialogs.FileChoosers;
+
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Point2D;
-import qupath.lib.gui.dialogs.Dialogs;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.images.ImageData;
-import qupath.lib.images.servers.ImageServer;
 import qupath.lib.measurements.MeasurementList;
 import qupath.lib.objects.PathAnnotationObject;
 import qupath.lib.objects.PathObject;
@@ -63,8 +65,8 @@ import org.slf4j.LoggerFactory;
  */
 public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	
-	final private static Logger logger = LoggerFactory.getLogger(CosmxAnnotation.class);
-	final private StringProperty cosmxAntnCosmxFldrProp = PathPrefs.createPersistentPreference("cosmxAntnCosmxFldr", ""); 
+	private static Logger logger = LoggerFactory.getLogger(CosmxAnnotation.class);
+	private StringProperty cosmxAntnCosmxFldrProp = PathPrefs.createPersistentPreference("cosmxAntnCosmxFldr", ""); 
 	private ParameterList params;
 	private String lastResults = null;
 	
@@ -76,6 +78,7 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 			.addTitleParameter("NanoString Cosmx Data Loader")
 			.addStringParameter("cosmxDir", "Cosmx directory", cosmxAntnCosmxFldrProp.get(), "Cosmx Out Directory")
 			.addBooleanParameter("consolToAnnot", "Consolidate transcript data to Visium-style spots? (default: false)", false, "Consolidate Transcript Data to Annotations? (default: false)")
+			.addBooleanParameter("removeUnlabeledCells", "Remove unlabeled cells? (default: true)", true, "Remove unlabeled cells? (default: true)")		
 			.addEmptyParameter("")
 			.addBooleanParameter("inclGeneExpr", "Include Gene Expression? (default: true)", true, "Include Gene Expression? (default: true)")		
 			.addBooleanParameter("inclNegCtrlProbe", "Include Negative Control Probe? (default: false)", false, "Include Negative Control Probe? (default: false)")		
@@ -88,23 +91,23 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	class AnnotationLoader implements ObjectDetector<BufferedImage> {
 		
 		@Override
-		public Collection<PathObject> runDetection(final ImageData<BufferedImage> imageData, final ParameterList params, final ROI pathROI) throws IOException {
+		public Collection<PathObject> runDetection(ImageData<BufferedImage> imageData, ParameterList params, ROI pathROI) throws IOException {
 			cosmxAntnCosmxFldrProp.set(params.getStringParameterValue("cosmxDir"));
 			
-			final ImageServer<BufferedImage> server = imageData.getServer();				
-			final PathObjectHierarchy hierarchy = imageData.getHierarchy();
-			final ArrayList<PathObject> resultPathObjectList = new ArrayList<PathObject>(hierarchy.getRootObject().getChildObjects());
+//			ImageServer<BufferedImage> server = imageData.getServer();				
+			PathObjectHierarchy hierarchy = imageData.getHierarchy();
+			ArrayList<PathObject> resultPathObjectList = new ArrayList<PathObject>(hierarchy.getRootObject().getChildObjects());
 			
 			try {
 				
             
-		        final double pixelSizeMicrons = server.getPixelCalibration().getAveragedPixelSizeMicrons();
+		        // double pixelSizeMicrons = server.getPixelCalibration().getAveragedPixelSizeMicrons();
 		        
 	            /*
 	             * Generate cell masks with their labels
 	             */
 				
-				final List<PathObject> selectedAnnotationPathObjectList = new ArrayList<>();
+				List<PathObject> selectedAnnotationPathObjectList = new ArrayList<>();
 				
 				for (PathObject pathObject : hierarchy.getSelectionModel().getSelectedObjects()) {
 					if (pathObject.isAnnotation() && pathObject.hasChildObjects())
@@ -113,24 +116,24 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 				
 				if(selectedAnnotationPathObjectList.isEmpty()) throw new Exception("Missed selected annotations");
 
-				final int maskDownsampling = params.getIntParameterValue("maskDownsampling");;
-				final int maskWidth = (int)Math.round(imageData.getServer().getWidth()/maskDownsampling);
-				final int maskHeight = (int)Math.round(imageData.getServer().getHeight()/maskDownsampling);	
+				int maskDownsampling = params.getIntParameterValue("maskDownsampling");;
+				int maskWidth = (int)Math.round(imageData.getServer().getWidth()/maskDownsampling);
+				int maskHeight = (int)Math.round(imageData.getServer().getHeight()/maskDownsampling);	
 				
-				final BufferedImage annotPathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_INT_RGB);
-				final List<PathObject> annotPathObjectList = new ArrayList<PathObject>();						
+				BufferedImage annotPathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_INT_RGB);
+				List<PathObject> annotPathObjectList = new ArrayList<PathObject>();						
 				
-				final Graphics2D annotPathObjectG2D = annotPathObjectImageMask.createGraphics();				
+				Graphics2D annotPathObjectG2D = annotPathObjectImageMask.createGraphics();				
 				annotPathObjectG2D.setBackground(new Color(0, 0, 0));
 				annotPathObjectG2D.clearRect(0, 0, maskWidth, maskHeight);
 				
 				annotPathObjectG2D.setClip(0, 0, maskWidth, maskHeight);
 				annotPathObjectG2D.scale(1.0/maskDownsampling, 1.0/maskDownsampling);					    
 				
-				final BufferedImage pathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_INT_RGB);
-				final List<PathObject> pathObjectList = new ArrayList<PathObject>();						
+				BufferedImage pathObjectImageMask = new BufferedImage(maskWidth, maskHeight, BufferedImage.TYPE_INT_RGB);
+				List<PathObject> pathObjectList = new ArrayList<PathObject>();						
 				
-				final Graphics2D pathObjectG2D = pathObjectImageMask.createGraphics();				
+				Graphics2D pathObjectG2D = pathObjectImageMask.createGraphics();				
 				pathObjectG2D.setBackground(new Color(0, 0, 0));
 				pathObjectG2D.clearRect(0, 0, maskWidth, maskHeight);
 				
@@ -144,13 +147,13 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 					for(PathObject p: selectedAnnotationPathObjectList) {
 						annotPathObjectList.add(p);
 					    
-					    final int pb0 = (annotPathObjectCount & 0xff) >> 0; // b
-					    final int pb1 = (annotPathObjectCount & 0xff00) >> 8; // g
-					    final int pb2 = (annotPathObjectCount & 0xff0000) >> 16; // r
-					    final Color pMaskColor = new Color(pb2, pb1, pb0); // r, g, b
+					    int pb0 = (annotPathObjectCount & 0xff) >> 0; // b
+					    int pb1 = (annotPathObjectCount & 0xff00) >> 8; // g
+					    int pb2 = (annotPathObjectCount & 0xff0000) >> 16; // r
+					    Color pMaskColor = new Color(pb2, pb1, pb0); // r, g, b
 				    
-					    final ROI pRoi = p.getROI();
-						final Shape pShape = pRoi.getShape();
+					    ROI pRoi = p.getROI();
+						Shape pShape = pRoi.getShape();
 						
 						annotPathObjectG2D.setColor(pMaskColor);
 						annotPathObjectG2D.fill(pShape);
@@ -164,13 +167,13 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 						for(PathObject c: p.getChildObjects()) {
 							pathObjectList.add(c);
 						    
-						    final int b0 = (pathObjectCount & 0xff) >> 0; // b
-						    final int b1 = (pathObjectCount & 0xff00) >> 8; // g
-						    final int b2 = (pathObjectCount & 0xff0000) >> 16; // r
-						    final Color maskColor = new Color(b2, b1, b0); // r, g, b
+						    int b0 = (pathObjectCount & 0xff) >> 0; // b
+						    int b1 = (pathObjectCount & 0xff00) >> 8; // g
+						    int b2 = (pathObjectCount & 0xff0000) >> 16; // r
+						    Color maskColor = new Color(b2, b1, b0); // r, g, b
 					    
-						    final ROI roi = c.getROI();
-							final Shape shape = roi.getShape();
+						    ROI roi = c.getROI();
+							Shape shape = roi.getShape();
 							
 							pathObjectG2D.setColor(maskColor);
 							pathObjectG2D.fill(shape);
@@ -198,78 +201,79 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 				
 				if(cosmxAntnCosmxFldrProp.get().isBlank()) throw new Exception("singleCellFile is blank");
 				
-				final HashMap<String, PathObject> cellToPathObjHashMap = new HashMap<>();
-				final File cosmxDir = new File(cosmxAntnCosmxFldrProp.get());
-				final FileFilter cosmxFovPosFileFilter = new WildcardFileFilter("*fov_positions_file.csv");
-				final File[] cosmxFovPosFileList = cosmxDir.listFiles(cosmxFovPosFileFilter);
+				HashMap<String, PathObject> cellToPathObjHashMap = new HashMap<>();
+				File cosmxDir = new File(cosmxAntnCosmxFldrProp.get());
+				FileFilter cosmxFovPosFileFilter = new WildcardFileFilter("*fov_positions_file.csv");
+				File[] cosmxFovPosFileList = cosmxDir.listFiles(cosmxFovPosFileFilter);
 				if(cosmxFovPosFileList.length != 1) throw new Exception("*fov_positions_file.csv error");
 				
-				final FileReader fovPosFileReader = new FileReader(new File(cosmxFovPosFileList[0].toString()));
-				final BufferedReader fovPosBufferedReader = new BufferedReader(fovPosFileReader);
+				FileReader fovPosFileReader = new FileReader(new File(cosmxFovPosFileList[0].toString()));
+				BufferedReader fovPosBufferedReader = new BufferedReader(fovPosFileReader);
 				fovPosBufferedReader.readLine();
 				String fovPosNextRecord;
 				
-				int x_global_min = -1;
-				int y_global_min = -1;
+				double x_global_min = -1.0;
+				double y_global_min = -1.0;
 				
 		        while ((fovPosNextRecord = fovPosBufferedReader.readLine()) != null) {
-		        	final String[] fovPosNextRecordArray = fovPosNextRecord.split(",");
+		        	String[] fovPosNextRecordArray = fovPosNextRecord.split(",");
 		        	
-		        	final int x_global_px = (int)(0.5+Double.parseDouble(fovPosNextRecordArray[1]));
-		        	final int y_global_px = (int)(0.5+Double.parseDouble(fovPosNextRecordArray[2]));
+		        	double x_global_px = (double)(Double.parseDouble(fovPosNextRecordArray[1]));
+		        	double y_global_px = (double)(Double.parseDouble(fovPosNextRecordArray[2]));
 		        	
-		        	if(x_global_min == -1 || x_global_px < x_global_min) x_global_min = x_global_px;
-		        	if(y_global_min == -1 || y_global_px < y_global_min) y_global_min = y_global_px;
+		        	if(x_global_min == -1.0 || x_global_px < x_global_min) x_global_min = x_global_px;
+		        	if(y_global_min == -1.0 || y_global_px < y_global_min) y_global_min = y_global_px;
 		        }
 				
 		        fovPosBufferedReader.close();
 				
-				final FileFilter cosmxMetadataFileFilter = new WildcardFileFilter("*metadata_file.csv");
-				final File[] cosmxMetadataFileList = cosmxDir.listFiles(cosmxMetadataFileFilter);
+				FileFilter cosmxMetadataFileFilter = new WildcardFileFilter("*metadata_file.csv");
+				File[] cosmxMetadataFileList = cosmxDir.listFiles(cosmxMetadataFileFilter);
 				if(cosmxMetadataFileList.length != 1) throw new Exception("*metadata_file.csv error");
 				
-				final FileReader singleCellFileReader = new FileReader(new File(cosmxMetadataFileList[0].toString()));
-				final BufferedReader singleCellBufferedReader = new BufferedReader(singleCellFileReader);
+				FileReader singleCellFileReader = new FileReader(new File(cosmxMetadataFileList[0].toString()));
+				BufferedReader singleCellBufferedReader = new BufferedReader(singleCellFileReader);
 				singleCellBufferedReader.readLine();
 				String singleCellNextRecord;
 				
 		        while ((singleCellNextRecord = singleCellBufferedReader.readLine()) != null) {
 				        
-		        	final String[] singleCellNextRecordArray = singleCellNextRecord.split(",");
+		        	String[] singleCellNextRecordArray = singleCellNextRecord.split(",");
 		        	
-		        	final int fov = Integer.parseInt(singleCellNextRecordArray[0].replaceAll("\"", ""));
-		        	final int cellId = Integer.parseInt(singleCellNextRecordArray[1].replaceAll("\"", ""));
+		        	int fov = Integer.parseInt(singleCellNextRecordArray[0].replaceAll("\"", ""));
+		        	int cellId = Integer.parseInt(singleCellNextRecordArray[1].replaceAll("\"", ""));
 		        	
-		        	final double cx = Double.parseDouble(singleCellNextRecordArray[6]);
-		        	final double cy = Double.parseDouble(singleCellNextRecordArray[7]);
+		        	double cx = Double.parseDouble(singleCellNextRecordArray[6]);
+		        	double cy = Double.parseDouble(singleCellNextRecordArray[7]);
 		        	
-		        	final double dx = cx-x_global_min;
-		        	final double dy = cy-y_global_min;
+		        	double dx = cx-x_global_min;
+		        	double dy = cy-y_global_min;
 		        	
-		        	final int fX = (int)(0.5+dx/maskDownsampling);
-		        	final int fY = (int)(0.5+dy/maskDownsampling);
+		        	int fX = (int)(0.5+dx/maskDownsampling);
+		        	int fY = (int)(0.5+dy/maskDownsampling);
 		        	
 		        	if(fX < 0 || fX >= pathObjectImageMask.getWidth() || fY < 0 || fY >= pathObjectImageMask.getHeight()) continue;
 		        	
-		        	final int v = pathObjectImageMask.getRGB(fX, fY);
-		        	final int d0 = v&0xff;
-		        	final int d1 = (v>>8)&0xff;
-		        	final int d2 = (v>>16)&0xff;
-					final int r = d2*0x10000+d1*0x100+d0;
+		        	int v = pathObjectImageMask.getRGB(fX, fY);
+		        	int d0 = v&0xff;
+		        	int d1 = (v>>8)&0xff;
+		        	int d2 = (v>>16)&0xff;
+					int r = d2*0x10000+d1*0x100+d0;
 				    
 		        	if(r == 0) continue; // This location doesn't have a cell.
 			        	
-		        	final int pathObjectId = r - 1;  // pathObjectId starts at 1, since 0 means background
+		        	int pathObjectId = r - 1;  // pathObjectId starts at 1, since 0 means background
 			        	
-		        	final PathObject cellPathObject = pathObjectList.get(pathObjectId);
+		        	PathObject cellPathObject = pathObjectList.get(pathObjectId);
 		        	cellToPathObjHashMap.put(String.valueOf(cellId)+"_"+String.valueOf(fov), cellPathObject);
 		        	
-		        	final double roiX = cellPathObject.getROI().getCentroidX();
-		        	final double roiY = cellPathObject.getROI().getCentroidY();
-		        	final double newDist = (new Point2D(dx, dy).distance(roiX, roiY))*pixelSizeMicrons;
-		        	final MeasurementList pathObjMeasList = cellPathObject.getMeasurementList();
+		        	double roiX = cellPathObject.getROI().getCentroidX();
+		        	double roiY = cellPathObject.getROI().getCentroidY();
+		        	// double newDist = (new Point2D(dx, dy).distance(roiX, roiY))*pixelSizeMicrons;
+		        	double newDist = (new Point2D(dx, dy).distance(roiX, roiY));
+		        	MeasurementList pathObjMeasList = cellPathObject.getMeasurementList();
 		        	if(pathObjMeasList.containsKey("cosmx:cell:cell_id")) {
-		        		final double minDist = pathObjMeasList.get("cosmx:cell:displacement");
+		        		double minDist = pathObjMeasList.get("cosmx:cell:displacement");
 		        		if(newDist < minDist) {
 		        			pathObjMeasList.put("cosmx:cell:fov", fov);
 		        			pathObjMeasList.put("cosmx:cell:cell_id", cellId);
@@ -295,24 +299,24 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	             * Read feature matrix data
 	             */
 			        
-		        final FileFilter cosmxExprMatFileFilter = new WildcardFileFilter("*exprMat_file.csv");
-				final File[] cosmxExprMatFileList = cosmxDir.listFiles(cosmxExprMatFileFilter);
+		        FileFilter cosmxExprMatFileFilter = new WildcardFileFilter("*exprMat_file.csv");
+				File[] cosmxExprMatFileList = cosmxDir.listFiles(cosmxExprMatFileFilter);
 				if(cosmxExprMatFileList.length != 1) throw new Exception("*exprMat_file.csv");
 				
-				final FileReader exprMatFileReader = new FileReader(new File(cosmxExprMatFileList[0].toString()));
-				final BufferedReader exprMatBufferedReader = new BufferedReader(exprMatFileReader);
-				final String[] exprMatHeaders = exprMatBufferedReader.readLine().split(",");
+				FileReader exprMatFileReader = new FileReader(new File(cosmxExprMatFileList[0].toString()));
+				BufferedReader exprMatBufferedReader = new BufferedReader(exprMatFileReader);
+				String[] exprMatHeaders = exprMatBufferedReader.readLine().split(",");
 				
 				String exprMatNextRecord;
 		        while ((exprMatNextRecord = exprMatBufferedReader.readLine()) != null) {
-		        	final String[] exprMatNextRecordArray = exprMatNextRecord.split(",");
+		        	String[] exprMatNextRecordArray = exprMatNextRecord.split(",");
 		        	
-		        	final int fov = Integer.parseInt(exprMatNextRecordArray[0].replaceAll("\"", ""));
-		        	final int cellId = Integer.parseInt(exprMatNextRecordArray[1].replaceAll("\"", ""));
+		        	int fov = Integer.parseInt(exprMatNextRecordArray[0].replaceAll("\"", ""));
+		        	int cellId = Integer.parseInt(exprMatNextRecordArray[1].replaceAll("\"", ""));
 		        	
 		        	if(cellToPathObjHashMap.containsKey(String.valueOf(cellId)+"_"+String.valueOf(fov))) {
-		        		final PathObject c = cellToPathObjHashMap.get(String.valueOf(cellId)+"_"+String.valueOf(fov));
-			        	final MeasurementList pathObjMeasList = c.getMeasurementList();
+		        		PathObject c = cellToPathObjHashMap.get(String.valueOf(cellId)+"_"+String.valueOf(fov));
+			        	MeasurementList pathObjMeasList = c.getMeasurementList();
 		        		
 		        		for(int i = 2; i < exprMatNextRecordArray.length; i ++) {
 			        		if(!params.getBooleanParameterValue("inclNegCtrlProbe") && (exprMatHeaders[i].replaceAll("\"", "").startsWith("NegPrb"))) continue;
@@ -323,12 +327,12 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 		        		pathObjMeasList.close();
 		        		
 		        		if(params.getBooleanParameterValue("consolToAnnot") && hierarchy.getRootObject() != c.getParent()) {
-			        		final MeasurementList parentPathObjMeasList = c.getParent().getMeasurementList();
+			        		MeasurementList parentPathObjMeasList = c.getParent().getMeasurementList();
 			        		
 			        		for(int f = 0; f < (exprMatNextRecordArray.length-2); f ++) {	
 			        			if(!params.getBooleanParameterValue("inclNegCtrlProbe") && (exprMatNextRecordArray[f].replaceAll("\"", "").startsWith("NegPrb"))) continue;
 			        			
-			        			final double oldVal = 
+			        			double oldVal = 
 			        					parentPathObjMeasList.containsKey("cosmx:spot_transcript:"+exprMatNextRecordArray[f])? 
 			        					parentPathObjMeasList.get("cosmx:spot_transcript:"+exprMatNextRecordArray[f]): 
 			        					0.0;
@@ -340,6 +344,19 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 			        	}
 			        }
 		        }
+		        
+				if(params.getBooleanParameterValue("removeUnlabeledCells")) {
+					for(PathObject c: pathObjectList) {
+//						if(c.getPathClass() == null) {
+//							c.getParent().removeChildObject(c);
+//						}
+						
+						MeasurementList pathObjMeasList = c.getMeasurementList();
+			        	if(!pathObjMeasList.containsKey("cosmx:cell:cell_id")) {
+			        		c.getParent().removeChildObject(c);
+			        	}
+					}
+				}
 
 		        hierarchy.getSelectionModel().setSelectedObject(null);
 			}
@@ -370,11 +387,10 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 
 	
 	@Override
-	protected void preprocess(final TaskRunner taskRunner, final ImageData<BufferedImage> imageData) {
+	protected void preprocess(TaskRunner taskRunner, ImageData<BufferedImage> imageData) {
 		if(params.getStringParameterValue("cosmxDir").isBlank()) {
 		
-			final File cosmxDir = Dialogs.promptForDirectory("CosMx directory", new File(cosmxAntnCosmxFldrProp.get()));
-			
+			File cosmxDir = FileChoosers.promptForDirectory("CosMx directory", new File(cosmxAntnCosmxFldrProp.get()));
 			if (cosmxDir != null) {
 				cosmxAntnCosmxFldrProp.set(cosmxDir.toString());
 			}
@@ -385,13 +401,13 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 			}
 		}
 		else {
-			cosmxAntnCosmxFldrProp.set(params.getStringParameterValue("xeniumDir"));
+			cosmxAntnCosmxFldrProp.set(params.getStringParameterValue("cosmxDir"));
 		}
 	};
 	
 	
 	@Override
-	public ParameterList getDefaultParameterList(final ImageData<BufferedImage> imageData) {
+	public ParameterList getDefaultParameterList(ImageData<BufferedImage> imageData) {
 		return params;
 	}
 
@@ -419,7 +435,7 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 
 
 	@Override
-	protected Collection<? extends PathObject> getParentObjects(final ImageData<BufferedImage> imageData) {	
+	protected Collection<? extends PathObject> getParentObjects(ImageData<BufferedImage> imageData) {	
 		PathObjectHierarchy hierarchy = imageData.getHierarchy();
 		if (hierarchy.getTMAGrid() == null)
 			return Collections.singleton(hierarchy.getRootObject());

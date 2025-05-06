@@ -23,64 +23,58 @@
 
 package qupath.ext.qust;
 
-
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Shape;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.io.BufferedReader;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.imgscalr.Scalr;
 import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
-
+import hdf.hdf5lib.HDF5Constants;
+import hdf.hdf5lib.H5;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.StringProperty;
-import qupath.ext.qust.ObjectClassificationImageAcquisition.DetectedObjectImageSampling;
 import qupath.lib.common.GeneralTools;
-import qupath.lib.gui.dialogs.Dialogs;
+import qupath.fx.dialogs.Dialogs;
+import qupath.fx.dialogs.FileChoosers;
+import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.objects.PathAnnotationObject;
 import qupath.lib.objects.PathObject;
+import qupath.lib.objects.PathRootObject;
 import qupath.lib.objects.TMACoreObject;
-import qupath.lib.objects.classes.PathClass;
-import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 import qupath.lib.plugins.AbstractInteractivePlugin;
 import qupath.lib.plugins.TaskRunner;
 import qupath.lib.plugins.parameters.ParameterList;
+import qupath.lib.projects.Project;
+import qupath.lib.projects.ProjectImageEntry;
 import qupath.lib.regions.RegionRequest;
 import qupath.lib.roi.ROIs;
 import qupath.lib.roi.interfaces.ROI;
@@ -94,18 +88,17 @@ import qupath.lib.roi.interfaces.ROI;
 public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugin<BufferedImage> {
 	protected static QuSTSetup qustSetup = QuSTSetup.getInstance();
 	
-	private static final Logger logger = LoggerFactory.getLogger(RegionSegmentationImageAcquisition.class);
+	private static Logger logger = LoggerFactory.getLogger(RegionSegmentationImageAcquisition.class);
 	private static String lastResults = null;
 	
-	private static final StringProperty regSegImgAcqDistDirProp = PathPrefs.createPersistentPreference("regSegImgAcqDistDir", "");
-//	private static final BooleanProperty regSegImgAcqDontRescalingProp = PathPrefs.createPersistentPreference("regSegImgAcqDontRescaling", true);
-//	private static final BooleanProperty regSegImgAcqNormalizationProp = PathPrefs.createPersistentPreference("regSegImgAcqNormalization", true);
-	private static final DoubleProperty regSegImgAcqMppProp = PathPrefs.createPersistentPreference("regSegImgAcqMpp",0.21233);
-	private static final IntegerProperty regSegImgAcqSamplingSizeProp = PathPrefs.createPersistentPreference("regSegImgAcqSamplingSize", 224);
-	private static final IntegerProperty regSegImgAcqSamplingStrideProp = PathPrefs.createPersistentPreference("regSegImgAcqSamplingStride", 112);
-	private static final BooleanProperty regSegImgAcqAllSamplesProp = PathPrefs.createPersistentPreference("regSegImgAcqAllSamplesProp", true);
-	private static final IntegerProperty regSegImgAcqSamplingNumProp = PathPrefs.createPersistentPreference("regSegImgAcqSamplingNum", 0);
-//	private static final StringProperty regSegImgAcqSamplingFmtProp = PathPrefs.createPersistentPreference("regSegImgAcqSamplingFmt", "png");
+	private static StringProperty regSegImgAcqDistProp = PathPrefs.createPersistentPreference("regSegImgAcqDist", "");
+//	private static BooleanProperty regSegImgAcqDontRescalingProp = PathPrefs.createPersistentPreference("regSegImgAcqDontRescaling", true);
+//	private static BooleanProperty regSegImgAcqNormalizationProp = PathPrefs.createPersistentPreference("regSegImgAcqNormalization", true);
+	private static DoubleProperty regSegImgAcqMppProp = PathPrefs.createPersistentPreference("regSegImgAcqMpp",0.21233);
+	private static IntegerProperty regSegImgAcqSamplingSizeProp = PathPrefs.createPersistentPreference("regSegImgAcqSamplingSize", 224);
+	private static IntegerProperty regSegImgAcqSamplingStrideProp = PathPrefs.createPersistentPreference("regSegImgAcqSamplingStride", 112);
+	private static BooleanProperty regSegImgAcqAllSamplesProp = PathPrefs.createPersistentPreference("regSegImgAcqAllSamplesProp", true);
+	private static IntegerProperty regSegImgAcqSamplingNumProp = PathPrefs.createPersistentPreference("regSegImgAcqSamplingNum", 0);
 	
 	private static ParameterList params;
 	
@@ -114,8 +107,9 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 	 */
 	public RegionSegmentationImageAcquisition() {
 		params = new ParameterList()
-			.addStringParameter("distFolder", "Distination Folder", regSegImgAcqDistDirProp.get(), "Distination Folder")
-			.addEmptyParameter("").addEmptyParameter("Reampling using...")
+			.addStringParameter("dist", "Distination", regSegImgAcqDistProp.get(), "Distination Folder or File")
+			.addChoiceParameter("format", "Format ", "Folder", Arrays.asList("Folder", "WebDataset", "HDF5"), "Choose which format to use")
+        	.addEmptyParameter("").addEmptyParameter("Reampling using...")
 			.addBooleanParameter("normalization", "Normalization (default: yes)", true, "Normalization (default: no)")
 			.addBooleanParameter("dontResampling", "Do not rescaling image (default: yes)", true, "Do not rescaling image (default: yes)")
 			.addEmptyParameter("...or...")
@@ -126,13 +120,12 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 			.addBooleanParameter("allSamples", "Include all samples (default: yes)", regSegImgAcqAllSamplesProp.get(), "Include all samples? (default: yes)")
 			.addEmptyParameter("...or...")
 			.addIntParameter("samplingNum", "Maximal Sampling Number", regSegImgAcqSamplingNumProp.get(), "objects(s)", "Maximal Sampling Number")
-//			.addStringParameter("format", "Image File Format (e.g., png, tiff, etc.) ", qustSetup.getImageFileFormat(), "Image File Format")
 			;
 	}
 
 	
 	@Override
-	public boolean runPlugin(final TaskRunner taskRunner, final ImageData<BufferedImage> imageData, final String arg) {
+	public boolean runPlugin(TaskRunner taskRunner, ImageData<BufferedImage> imageData, String arg) {
 		boolean success = super.runPlugin(taskRunner, imageData, arg);
 		imageData.getHierarchy().fireHierarchyChangedEvent(this);
 		return success;
@@ -140,8 +133,8 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 	
 	
 	@Override
-	protected void addRunnableTasks(final ImageData<BufferedImage> imageData, final PathObject parentObject, List<Runnable> tasks) {
-		final ParameterList params = getParameterList(imageData);
+	protected void addRunnableTasks(ImageData<BufferedImage> imageData, PathObject parentObject, List<Runnable> tasks) {
+		ParameterList params = getParameterList(imageData);
 		
 		tasks.add(new RegionSegmentationRunnable(imageData, parentObject, params));
 	}
@@ -151,404 +144,543 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 		private ImageData<BufferedImage> imageData;
 		private ParameterList params;
 		private PathObject parentObject;
-		
-		public RegionSegmentationRunnable(final ImageData<BufferedImage> imageData, final PathObject parentObject, final ParameterList params) {
+		private MacenkoStainingNormalizer normalizer = new MacenkoStainingNormalizer();
+
+		public RegionSegmentationRunnable(ImageData<BufferedImage> imageData, PathObject parentObject, ParameterList params) {
 			this.imageData = imageData;
 			this.parentObject = parentObject;
 			this.params = params;
 		}
 
+		
 		@Override
 		public void run() {
-			try {
-				if (parentObject instanceof PathAnnotationObject) {
-//					regSegImgAcqDontRescalingProp.set(params.getBooleanParameterValue("dontResampling"));
-//					regSegImgAcqNormalizationProp.set(params.getBooleanParameterValue("normalization"));
-					regSegImgAcqMppProp.set(params.getDoubleParameterValue("mpp"));
-					regSegImgAcqSamplingSizeProp.set(params.getIntParameterValue("samplingSize"));
-					regSegImgAcqSamplingStrideProp.set(params.getIntParameterValue("samplingStride"));
-					regSegImgAcqAllSamplesProp.set(params.getBooleanParameterValue("allSamples"));
-					regSegImgAcqSamplingNumProp.set(params.getIntParameterValue("samplingNum"));
-//					regSegImgAcqSamplingFmtProp.set(params.getStringParameterValue("format"));
-					
-					final ImageServer<BufferedImage> server = (ImageServer<BufferedImage>) imageData.getServer();
-					final String serverPath = server.getPath();
-					
-					final double imageMpp = server.getPixelCalibration().getAveragedPixelSizeMicrons();
-					final double scalingFactor = params.getBooleanParameterValue("dontResampling") ? 1.0: regSegImgAcqMppProp.get() / imageMpp;
-					final int featureSize = (int)(0.5 + scalingFactor * regSegImgAcqSamplingSizeProp.get());
-					final int stride = (int)(0.5 + scalingFactor * regSegImgAcqSamplingStrideProp.get());
-					
-					final int segmentationWidth = 1+(int)((double)(server.getWidth()-featureSize)/(double)stride);
-					final int segmentationHeight = 1+(int)((double)(server.getHeight()-featureSize)/(double)stride);
-					
-					final List<RegionRequest> allRegionList = Collections.synchronizedList(new ArrayList<RegionRequest>());
-					final List<RegionRequest> availRegionList = Collections.synchronizedList(new ArrayList<RegionRequest>());
-
-					try {
-						IntStream.range(0, segmentationHeight).parallel().forEach(y -> {
-			//			for(int y = 0; y < segmentationHeight; y ++) {
-							IntStream.range(0, segmentationWidth).parallel().forEach(x -> {
-			//				for(int x = 0; x < segmentationWidth; x ++) {
-								final int alignedY = stride*y;
-								final int alignedX = stride*x;
-								
-								synchronized(allRegionList) {
-									allRegionList.add(RegionRequest.createInstance(serverPath, 1.0, alignedX, alignedY, featureSize, featureSize));
-								}
-							});
-			//				}
-						});
-			//			}
-			
-						final AtomicBoolean success = new AtomicBoolean(true);
-						
-						final ROI annotObjRoi = parentObject.getROI();
-						final Geometry annotObjRoiGeom = annotObjRoi.getGeometry();
-						
-						allRegionList.parallelStream().forEach(r -> {
-							if(success.get()) {
-								final ROI regionRoi = ROIs.createRectangleROI(r);
-								final Geometry intersect = annotObjRoiGeom.intersection(regionRoi.getGeometry());
-								if(!intersect.isEmpty()) {
-									try {	
-										synchronized(availRegionList) {
-											availRegionList.add(r);
-										}
-									}
-							        catch (Exception e) {
-							        	success.set(false);
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-								}
-							}
-						});
-						
-						assert success.get(): "Region segmentation data preparation failed!";
-						
-						final int samplingNum = regSegImgAcqAllSamplesProp.get()? availRegionList.size(): regSegImgAcqSamplingNumProp.get() <= availRegionList.size()? regSegImgAcqSamplingNumProp.get(): availRegionList.size();
-							
-						availRegionList.subList(0, samplingNum).parallelStream().forEach(r -> {
-							try {	
-								final BufferedImage imgContent = (BufferedImage) server.readRegion(r);
-								final BufferedImage imgBuffer = new BufferedImage(imgContent.getWidth(), imgContent.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-								imgBuffer.getGraphics().drawImage(imgContent, 0, 0, null);
-								final BufferedImage imgSampled = params.getBooleanParameterValue("dontResampling") ? imgBuffer: Scalr.resize(imgBuffer, regSegImgAcqSamplingSizeProp.get());
-								final String filename = parentObject.getID().toString()+"."+Integer.toString(r.getX())+"-"+Integer.toString(r.getY());
-								final String fileExt = qustSetup.getImageFileFormat().strip().charAt(0) == '.' ? qustSetup.getImageFileFormat().substring(1) : qustSetup.getImageFileFormat();
-								final Path imageFilePath = Paths.get(Paths.get(regSegImgAcqDistDirProp.get()).toString(), filename + "." + fileExt);
-								final File imageFile = new File(imageFilePath.toString());
-								ImageIO.write(imgSampled, fileExt, imageFile);
-							}
-					        catch (Exception e) {
-					        	success.set(false);
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						});
-						
-						assert success.get(): "Region segmentation data preparation failed!";
-					}
-				    catch (Exception e) {
-						// TODO Auto-generated catch block
-				    	logger.warn(e.toString());
-						e.printStackTrace();
-					}
-				    finally {
-				    	allRegionList.clear();
-				    	availRegionList.clear();
-				    	
-					    System.gc();
-				    }
-				}
-				else {
-					throw new IOException("The chosen object is not annotations.");
-				}
-			} catch (IOException e) {
-				logger.error("Error processing " + parentObject, e);
-			} finally {
-				parentObject.getMeasurementList().close();
-				imageData = null;
-				params = null;
+			if (!(parentObject instanceof PathAnnotationObject) || !parentObject.hasChildObjects()) {
+				return;
 			}
+			
+			regSegImgAcqMppProp.set(params.getDoubleParameterValue("mpp"));
+			regSegImgAcqSamplingSizeProp.set(params.getIntParameterValue("samplingSize"));
+			regSegImgAcqSamplingStrideProp.set(params.getIntParameterValue("samplingStride"));
+			regSegImgAcqAllSamplesProp.set(params.getBooleanParameterValue("allSamples"));
+			regSegImgAcqSamplingNumProp.set(params.getIntParameterValue("samplingNum"));
+			
+			ImageServer<BufferedImage> server = (ImageServer<BufferedImage>) imageData.getServer();
+			String serverPath = server.getPath();
+			
+			double imageMpp = server.getPixelCalibration().getAveragedPixelSizeMicrons();
+			double scalingFactor = params.getBooleanParameterValue("dontResampling") ? 1.0: regSegImgAcqMppProp.get() / imageMpp;
+			int featureSize = (int)(0.5 + scalingFactor * regSegImgAcqSamplingSizeProp.get());
+			int stride = (int)(0.5 + scalingFactor * regSegImgAcqSamplingStrideProp.get());
+			
+			int segmentationWidth = 1+(int)((double)(server.getWidth()-featureSize)/(double)stride);
+			int segmentationHeight = 1+(int)((double)(server.getHeight()-featureSize)/(double)stride);
+			
+			List<RegionRequest> allRegionList = Collections.synchronizedList(new ArrayList<RegionRequest>());
+			List<RegionRequest> availRegionList = Collections.synchronizedList(new ArrayList<RegionRequest>());
+
+			AtomicBoolean success = new AtomicBoolean(true);
+			
+			IntStream.range(0, segmentationHeight).parallel().forEach(y -> {
+				if (!success.get()) return;
+				
+				IntStream.range(0, segmentationWidth).parallel().forEach(x -> {
+					if (!success.get()) return;
+					
+					int alignedY = stride*y;
+					int alignedX = stride*x;
+					try {
+						synchronized(allRegionList) {
+							allRegionList.add(RegionRequest.createInstance(serverPath, 1.0, alignedX, alignedY, featureSize, featureSize));
+						}
+					} catch (Exception e) {
+			        	e.printStackTrace();
+			        	success.set(false);
+						return;
+					}
+				});
+			});
+
+			if (!success.get()) {
+				logger.error("Region segmentation data preparation failed!");
+				return;
+			}
+			
+			ROI annotObjRoi = parentObject.getROI();
+			Geometry annotObjRoiGeom = annotObjRoi.getGeometry();
+			
+			allRegionList.parallelStream().forEach(r -> {
+				ROI regionRoi = ROIs.createRectangleROI(r);
+				Geometry intersect = annotObjRoiGeom.intersection(regionRoi.getGeometry());
+				
+				if (!intersect.isEmpty()) 
+					availRegionList.add(r);
+			});
+			
+			Collections.shuffle(availRegionList);
+
+			QuSTSetup QuSTOptions = QuSTSetup.getInstance();
+			int normalizationSampleSize = QuSTOptions.getNormalizationSampleSize();						
+			
+			if (availRegionList.size() < normalizationSampleSize) {
+				logger.error("Object number is smaller than the required number for normalization");
+				return;
+			}
+			List<RegionRequest> normalizationSamplingRegionList = Collections
+					.synchronizedList(availRegionList.subList(0, normalizationSampleSize));						
+			
+			List<BufferedImage> normalizationSamplingImageList = Collections.synchronizedList(new ArrayList<>());
+			
+			normalizationSamplingRegionList.stream().parallel().forEach(r -> {
+				if (!success.get()) return;
+				
+				BufferedImage imgContent = null;
+				
+				try {	
+					imgContent = (BufferedImage) server.readRegion(r);
+				}
+		        catch (Exception e) {
+		        	e.printStackTrace();
+		        	success.set(false);
+		        	return;
+				}
+				
+				BufferedImage imgBuf = new BufferedImage(imgContent.getWidth(), imgContent.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+				imgBuf.getGraphics().drawImage(imgContent, 0, 0, null);
+				normalizationSamplingImageList.add(imgBuf);
+			});
+			
+			if (!success.get()) {
+				logger.error("Region segmentation data preparation failed!");
+				return;
+			}
+			
+			BufferedImage normalizationSamplingImage = normalizer.concatBufferedImages(normalizationSamplingImageList);
+			final double[][] est_W = normalizer.reorderStainsByCosineSimilarity(normalizer.getStainMatrix(normalizationSamplingImage, normalizer.OD_threshold, 1), normalizer.targetStainReferenceMatrix);
+			
+			int samplingNum = params.getIntParameterValue("samplingNum") == 0
+					|| params.getIntParameterValue("samplingNum") > availRegionList.size() 
+					|| params.getBooleanParameterValue("allSamples") 
+					? availRegionList.size()
+							: params.getIntParameterValue("samplingNum");
+					
+			List<RegionRequest> samplingRegionList = Collections
+					.synchronizedList(availRegionList.subList(0, samplingNum));
+			
+			String imgFmt = qustSetup.getImageFileFormat().strip();
+        	String fileExt = imgFmt.charAt(0) == '.' ? imgFmt.substring(1) : imgFmt;					
+			
+			String saveLocation = Paths.get(regSegImgAcqDistProp.get()).toString();
+			String saveType = (String)params.getChoiceParameterValue("format");
+
+			if(saveType == "Folder") {
+				new File(saveLocation).mkdirs();
+				
+				samplingRegionList.subList(0, samplingNum).parallelStream().forEach(r -> {
+					if (!success.get()) return;
+					
+					try {	
+						BufferedImage imgContent = (BufferedImage) server.readRegion(r);
+						BufferedImage imgBuffer = new BufferedImage(imgContent.getWidth(), imgContent.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+						imgBuffer.getGraphics().drawImage(imgContent, 0, 0, null);
+						
+						BufferedImage outputImgBuf = params.getBooleanParameterValue("normalization")? 
+								normalizer.normalizeToReferenceImage(imgBuffer, est_W, normalizer.targetStainReferenceMatrix): imgBuffer;
+						
+						BufferedImage imgSampled = params.getBooleanParameterValue("dontResampling") ? outputImgBuf
+								: Scalr.resize(outputImgBuf, params.getIntParameterValue("samplingSize"));
+						
+						String filename = parentObject.getID().toString()+"."+Integer.toString(r.getX())+"-"+Integer.toString(r.getY());
+						Path imageFilePath = Paths.get(saveLocation, filename + "." + fileExt);
+						File imageFile = new File(imageFilePath.toString());
+						ImageIO.write(imgSampled, fileExt, imageFile);
+					}
+			        catch (Exception e) {
+			        	e.printStackTrace();
+			        	success.set(false);
+			        	return;
+					}
+				});
+			} else if (saveType == "WebDataset") {
+				Iterator<RegionRequest> samplingRegionRequestIterator = samplingRegionList.iterator();
+				
+				class ImageLabelPair {
+				   String idx;
+				   byte[] imgBytes;
+				   byte[] labelBytes;
+				   ImageLabelPair(byte[] imgBytes, byte[] labelBytes) {
+				       this.imgBytes = imgBytes;
+				       this.labelBytes = labelBytes;
+				   }
+				}
+					
+				int batchSize = 1000;
+				int batchNum = 0;
+
+				// Write this batch to tar
+        		try (TarArchiveOutputStream tarOut = new TarArchiveOutputStream(
+        				new BufferedOutputStream(new FileOutputStream(saveLocation)))) {
+        		
+		        	while (samplingRegionRequestIterator.hasNext()) {
+		        		List<BufferedImage> imageBatch = new ArrayList<>(batchSize);
+		        		List<String> labelBatch = new ArrayList<>(batchSize);
+		        		// Load next batch (avoiding OOM)
+						
+		        		for (int i = 0; i < batchSize && samplingRegionRequestIterator.hasNext(); i++) {
+		        			RegionRequest r = samplingRegionRequestIterator.next();
+		        			BufferedImage imgContent = (BufferedImage) server.readRegion(r);
+							BufferedImage imgBuffer = new BufferedImage(imgContent.getWidth(), imgContent.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+							imgBuffer.getGraphics().drawImage(imgContent, 0, 0, null);
+							
+							BufferedImage outputImgBuf = params.getBooleanParameterValue("normalization")? 
+									normalizer.normalizeToReferenceImage(imgBuffer, est_W, normalizer.targetStainReferenceMatrix): imgBuffer;
+							
+							BufferedImage imgSampled = params.getBooleanParameterValue("dontResampling") ? outputImgBuf
+									: Scalr.resize(outputImgBuf, params.getIntParameterValue("samplingSize"));
+							
+							imageBatch.add(imgSampled);
+		        			labelBatch.add(parentObject.getID().toString());
+		        		}
+		        		if (imageBatch.isEmpty()) break;
+			           
+		        		// Parallel encoding
+		        		List<ImageLabelPair> encodedBatch = IntStream.range(0, imageBatch.size()).parallel().mapToObj(i -> {
+		        			try {
+		        				// Encode image
+			                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			                    ImageIO.write(imageBatch.get(i), fileExt, baos);
+			                    byte[] imgBytes = baos.toByteArray();
+			                    baos.close();
+			                    // Encode label
+			                    byte[] labelBytes = labelBatch.get(i) != null ?
+			                    		labelBatch.get(i).getBytes(StandardCharsets.UTF_8) : null;
+			                    return new ImageLabelPair(imgBytes, labelBytes);
+			                } catch (Exception e) {
+			                	throw new RuntimeException(e);
+			                }
+		        		})
+		        		.collect(Collectors.toList());
+					
+	        			for (ImageLabelPair item : encodedBatch) {
+	        				// Write image
+	        				TarArchiveEntry imgEntry = new TarArchiveEntry(item.idx + '.' + fileExt);
+	        				imgEntry.setSize(item.imgBytes.length);
+	        				tarOut.putArchiveEntry(imgEntry);
+	        				tarOut.write(item.imgBytes);
+	        				tarOut.closeArchiveEntry();
+	        				// Write label
+	        				if (item.labelBytes != null) {
+	        					TarArchiveEntry labelEntry = new TarArchiveEntry(item.idx + ".cls");
+	        					labelEntry.setSize(item.labelBytes.length);
+	        					tarOut.putArchiveEntry(labelEntry);
+	        					tarOut.write(item.labelBytes);
+	        					tarOut.closeArchiveEntry();
+	        				}
+	        			}
+	        			
+		        		logger.info("Wrote batch %d to %s%n", batchNum, saveLocation);
+		        		batchNum++;
+		        		// Release memory for next batch
+		        		imageBatch.clear();
+		        		labelBatch.clear();
+		        		encodedBatch.clear();
+		        		System.gc(); // optional, may help with memory	        			
+	        		}
+		        } catch (Exception e) {
+					e.printStackTrace();
+					logger.error(e.toString());
+					return;
+				}
+				
+				if (!success.get()) {
+					logger.error("Something went wrong");
+					return;
+				}
+				
+			} else if (saveType == "HDF5") {
+				String osName = System.getProperty("os.name").toLowerCase();
+				
+				String libResourcePath = "/native/libhdf5_java.so";
+				
+				if (osName.contains("nix") || osName.contains("nux")) {
+					libResourcePath = "/native/linux/libhdf5_java.so";
+				} else {
+					logger.error("Unsupported OS: "+ osName);
+					return;
+				}
+				
+				InputStream in = RegionSegmentationImageAcquisition.class.getResourceAsStream(libResourcePath);
+				if (in == null) {
+					logger.error("Native library not found: "+libResourcePath);
+					return;
+				}
+				File temp = null;
+				try {
+					temp = File.createTempFile("libhdf5_java", ".so");
+				} catch (IOException e) {
+					e.printStackTrace();
+					logger.error(e.toString());
+					return;
+				}
+				
+				temp.deleteOnExit();
+				
+				try (OutputStream out = new FileOutputStream(temp)) {
+					byte[] buf = new byte[4096];
+					int len;
+					while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
+				} catch (Exception e) {
+					e.printStackTrace();
+					logger.error(e.toString());
+					return;
+				}
+				
+				System.load(temp.getAbsolutePath());
+				
+				int StrLenCnt = 0;
+				
+				for(RegionRequest r: samplingRegionList) {
+					String batchIds = parentObject.getID().toString()+"."+Integer.toString(r.getX())+"-"+Integer.toString(r.getY());
+					String batchLabels = parentObject.getID().toString();
+					byte[] batchIdUtf = batchIds.getBytes(StandardCharsets.UTF_8);
+					byte[] batchLabelUtf = batchLabels.getBytes(StandardCharsets.UTF_8);
+					 
+					if (StrLenCnt < batchIdUtf.length) StrLenCnt = batchIdUtf.length;
+					if (StrLenCnt < batchLabelUtf.length) StrLenCnt = batchLabelUtf.length;
+				}
+							
+				final int maxStrLen = StrLenCnt;			
+				int batchSize = 1000;
+				
+				// Create HDF5 file
+				long file_id = H5.H5Fcreate(saveLocation.toString(), HDF5Constants.H5F_ACC_TRUNC,
+						HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+				// Create image dataset
+				long[] chunk_dims = {batchSize, featureSize, featureSize, 3};
+				long[] max_dims = {HDF5Constants.H5S_UNLIMITED, featureSize, featureSize, 3};
+				long[] init_dims = {0, featureSize, featureSize, 3};
+				long dataspace_id = H5.H5Screate_simple(4, init_dims, max_dims);
+				long plist_id = H5.H5Pcreate(HDF5Constants.H5P_DATASET_CREATE);
+				H5.H5Pset_chunk(plist_id, 4, chunk_dims);
+				H5.H5Pset_deflate(plist_id, 6);
+				long image_dtype = HDF5Constants.H5T_NATIVE_UINT8;
+				long image_dset_id = H5.H5Dcreate(file_id, "images", image_dtype,
+						dataspace_id, HDF5Constants.H5P_DEFAULT, plist_id, HDF5Constants.H5P_DEFAULT);
+				// String type (variable length UTF-8)
+				long str_type = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
+				H5.H5Tset_size(str_type, maxStrLen);
+				H5.H5Tset_strpad(str_type, HDF5Constants.H5T_STR_NULLTERM);
+				H5.H5Tset_cset(str_type, HDF5Constants.H5T_CSET_UTF8);
+				long[] str_init = {0};
+				long[] str_max = {HDF5Constants.H5S_UNLIMITED};
+				long str_space = H5.H5Screate_simple(1, str_init, str_max);
+				long str_plist = H5.H5Pcreate(HDF5Constants.H5P_DATASET_CREATE);
+				H5.H5Pset_chunk(str_plist, 1, new long[]{batchSize});
+				long id_dset = H5.H5Dcreate(file_id, "ids", str_type,
+						str_space, HDF5Constants.H5P_DEFAULT, str_plist, HDF5Constants.H5P_DEFAULT);
+				long label_dset = H5.H5Dcreate(file_id, "labels", str_type,
+						str_space, HDF5Constants.H5P_DEFAULT, str_plist, HDF5Constants.H5P_DEFAULT);
+				// Batch processing
+				int offset = 0;
+				while (offset < samplingRegionList.size()) {
+					int end = Math.min(offset + batchSize, samplingRegionList.size());
+					int B = end - offset;
+					byte[][][][] batchImageBuf = new byte[B][featureSize][featureSize][3];
+					byte[][] batchIdBuf = new byte[B][maxStrLen];
+					byte[][] batchLabelBuf = new byte[B][maxStrLen];
+					final int final_offset = offset;
+					IntStream.range(0, B).parallel().forEach(i -> {
+						if (!success.get()) return;
+						
+						RegionRequest r = samplingRegionList.get(final_offset + i);
+						BufferedImage imgContent = null;
+						
+						try {
+							imgContent = (BufferedImage) server.readRegion(r);
+						} catch (IOException e) {
+							e.printStackTrace();
+							success.set(false);
+							return;
+						}
+						
+						BufferedImage imgBuf = new BufferedImage(imgContent.getWidth(), imgContent.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+						imgBuf.getGraphics().drawImage(imgContent, 0, 0, null);
+					
+						BufferedImage outputImgBuf = params.getBooleanParameterValue("normalization")? 
+							   	normalizer.normalizeToReferenceImage(imgBuf, est_W, normalizer.targetStainReferenceMatrix): imgBuf;
+					
+					   	BufferedImage imgSampled = params.getBooleanParameterValue("dontResampling") ? 
+					   			outputImgBuf: Scalr.resize(outputImgBuf, params.getIntParameterValue("samplingSize"));
+						
+						for (int y = 0; y < featureSize; y++) {
+							for (int x = 0; x < featureSize; x++) {
+								int rgb = imgSampled.getRGB(x, y);
+								batchImageBuf[i][y][x][0] = (byte) ((rgb >> 16) & 0xFF);
+								batchImageBuf[i][y][x][1] = (byte) ((rgb >> 8) & 0xFF);
+								batchImageBuf[i][y][x][2] = (byte) (rgb & 0xFF);
+							}
+						}
+						
+						String batchIdStr = parentObject.getID().toString();
+						byte[] batchIdUtfBytes = batchIdStr.getBytes(StandardCharsets.UTF_8);
+						int batchIdLen = Math.min(batchIdUtfBytes.length, maxStrLen - 1);
+						System.arraycopy(batchIdUtfBytes, 0, batchIdBuf[i], 0, batchIdLen);
+						batchIdBuf[i][batchIdLen] = 0;
+						
+						String batchLabelStr = parentObject.getID().toString()+"."+Integer.toString(r.getX())+"-"+Integer.toString(r.getY());
+						byte[] batchLabelUtfBytes = batchLabelStr.getBytes(StandardCharsets.UTF_8);
+						int batchLabelLen = Math.min(batchLabelUtfBytes.length, maxStrLen - 1);
+						System.arraycopy(batchLabelUtfBytes, 0, batchLabelBuf[i], 0, batchLabelLen);
+						batchLabelBuf[i][batchLabelLen] = 0;
+					});
+					
+					if (!success.get()) {
+						logger.error("Region segmentation data preparation failed!");
+						return;
+					}
+					
+					long newTotal = offset + B;
+					// Extend datasets
+					H5.H5Dset_extent(image_dset_id, new long[]{newTotal, featureSize, featureSize, 3});
+					H5.H5Dset_extent(id_dset, new long[]{newTotal});
+					H5.H5Dset_extent(label_dset, new long[]{newTotal});
+					// Write image batch
+					long img_space = H5.H5Dget_space(image_dset_id);
+					H5.H5Sselect_hyperslab(img_space, HDF5Constants.H5S_SELECT_SET,
+							new long[]{offset, 0, 0, 0}, null, new long[]{B, featureSize, featureSize, 3}, null);
+					long img_mem = H5.H5Screate_simple(4, new long[]{B, featureSize, featureSize, 3}, null);
+					H5.H5Dwrite(image_dset_id, image_dtype, img_mem, img_space,
+							HDF5Constants.H5P_DEFAULT, batchImageBuf);
+					// Write id batch
+					long id_space = H5.H5Dget_space(id_dset);
+					H5.H5Sselect_hyperslab(id_space, HDF5Constants.H5S_SELECT_SET,
+							new long[]{offset}, null, new long[]{B}, null);
+					long id_mem = H5.H5Screate_simple(1, new long[]{B}, null);
+					H5.H5Dwrite(id_dset, str_type, id_mem, id_space, HDF5Constants.H5P_DEFAULT, batchIdBuf);
+					// Write label batch
+					long label_space = H5.H5Dget_space(label_dset);
+					H5.H5Sselect_hyperslab(label_space, HDF5Constants.H5S_SELECT_SET,
+							new long[]{offset}, null, new long[]{B}, null);
+					long label_mem = H5.H5Screate_simple(1, new long[]{B}, null);
+					H5.H5Dwrite(label_dset, str_type, label_mem, label_space, HDF5Constants.H5P_DEFAULT, batchLabelBuf);
+					offset += B;
+				}
+				// Cleanup
+				H5.H5Dclose(image_dset_id);
+				H5.H5Dclose(id_dset);
+				H5.H5Dclose(label_dset);
+				H5.H5Fclose(file_id);	
+			} 
 		}
-		
 		
 		@Override
 		public String toString() {
-			// TODO: Give a better toString()
-			return "stardist cell nuclei detection";
+			return "Region segmentation to dataset";
 		}
 	}
 
-	
-	private double[] estimate_w(ImageData<BufferedImage> imageData) {
-		final ImageServer<BufferedImage> server = (ImageServer<BufferedImage>) imageData.getServer();
-		final String serverPath = server.getPath();			
-		final int segmentationWidth = (int)((double)(server.getWidth())/(double)regSegImgAcqSamplingSizeProp.get());
-		final int segmentationHeight = (int)((double)(server.getHeight())/(double)regSegImgAcqSamplingSizeProp.get());
-		double[] W = null;
-		
-//		final String timeStamp = Long.toString(System.nanoTime());
-		final String uuid = UUID.randomUUID().toString().replace("-", "");
-		
-		final AtomicBoolean success = new AtomicBoolean(true);
-		
-		final List<RegionRequest> segmentationRequestList = Collections.synchronizedList(new ArrayList<RegionRequest>());
-		final List<RegionRequest> availableRequestList = Collections.synchronizedList(new ArrayList<RegionRequest>());
-		
-		try {	
-			final Path resultPath = Files.createTempFile("qust-estimate_w-result-" + uuid + "-", ".json");
-	        final String resultPathString = resultPath.toAbsolutePath().toString();
-	        resultPath.toFile().deleteOnExit();
+	@Override
+	protected void preprocess(TaskRunner taskRunner, ImageData<BufferedImage> imageData) {
 
-	        final Path imageSetPath = Files.createTempDirectory("qust-estimate_w-imageset-" + uuid + "-");
-			final String imageSetPathString = imageSetPath.toAbsolutePath().toString();
-	        imageSetPath.toFile().deleteOnExit();
-        
-			IntStream.range(0, segmentationHeight).parallel().forEach(y -> {
-				// for(int y = 0; y < server.getHeight(); y += samplingFeatureStride) {
-				IntStream.range(0, segmentationWidth).parallel().forEach(x -> {
-				// for(int x = 0; x < server.getWidth(); x += samplingFeatureStride) {
-					
-					final int aligned_y = regSegImgAcqSamplingSizeProp.get()*y;
-					final int aligned_x = regSegImgAcqSamplingSizeProp.get()*x;
-					
-					synchronized(availableRequestList) {
-						availableRequestList.add(RegionRequest.createInstance(serverPath, 1.0, aligned_x, aligned_y, regSegImgAcqSamplingSizeProp.get(), regSegImgAcqSamplingSizeProp.get()));
-					}
-				});
-				// }
-			});
-			// }
-			
-			final PathObjectHierarchy hierarchy = imageData.getHierarchy();
-			final List<PathObject> RoiRegions = hierarchy.getFlattenedObjectList(null).stream()
-		    		.filter(p->p.isAnnotation() && p.hasROI())
-		    		.collect(Collectors.toList());
-		 
-		    // Get all the represented classifications
-			final Set<PathClass> pathClasses = new HashSet<PathClass>();
-		    RoiRegions.forEach(r -> pathClasses.add(r.getPathClass()));
-		    final PathClass[] pathClassArray = pathClasses.toArray(new PathClass[pathClasses.size()]);
-		    final Map<PathClass, Color> pathClassColors = new HashMap<PathClass, Color>();			 
-		    IntStream.range(1, pathClasses.size()).forEach(i -> pathClassColors.put(pathClassArray[i], new Color(i, i, i)));
-		    
-		    assert availableRequestList.size() > 1000: "Number of available region samples is too small."; 
-		    
-		    Collections.shuffle(availableRequestList);
-		    final List<RegionRequest> samplingRequestList = Collections.synchronizedList(availableRequestList.subList(0, 1000));
-		    
-		    samplingRequestList.parallelStream().forEach(request-> {	
-			// for(var request: availableRequestList) { 
-				if(success.get()) {
-					try {				    		
-			    		final BufferedImage img = (BufferedImage)server.readRegion(request);
-			    				    		
-			    		final int width = img.getWidth();
-			    		final int height = img.getHeight();
-			    		final int x = request.getX();
-			    		final int y = request.getY();
-	
-					    // Fill the tissues with the appropriate label
-			    		final BufferedImage imgMask = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-			    		final Graphics2D g2d = imgMask.createGraphics();
-					    g2d.setClip(0, 0, width, height);
-					    g2d.scale(1.0, 1.0);
-					    g2d.translate(-x, -y);
+		String fileName = params.getStringParameterValue("dist");
+		String format = (String)params.getChoiceParameterValue("format");
+		File regSegImgAcqDistFp;
+		
+		if(format == "WebDataset") {
+			if (fileName.isBlank()) {
+				QuPathGUI qupath = QuPathGUI.getInstance();
 				
-					    final AtomicInteger count = new AtomicInteger(0);
-					    RoiRegions.forEach(roi_region -> {
-					    // for(var roi_region: RoiRegions) {
-					    	final ROI roi = roi_region.getROI();
-					        if (request.intersects(roi.getBoundsX(), roi.getBoundsY(), roi.getBoundsWidth(), roi.getBoundsHeight())) {
-					        	final Shape shape = roi.getShape();
-					        	final Color color = pathClassColors.get(roi_region.getPathClass());
-				    	        g2d.setColor(color);
-				    	        g2d.fill(shape);
-				    	        count.incrementAndGet();			        
-					        }
-					    });
-					    // }
-					    
-					    g2d.dispose();
-					    
-					    if (count.get() > 0) {
-					        // Extract the bytes from the image
-					    	final DataBufferByte buf = (DataBufferByte)imgMask.getRaster().getDataBuffer();
-					    	final byte[] bytes = buf.getData();
-					    	
-					    	final List<Byte> byteList = Arrays.asList(ArrayUtils.toObject(bytes));
-					        // Check if we actually have any non-zero pixels, if necessary -
-					        // we might not if the tissue bounding box intersected the region, but the tissue itself does not
-					    	
-					    	if(byteList.stream().filter(b -> b != 0).count() > 0) {
-					    		synchronized(segmentationRequestList) {
-					    			segmentationRequestList.add(request);
-					    		}
-					        }
-					    }	
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						success.set(false);
-						e.printStackTrace();
-					}	
-	    		}
-			});
-			
-			assert success.get(): "Estimate W data preparation failed!";
-							
-			IntStream.range(0, segmentationRequestList.size()).parallel().forEachOrdered(i -> { 
-			// for(var request: segmentationRequestList) {							
-				final RegionRequest request = segmentationRequestList.get(i);
+				// Get default name & output directory
+				Project<BufferedImage> project = qupath.getProject();
+				String defaultName = imageData.getServer().getMetadata().getName();
 				
-		        try {
-		        	// Read image patches from server
-					final BufferedImage readImg = (BufferedImage)server.readRegion(request);
-					final BufferedImage bufImg = new BufferedImage(readImg.getWidth(), readImg.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-					bufImg.getGraphics().drawImage(readImg, 0, 0, null);
-					
-					//  Assign a file name by sequence
-					final String imageFileName = Integer.toString(i)+"."+qustSetup.getImageFileFormat();
-					
-					// Obtain the absolute path of the given image file name (with the predefined temporary imageset path)
-					final Path imageFilePath = Paths.get(imageSetPathString, imageFileName);
-					
-					// Make the image file
-					File imageFile = new File(imageFilePath.toString());
-					ImageIO.write(bufImg, qustSetup.getImageFileFormat(), imageFile);
-		        }
-		        catch (IOException e) {
-		        	success.set(false);
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				if (project != null) {
+					ProjectImageEntry<BufferedImage> entry = project.getEntry(imageData);
+					if (entry != null)
+						defaultName = entry.getImageName();
 				}
-			});
-			// }
-			
-			assert success.get(): "Region segmentation data preparation failed!.";
-	    	
-			// Create command to run
-	        VirtualEnvironmentRunner veRunner;
-	        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
-		
-	        // This is the list of commands after the 'python' call
-	        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
-	        List<String> qustArguments = new ArrayList<>(Arrays.asList("-W", "ignore", script_path, "estimate_w", resultPathString));
-	        
-	        qustArguments.add("--image_path");
-	        qustArguments.add(imageSetPathString.trim().contains(" ")? "\""+imageSetPathString.trim()+"\"": imageSetPathString.trim());
-	        veRunner.setArguments(qustArguments);
-	        
-	        // Finally, we can run the command
-	        final String[] logs = veRunner.runCommand();
-	        for (String log : logs) logger.info(log);
-	        // logger.info("Object segmentation command finished running");
-			
-			final FileReader resultFileReader = new FileReader(new File(resultPathString));
-			final BufferedReader bufferedReader = new BufferedReader(resultFileReader);
-			final Gson gson = new Gson();
-			final JsonObject jsonObject = gson.fromJson(bufferedReader, JsonObject.class);
-			
-			final Boolean ve_success = gson.fromJson(jsonObject.get("success"), new TypeToken<Boolean>(){}.getType());
-			assert ve_success: "classification.py returned failed";
-			
-			final List<Double> ve_result = gson.fromJson(jsonObject.get("W"), new TypeToken<List<Double>>(){}.getType());
-			
-			assert ve_result != null: "classification.py returned null";
-
-        	W = ve_result.stream().mapToDouble(Double::doubleValue).toArray();		        	
-			
-			success.set(true);
-	    }
-	    catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	    finally {
-	    	availableRequestList.clear();
-	    	segmentationRequestList.clear();
-	    	
-		    System.gc();
-	    }
-		
-		return W;
-	}
-	
-	
-	@Override
-	protected void preprocess(final TaskRunner taskRunner, final ImageData<BufferedImage> imageData) {
-		if (params.getStringParameterValue("distFolder").isBlank()) {
-			final File regSegImgAcqDistDirFp = Dialogs.promptForDirectory("Output directory", new File(regSegImgAcqDistDirProp.get()));
-
-			if (regSegImgAcqDistDirFp != null) {
-				regSegImgAcqDistDirProp.set(regSegImgAcqDistDirFp.toString());
-			} else {
-				Dialogs.showErrorMessage("Warning", "No output directory is selected!");
-				lastResults = "No output directory is selected!";
-				logger.warn(lastResults);
+				
+				defaultName = GeneralTools.stripExtension(defaultName);
+				File defaultDirectory = project == null || project.getPath() == null ? null : project.getPath().toFile();
+				while (defaultDirectory != null && !defaultDirectory.isDirectory())
+					defaultDirectory = defaultDirectory.getParentFile();
+				File defaultFile = new File(defaultDirectory, defaultName);
+				
+				regSegImgAcqDistFp = FileChoosers.promptToSaveFile("Export to file", defaultFile,
+						FileChoosers.createExtensionFilter("WebDataset file", ".tar"));
+				
+				if (regSegImgAcqDistFp != null) {
+					regSegImgAcqDistProp.set(regSegImgAcqDistFp.toString());
+				} else {
+					Dialogs.showErrorMessage("Warning", "No output file is selected!");
+					lastResults = "No output file is selected!";
+					logger.warn(lastResults);
+				}
 			}
-		} else {
-			regSegImgAcqDistDirProp.set(params.getStringParameterValue("distFolder"));
-		}
-		
-	}
-
+			else {
+				regSegImgAcqDistProp.set(fileName);
+			}
+		} else if(format == "HDF5") {
+			if (fileName.isBlank()) {
+				QuPathGUI qupath = QuPathGUI.getInstance();
+				
+				// Get default name & output directory
+				Project<BufferedImage> project = qupath.getProject();
+				String defaultName = imageData.getServer().getMetadata().getName();
+				
+				if (project != null) {
+					ProjectImageEntry<BufferedImage> entry = project.getEntry(imageData);
+					if (entry != null)
+						defaultName = entry.getImageName();
+				}
+				
+				defaultName = GeneralTools.stripExtension(defaultName);
+				File defaultDirectory = project == null || project.getPath() == null ? null : project.getPath().toFile();
+				while (defaultDirectory != null && !defaultDirectory.isDirectory())
+					defaultDirectory = defaultDirectory.getParentFile();
+				File defaultFile = new File(defaultDirectory, defaultName);
+				
+				regSegImgAcqDistFp = FileChoosers.promptToSaveFile("Export to file", defaultFile,
+						FileChoosers.createExtensionFilter("HDF5 file", ".h5"));
+				
+				if (regSegImgAcqDistFp != null) {
+					regSegImgAcqDistProp.set(regSegImgAcqDistFp.toString());
+				} else {
+					Dialogs.showErrorMessage("Warning", "No output file is selected!");
+					lastResults = "No output file is selected!";
+					logger.warn(lastResults);
+				}
+			}
+			else {
+				regSegImgAcqDistProp.set(fileName);
+			}
+		} else if(format == "Folder") {
+			if (fileName.isBlank()) {
+				regSegImgAcqDistFp = FileChoosers.promptForDirectory("Output directory", new File(regSegImgAcqDistProp.get()));
 	
-	@Override
-	protected void postprocess(final TaskRunner taskRunner, final ImageData<BufferedImage> imageData) {
-		if(getParameterList(imageData).getBooleanParameterValue("normalization")) {		
-			try {
-//				final String timeStamp = Long.toString(System.nanoTime());
-				final String uuid = UUID.randomUUID().toString().replace("-", "");
-				final Path resultPath = Files.createTempFile("qust-normalization_result-" + uuid + "-", ".json");
-		        final String resultPathString = resultPath.toAbsolutePath().toString();
-		        resultPath.toFile().deleteOnExit();
-		        
-				// Create command to run
-		        VirtualEnvironmentRunner veRunner;
-		        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), ObjectClassificationImageAcquisition.class.getSimpleName(), qustSetup.getSptx2ScriptPath());
-			
-		        // This is the list of commands after the 'python' call
-		        // List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", "-m", "/workspace/QuST/qupath-QuST/qupath-extension-QuST/scripts/object_classifier"));
-				final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
-				
-				// List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", "/workspace/QuST/qupath-QuST/qupath-extension-QuST/scripts/classification.py", "param", resultPathString));
-				List<String> qustArguments = new ArrayList<>(Arrays.asList("-W", "ignore", script_path, "normalize", resultPathString));
-				
-		        qustArguments.add("--image_path");
-		        qustArguments.add(regSegImgAcqDistDirProp.get().trim().contains(" ")? "\""+regSegImgAcqDistDirProp.get().trim()+"\"": regSegImgAcqDistDirProp.get().trim());
-		        		
-		        veRunner.setArguments(qustArguments);
-		
-		        // Finally, we can run Cellpose
-		        final String[] logs = veRunner.runCommand();
-		        // veRunner.runCommand();
-		        
-		        for (String log : logs) logger.info(log);
-		        // logger.info("Object classification command finished running");
-		        
-		        final FileReader resultFileReader = new FileReader(new File(resultPathString));
-				final BufferedReader bufferedReader = new BufferedReader(resultFileReader);
-				final Gson gson = new Gson();
-				final JsonObject jsonObject = gson.fromJson(bufferedReader, JsonObject.class);
-		        final Boolean ve_success = gson.fromJson(jsonObject.get("success"), new TypeToken<Boolean>(){}.getType());
-		        resultPath.toFile().delete();
-		        
-		        assert ve_success: "classification.py returned failed for normalizatrion";
-			} catch (Exception e) {
-				Dialogs.showErrorMessage("Error", e.getMessage());
-				e.printStackTrace();
-			} finally {
-				System.gc();
+				if (regSegImgAcqDistFp != null) {
+					regSegImgAcqDistProp.set(regSegImgAcqDistFp.toString());
+				} else {
+					Dialogs.showErrorMessage("Warning", "No output directory is selected!");
+					lastResults = "No output directory is selected!";
+					logger.warn(lastResults);
+				}
+			}
+			else {
+				regSegImgAcqDistProp.set(fileName);
 			}
 		}		
 	}
+
+	
+	@Override
+	protected void postprocess(TaskRunner taskRunner, ImageData<BufferedImage> imageData) {
+	
+	}
 	
 	
 	@Override
-	public ParameterList getDefaultParameterList(final ImageData<BufferedImage> imageData) {
+	public ParameterList getDefaultParameterList(ImageData<BufferedImage> imageData) {
 		return params;
 	}
 
@@ -572,7 +704,7 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 
 	
 	@Override
-	protected Collection<PathObject> getParentObjects(final ImageData<BufferedImage> imageData) {
+	protected Collection<PathObject> getParentObjects(ImageData<BufferedImage> imageData) {
 		Collection<Class<? extends PathObject>> parentClasses = getSupportedParentObjectClasses();
 		List<PathObject> parents = new ArrayList<>();
 		for (PathObject parent : imageData.getHierarchy().getSelectionModel().getSelectedObjects()) {
@@ -587,15 +719,12 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 		return parents;
 	}
 
-	
 	@Override
 	public Collection<Class<? extends PathObject>> getSupportedParentObjectClasses() {
-		List<Class<? extends PathObject>> parents = new ArrayList<>();
-		parents.add(TMACoreObject.class);
-		parents.add(PathAnnotationObject.class);
-
-		return parents;
+		// Temporarily disabled so as to avoid asking annoying questions when run repeatedly
+		List<Class<? extends PathObject>> list = new ArrayList<>();
+		list.add(TMACoreObject.class);
+		list.add(PathRootObject.class);
+		return list;	
 	}
-	
-
 }

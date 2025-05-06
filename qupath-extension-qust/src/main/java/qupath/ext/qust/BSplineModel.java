@@ -1876,8 +1876,10 @@ public class BSplineModel implements Runnable
 //				if(this.bSubsampledOutput)
 //					IJ.log("Coefficients pyramid " + fullWidth + "x" + fullHeight);
 				cpyramid.push(fullDual);
-				cpyramid.push(new Integer(fullHeight));
-				cpyramid.push(new Integer(fullWidth));
+				// cpyramid.push(new Integer(fullHeight));
+				cpyramid.push(fullHeight);
+				// cpyramid.push(new Integer(fullWidth));
+				cpyramid.push(fullWidth);
 				halfWidth *= 2;
 				halfHeight *= 2;
 				continue;
@@ -1891,8 +1893,10 @@ public class BSplineModel implements Runnable
 //			if(this.bSubsampledOutput)
 //				IJ.log("Coefficients pyramid " + halfWidth + "x" + halfHeight);
 			cpyramid.push(halfCoefficient);
-			cpyramid.push(new Integer(halfHeight));
-			cpyramid.push(new Integer(halfWidth));
+			// cpyramid.push(new Integer(halfHeight));
+			cpyramid.push(halfHeight);
+			// cpyramid.push(new Integer(halfWidth));
+			cpyramid.push(halfWidth);
 			
 
 			fullDual = halfDual;
@@ -1943,8 +1947,10 @@ public class BSplineModel implements Runnable
 //						IJ.log("Coefficients pyramid " + fullWidth + "x" + fullHeight);
 					
 					cpyramid.push(fullDual);
-					cpyramid.push(new Integer(fullHeight));
-					cpyramid.push(new Integer(fullWidth));
+					// cpyramid.push(new Integer(fullHeight));
+					cpyramid.push(fullHeight);
+					// cpyramid.push(new Integer(fullWidth));
+					cpyramid.push(fullWidth);
 					halfWidth *= 2;
 					halfHeight *= 2;
 					continue;
@@ -1954,8 +1960,10 @@ public class BSplineModel implements Runnable
 //				if(this.bSubsampledOutput)
 //					IJ.log("Coefficients pyramid " + halfWidth + "x" + halfHeight);
 				cpyramid.push(halfCoefficient);
-				cpyramid.push(new Integer(halfHeight));
-				cpyramid.push(new Integer(halfWidth));
+				// cpyramid.push(new Integer(halfHeight));
+				cpyramid.push(halfHeight);
+				// cpyramid.push(new Integer(halfWidth));
+				cpyramid.push(halfWidth);
 								
 				// We store the coefficients of the corresponding subsampled
 				// output if it exists.
@@ -2002,8 +2010,10 @@ public class BSplineModel implements Runnable
 //				 if(this.bSubsampledOutput)
 //						IJ.log(" Image pyramid " + fullWidth + "x" + fullHeight);
 				 imgpyramid.push(fullDual);
-				 imgpyramid.push(new Integer(fullHeight));
-				 imgpyramid.push(new Integer(fullWidth));
+				 // imgpyramid.push(new Integer(fullHeight));
+				 imgpyramid.push(fullHeight);
+				 // imgpyramid.push(new Integer(fullWidth));
+				 imgpyramid.push(fullWidth);
 				 halfWidth *= 2;
 				 halfHeight *= 2;
 				 continue;
@@ -2017,8 +2027,10 @@ public class BSplineModel implements Runnable
 //			 if(this.bSubsampledOutput)
 //				 IJ.log(" Image pyramid " + halfWidth + "x" + halfHeight);
 			 imgpyramid.push(halfImage);
-			 imgpyramid.push(new Integer(halfHeight));
-			 imgpyramid.push(new Integer(halfWidth));
+			 // imgpyramid.push(new Integer(halfHeight));
+			 imgpyramid.push(halfHeight);
+			 // imgpyramid.push(new Integer(halfWidth));
+			 imgpyramid.push(halfWidth);
 			 
 			 fullDual = halfDual;
 			 

@@ -19,12 +19,13 @@ import java.util.stream.Collectors;
  * @author Olivier Burri
  * @author Romain Guiet
  * @author Nicolas Chiaruttini
+ * 
+ * @author huangch
  */
 public class VirtualEnvironmentRunner {
     private final static Logger logger = LoggerFactory.getLogger(VirtualEnvironmentRunner.class);
     private final EnvType envType;
     private String name;
-    private String workdir;
     private String environmentNameOrPath;
 
     private List<String> arguments;
@@ -55,11 +56,10 @@ public class VirtualEnvironmentRunner {
         }
     }
 
-    public VirtualEnvironmentRunner(String environmentNameOrPath, EnvType type, String name, String workdir) {
+    public VirtualEnvironmentRunner(String environmentNameOrPath, EnvType type, String name) {
         this.environmentNameOrPath = environmentNameOrPath;
         this.envType = type;
         this.name = name;
-        this.workdir = workdir;
         if (envType.equals(EnvType.OTHER))
             logger.error("Environment is unknown, please set the environment type to something different than 'Other'");
     }
@@ -187,10 +187,12 @@ public class VirtualEnvironmentRunner {
         // logger.info("This command should run directly if copy-pasted into your shell");
 
         // Now the cmd line is ready
-        ProcessBuilder pb = new ProcessBuilder(shell);
-        if(!workdir.strip().isBlank()) pb.directory(new File(workdir));
-        pb.redirectErrorStream(true);
-
+        ProcessBuilder pb = new ProcessBuilder(shell).redirectErrorStream(true);
+        
+        // Configure processbuilder env for GPUs
+        pb.environment().put("CUDA_VISIBLE_DEVICES", System.getenv("CUDA_VISIBLE_DEVICES")==null? "0": System.getenv("CUDA_VISIBLE_DEVICES"));
+        pb.environment().put("NVIDIA_VISIBLE_DEVICES", System.getenv("NVIDIA_VISIBLE_DEVICES")==null? "all": System.getenv("NVIDIA_VISIBLE_DEVICES"));
+        
         // Start the process and follow it throughout
         Process p = pb.start();
 
