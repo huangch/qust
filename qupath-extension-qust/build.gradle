@@ -50,6 +50,35 @@ dependencies {
     implementation "net.mahdilamb:colormap:0.9.61"
     implementation "org.ini4j:ini4j:0.5.4"
     implementation "org.json:json:20230227"
+    
+    // Core DJL API
+    implementation "ai.djl:api:0.24.0"
+    // PyTorch Engine (choose one based on your platform)
+    implementation "ai.djl.pytorch:pytorch-engine:0.24.0"
+    // PyTorch Model Zoo (optional, for pre-trained models)
+    implementation "ai.djl.pytorch:pytorch-model-zoo:0.24.0"
+    // Platform-specific PyTorch native libraries
+    // Choose ONE of the following based on your target platform:
+    // For Windows with CPU only
+    runtimeOnly "ai.djl.pytorch:pytorch-native-cpu:1.13.1:win-x86_64"
+    // For Windows with CUDA support (if you have NVIDIA GPU)
+    // runtimeOnly "ai.djl.pytorch:pytorch-native-cu118:1.13.1:win-x86_64"
+    // For Linux with CPU only
+    // runtimeOnly "ai.djl.pytorch:pytorch-native-cpu:1.13.1:linux-x86_64"
+    // For Linux with CUDA support
+    // runtimeOnly "ai.djl.pytorch:pytorch-native-cu118:1.13.1:linux-x86_64"
+    // For macOS (CPU only)
+    // runtimeOnly "ai.djl.pytorch:pytorch-native-cpu:1.13.1:osx-x86_64"
+    // For macOS Apple Silicon (M1/M2 with MPS support)
+    // runtimeOnly "ai.djl.pytorch:pytorch-native-cpu:1.13.1:osx-aarch64"
+    // Computer Vision utilities
+    implementation "ai.djl:basicdataset:0.24.0"
+    
+    // implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    // implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+    // implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.2'
+    
+    
     implementation files("java-hdf5/hdf5.jar")
     // implementation fileTree(dir: 'java-hdf5', include: ['*.jar'])
     // implementation fileTree(dir: './scripts', include: ['*.py'])

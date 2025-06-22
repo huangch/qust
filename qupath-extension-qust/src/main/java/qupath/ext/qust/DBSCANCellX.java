@@ -36,7 +36,7 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 import qupath.lib.objects.PathObject;
 import qupath.lib.objects.PathRootObject;
 import qupath.lib.objects.hierarchy.PathObjectHierarchy;
@@ -150,11 +150,11 @@ public class DBSCANCellX extends AbstractDetectionPlugin<BufferedImage> {
 			        	.collect(Collectors.toList()));
 		        }
 		        else if(sltdAnnotNum > 0 && sltdDetNum > 0) {
-		        	Dialogs.showErrorMessage("Error", "Do not select both annotations and detections.");
+//		        	Dialogs.showErrorMessage("Error", "Do not select both annotations and detections.");
 		        	throw new Exception("Do not select both annotations and detections.");
 		        }
 		        else {
-		        	Dialogs.showErrorMessage("Error", "No annotations/detections are selected.");
+//		        	Dialogs.showErrorMessage("Error", "No annotations/detections are selected.");
 		        	throw new Exception("No annotations/detections are selected.");
 		        }
 				

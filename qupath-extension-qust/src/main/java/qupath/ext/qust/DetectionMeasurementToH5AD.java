@@ -11,7 +11,7 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License 
- * along with ST-AnD.  If not, see <https://www.gnu.org/licenses/>.
+ * along with QuST. If not, see <https://www.gnu.org/licenses/>.
  * #L%
  */
 
@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -56,7 +57,7 @@ import qupath.lib.plugins.parameters.ParameterList;
 import qupath.lib.projects.Project;
 import qupath.lib.projects.ProjectImageEntry;
 import qupath.lib.roi.interfaces.ROI;
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.images.ImageData;
@@ -64,7 +65,7 @@ import qupath.lib.measurements.MeasurementList;
 import qupath.lib.gui.QuPathGUI;
 
 /**
- * Plugin for LLM
+ * Plugins for exporting detection measurements to h5ad.
  * 
  * @author Chao Hui Huang
  *
@@ -72,14 +73,12 @@ import qupath.lib.gui.QuPathGUI;
 public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<BufferedImage> {
 	
 	private static Logger logger = LoggerFactory.getLogger(DetectionMeasurementToH5AD.class);
-	private static ParameterList params = null;
-	private static File outFile = null;
-	private static List<PathObject> chosenObjects = Collections.synchronizedList(new ArrayList<PathObject>());
-	private static String allObjects = "All objects";
-	private static String selectedObjects = "Selected objects";
-	private static String lastResults = null;
-	
-//	private static QuSTSetup qustSetup = QuSTSetup.getInstance();
+	private ParameterList params = null;
+	private File outFile = null;
+	private List<PathObject> chosenObjects = Collections.synchronizedList(new ArrayList<PathObject>());
+	private String allObjects = "All objects";
+	private String selectedObjects = "Selected objects";
+	private String lastResults = null;
 	
 	/**
 	 * Constructor.
@@ -195,7 +194,7 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 	 * @return success
 	 * @throws IOException 
 	 */
-	private static void writeH5AD(String outFilePath, ImageData<?> imageData) throws RuntimeException, IOException {
+	private void writeH5AD(String outFilePath, ImageData<?> imageData) throws RuntimeException, IOException {
 		List<String> measIdList = chosenObjects.get(0).getMeasurementList().getMeasurementNames();
 
 		PathObjectConnections connections = (PathObjectConnections) imageData.getProperty("OBJECT_CONNECTIONS");
@@ -211,7 +210,10 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 		
 		for (int i = 0; i < n_obs; i++) {
 			PathObject o = chosenObjects.get(i);
-			String cell_id = o.getName();
+			
+			
+			String cell_id = ((o.getName() != null && !o.getName().isBlank()))? o.getName(): o.getID().toString();
+					
 			cell_id_map.put(cell_id, i);
 			
 			int idx_l = cell_id.length();
@@ -280,7 +282,8 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 	        chosenObjects.stream().forEach(o-> {
 	        	byte[] obs_buf_bytes = new byte[obs_idx_len+obs_cls_len+obs_cx_len+obs_cy_len];
 	        	
-	        	String cell_id = o.getName();
+	        	String cell_id = ((o.getName() != null && !o.getName().isBlank()))? o.getName(): o.getID().toString();
+				
 	        	byte[] cell_idx_raw = cell_id.getBytes(StandardCharsets.UTF_8);
 	            System.arraycopy(cell_idx_raw, 0, obs_buf_bytes, 0, Math.min(cell_idx_raw.length, obs_idx_len));
 	            
@@ -329,7 +332,8 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 		        	List<PathObject> neighbors = connections.getConnections(o);
 		        		
 					for(PathObject n: neighbors) {
-						int cell_id_idx = cell_id_map.get(n.getName());
+			        	String cell_id = ((n.getName() != null && !n.getName().isBlank()))? n.getName(): n.getID().toString();
+						int cell_id_idx = cell_id_map.get(cell_id);
 						csr_indices.add(cell_id_idx);
 						csr_data.add(1.0F);
 						nnz ++;
@@ -489,7 +493,7 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 		} catch (Exception e) {
 			e.printStackTrace();
            	logger.error(e.toString());
-           	Dialogs.showErrorMessage("Error", e.getLocalizedMessage());
+//           	Dialogs.showErrorMessage("Error", e.getLocalizedMessage());
            	if (file_id >= 0) {
                	try {
                    	H5.H5Fclose(file_id);
@@ -502,7 +506,7 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
             		}
             		
                	} catch (Exception ignore) {
-               		Dialogs.showErrorMessage("Error", e.getLocalizedMessage());
+//               		Dialogs.showErrorMessage("Error", e.getLocalizedMessage());
                    	e.printStackTrace();
                    	logger.error(e.getLocalizedMessage());
                	}
@@ -535,6 +539,9 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 			
 			outFile = FileChoosers.promptToSaveFile("Export to file", defaultFile,
 					FileChoosers.createExtensionFilter("AnnData file", ".h5ad"));
+			
+			Map <String, String> newParam = Map.of("fileName", outFile.toString());
+			ParameterList.updateParameterList(params, newParam, Locale.getDefault());
 		}
 		else {
 			outFile = new File(fileName);
@@ -558,7 +565,7 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 		} catch (IOException e) {
 			e.printStackTrace();
 			logger.error(e.getLocalizedMessage());;
-			Dialogs.showErrorMessage("Error", e.getLocalizedMessage());
+//			Dialogs.showErrorMessage("Error", e.getLocalizedMessage());
 		}
 	}
 	
@@ -569,7 +576,7 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 
 	@Override
 	public String getName() {
-		return "LLM";
+		return "Plugins for exporting detection measurements to h5ad";
 	}
 
 	@Override
@@ -579,7 +586,7 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 
 	@Override
 	public String getDescription() {
-		return "Detect one or more regions of interest by applying a global threshold";
+		return "Plugins for exporting detection measurements to h5ad";
 	}
 
 	class AnnotationLoader implements ObjectDetector<BufferedImage> {
@@ -592,7 +599,7 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 			String comboChoice = (String)params.getChoiceParameterValue("exportOptions");
 			if (comboChoice.equals(selectedObjects)) {
 				if (hierarchy.getSelectionModel().noSelection()) {
-					Dialogs.showErrorMessage("No selection", "No selection detected!");
+//					Dialogs.showErrorMessage("No selection", "No selection detected!");
 					return new ArrayList<PathObject>(hierarchy.getRootObject().getChildObjects());
 				}
 				toProcess = hierarchy.getSelectionModel().getSelectedObjects();
@@ -612,7 +619,7 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 			});
 			
 			if (Thread.currentThread().isInterrupted()) {
-				Dialogs.showErrorMessage("Warning", "Interrupted!");
+//				Dialogs.showErrorMessage("Warning", "Interrupted!");
 				lastResults =  "Interrupted!";
 				logger.warn(lastResults);
 			}
@@ -644,13 +651,9 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 	public Collection<Class<? extends PathObject>> getSupportedParentObjectClasses() {
 		// Temporarily disabled so as to avoid asking annoying questions when run repeatedly
 		List<Class<? extends PathObject>> list = new ArrayList<>();
+//		list.add(PathAnnotationObject.class);
 		list.add(TMACoreObject.class);
 		list.add(PathRootObject.class);
 		return list;		
-
-//		return Arrays.asList(
-//				PathAnnotationObject.class,
-//				TMACoreObject.class
-//				);
 	}
 }

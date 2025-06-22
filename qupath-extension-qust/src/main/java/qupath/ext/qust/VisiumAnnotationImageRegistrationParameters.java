@@ -34,7 +34,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.IntegerProperty;
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.images.ImageData;
@@ -206,7 +206,7 @@ public class VisiumAnnotationImageRegistrationParameters extends AbstractDetecti
 				vsumAnnotImgRegParamOutDirProp.set(vsumAnnotImgRegParamOutDir.toString());
 			}
 			else {
-				Dialogs.showErrorMessage("Warning", "No Visium output directory is selected!");
+//				Dialogs.showErrorMessage("Warning", "No Visium output directory is selected!");
 				lastResults =  "No Visium output directory is selected!";
 				logger.warn(lastResults);
 			}
@@ -252,11 +252,15 @@ public class VisiumAnnotationImageRegistrationParameters extends AbstractDetecti
 
 	@Override
 	public Collection<Class<? extends PathObject>> getSupportedParentObjectClasses() {
-		// TODO: Re-allow taking an object as input in order to limit bounds
 		// Temporarily disabled so as to avoid asking annoying questions when run repeatedly
 		List<Class<? extends PathObject>> list = new ArrayList<>();
 		list.add(TMACoreObject.class);
 		list.add(PathRootObject.class);
-		return list;
+		return list;		
+
+//		return Arrays.asList(
+//				PathAnnotationObject.class,
+//				TMACoreObject.class
+//				);
 	}
 }

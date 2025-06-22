@@ -35,7 +35,7 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.IntegerProperty;
 import qupath.lib.common.GeneralTools;
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.images.ImageData;
@@ -62,9 +62,9 @@ import org.json.JSONObject;
  * @author Chao Hui Huang
  *
  */
-public class XeniumAnnotationImageRegistrationParameters2 extends AbstractDetectionPlugin<BufferedImage> {
+public class XeniumAnnotationImageRegistrationParameters extends AbstractDetectionPlugin<BufferedImage> {
 	
-	private static Logger logger = LoggerFactory.getLogger(XeniumAnnotationImageRegistrationParameters2.class);
+	private static Logger logger = LoggerFactory.getLogger(XeniumAnnotationImageRegistrationParameters.class);
 	
 	private StringProperty xnumAnnotImgRegParamOutDirProp = PathPrefs.createPersistentPreference("xnumAnnotImgRegParamOutDir", ""); // 0.583631786649883, -0.003093833507169, 3976.5962855892744, 0.002910311759446, 0.583704549228862, 4045.851508970304
 	private IntegerProperty xnumAnnotImgRegParamSrcImgWidthProp = PathPrefs.createPersistentPreference("xnumAnnotImgRegParamSrcImgWidth", 256); // 0.2125
@@ -89,7 +89,7 @@ public class XeniumAnnotationImageRegistrationParameters2 extends AbstractDetect
 	/**
 	 * Constructor.
 	 */
-	public XeniumAnnotationImageRegistrationParameters2() {
+	public XeniumAnnotationImageRegistrationParameters() {
 		params = new ParameterList()
 			.addStringParameter("xnumAnnotImgRegParamOutDir", "Xenium output directory", xnumAnnotImgRegParamOutDirProp.get(), "Xenium output directory")
 			.addIntParameter("xnumAnnotImgRegParamSrcImgWidth", "Source image width", xnumAnnotImgRegParamSrcImgWidthProp.get(), null, "Source image width")		
@@ -212,7 +212,7 @@ public class XeniumAnnotationImageRegistrationParameters2 extends AbstractDetect
 				xnumAnnotImgRegParamOutDirProp.set(xnumAnnotImgRegParamOutDir.toString());
 			}
 			else {
-				Dialogs.showErrorMessage("Warning", "No Xenium output directory is selected!");
+//				Dialogs.showErrorMessage("Warning", "No Xenium output directory is selected!");
 				lastResults =  "No Xenium output directory is selected!";
 				logger.warn(lastResults);
 			}
@@ -258,11 +258,15 @@ public class XeniumAnnotationImageRegistrationParameters2 extends AbstractDetect
 
 	@Override
 	public Collection<Class<? extends PathObject>> getSupportedParentObjectClasses() {
-		// TODO: Re-allow taking an object as input in order to limit bounds
 		// Temporarily disabled so as to avoid asking annoying questions when run repeatedly
 		List<Class<? extends PathObject>> list = new ArrayList<>();
 		list.add(TMACoreObject.class);
 		list.add(PathRootObject.class);
-		return list;
+		return list;		
+
+//		return Arrays.asList(
+//				PathAnnotationObject.class,
+//				TMACoreObject.class
+//				);
 	}
 }

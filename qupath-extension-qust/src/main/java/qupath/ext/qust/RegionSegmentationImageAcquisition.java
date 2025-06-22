@@ -60,7 +60,7 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.StringProperty;
 import qupath.lib.common.GeneralTools;
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.prefs.PathPrefs;
@@ -144,7 +144,7 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 		private ImageData<BufferedImage> imageData;
 		private ParameterList params;
 		private PathObject parentObject;
-		private MacenkoStainingNormalizer normalizer = new MacenkoStainingNormalizer();
+//		private MacenkoStainingNormalizer normalizer = new MacenkoStainingNormalizer();
 
 		public RegionSegmentationRunnable(ImageData<BufferedImage> imageData, PathObject parentObject, ParameterList params) {
 			this.imageData = imageData;
@@ -255,8 +255,11 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 				return;
 			}
 			
-			BufferedImage normalizationSamplingImage = normalizer.concatBufferedImages(normalizationSamplingImageList);
-			final double[][] est_W = normalizer.reorderStainsByCosineSimilarity(normalizer.getStainMatrix(normalizationSamplingImage, normalizer.OD_threshold, 1), normalizer.targetStainReferenceMatrix);
+			BufferedImage normalizationSamplingImage = MacenkoStainingNormalizer.concatBufferedImages(normalizationSamplingImageList);
+//			final double[][] est_W = normalizer.reorderStainsByCosineSimilarity(normalizer.getStainMatrix(normalizationSamplingImage, normalizer.OD_threshold, 1), normalizer.targetStainReferenceMatrix);
+			
+			double[][][] normalizationSamplingImageAry = MacenkoStainingNormalizer.convertImageToRGBArray(normalizationSamplingImage);
+			double[][] est_W = MacenkoStainingNormalizer.separateStainsMacenkoPca(normalizationSamplingImageAry);
 			
 			int samplingNum = params.getIntParameterValue("samplingNum") == 0
 					|| params.getIntParameterValue("samplingNum") > availRegionList.size() 
@@ -284,8 +287,30 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 						BufferedImage imgBuffer = new BufferedImage(imgContent.getWidth(), imgContent.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
 						imgBuffer.getGraphics().drawImage(imgContent, 0, 0, null);
 						
-						BufferedImage outputImgBuf = params.getBooleanParameterValue("normalization")? 
-								normalizer.normalizeToReferenceImage(imgBuffer, est_W, normalizer.targetStainReferenceMatrix): imgBuffer;
+//						BufferedImage outputImgBuf = params.getBooleanParameterValue("normalization")? 
+//								normalizer.normalizeToReferenceImage(imgBuffer, est_W, normalizer.targetStainReferenceMatrix, BufferedImage.TYPE_3BYTE_BGR): imgBuffer;
+						
+						
+						BufferedImage outputImgBuf = null;
+			            
+			            if (params.getBooleanParameterValue("normalization")) {
+			            	double[][][] imgBufferAry = MacenkoStainingNormalizer.convertImageToRGBArray(imgBuffer);
+			            	double[][][] normaImgAry = MacenkoStainingNormalizer.deconvolutionBasedNormalization(
+			            			imgBufferAry, 
+			            			est_W,  
+			            			MacenkoStainingNormalizer.targetStainReferenceMatrix, 
+			            			null, 
+			            			new String[]{"hematoxylin", "eosin", null},
+			            			null,
+			            			null
+			            		);
+			            	
+			            	outputImgBuf = MacenkoStainingNormalizer.convertRGBArrayToImage(normaImgAry, BufferedImage.TYPE_3BYTE_BGR);
+			            } else {
+			            	outputImgBuf = imgBuffer;
+			            }
+						
+						
 						
 						BufferedImage imgSampled = params.getBooleanParameterValue("dontResampling") ? outputImgBuf
 								: Scalr.resize(outputImgBuf, params.getIntParameterValue("samplingSize"));
@@ -332,8 +357,33 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 							BufferedImage imgBuffer = new BufferedImage(imgContent.getWidth(), imgContent.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
 							imgBuffer.getGraphics().drawImage(imgContent, 0, 0, null);
 							
-							BufferedImage outputImgBuf = params.getBooleanParameterValue("normalization")? 
-									normalizer.normalizeToReferenceImage(imgBuffer, est_W, normalizer.targetStainReferenceMatrix): imgBuffer;
+//							BufferedImage outputImgBuf = params.getBooleanParameterValue("normalization")? 
+//									normalizer.normalizeToReferenceImage(imgBuffer, est_W, normalizer.targetStainReferenceMatrix, BufferedImage.TYPE_3BYTE_BGR): imgBuffer;
+							
+							
+							
+							
+							
+							BufferedImage outputImgBuf = null;
+				            
+				            if (params.getBooleanParameterValue("normalization")) {
+				            	double[][][] imgBufferAry = MacenkoStainingNormalizer.convertImageToRGBArray(imgBuffer);
+				            	double[][][] normaImgAry = MacenkoStainingNormalizer.deconvolutionBasedNormalization(
+				            			imgBufferAry, 
+				            			est_W,  
+				            			MacenkoStainingNormalizer.targetStainReferenceMatrix, 
+				            			null, 
+				            			new String[]{"hematoxylin", "eosin", null},
+				            			null,
+				            			null
+				            		);
+				            	
+				            	outputImgBuf = MacenkoStainingNormalizer.convertRGBArrayToImage(normaImgAry, BufferedImage.TYPE_3BYTE_BGR);
+				            } else {
+				            	outputImgBuf = imgBuffer;
+				            }
+							
+							
 							
 							BufferedImage imgSampled = params.getBooleanParameterValue("dontResampling") ? outputImgBuf
 									: Scalr.resize(outputImgBuf, params.getIntParameterValue("samplingSize"));
@@ -506,9 +556,31 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 						BufferedImage imgBuf = new BufferedImage(imgContent.getWidth(), imgContent.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
 						imgBuf.getGraphics().drawImage(imgContent, 0, 0, null);
 					
-						BufferedImage outputImgBuf = params.getBooleanParameterValue("normalization")? 
-							   	normalizer.normalizeToReferenceImage(imgBuf, est_W, normalizer.targetStainReferenceMatrix): imgBuf;
+//						BufferedImage outputImgBuf = params.getBooleanParameterValue("normalization")? 
+//							   	normalizer.normalizeToReferenceImage(imgBuf, est_W, normalizer.targetStainReferenceMatrix, BufferedImage.TYPE_3BYTE_BGR): imgBuf;
 					
+						
+						
+						BufferedImage outputImgBuf = null;
+			            
+			            if (params.getBooleanParameterValue("normalization")) {
+			            	double[][][] imgBufAry = MacenkoStainingNormalizer.convertImageToRGBArray(imgBuf);
+			            	double[][][] normaImgAry = MacenkoStainingNormalizer.deconvolutionBasedNormalization(
+			            			imgBufAry, 
+			            			est_W,  
+			            			MacenkoStainingNormalizer.targetStainReferenceMatrix, 
+			            			null, 
+			            			new String[]{"hematoxylin", "eosin", null},
+			            			null,
+			            			null
+			            		);
+			            	
+			            	outputImgBuf = MacenkoStainingNormalizer.convertRGBArrayToImage(normaImgAry, BufferedImage.TYPE_3BYTE_BGR);
+			            } else {
+			            	outputImgBuf = imgBuf;
+			            }
+						
+						
 					   	BufferedImage imgSampled = params.getBooleanParameterValue("dontResampling") ? 
 					   			outputImgBuf: Scalr.resize(outputImgBuf, params.getIntParameterValue("samplingSize"));
 						
@@ -612,7 +684,7 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 				if (regSegImgAcqDistFp != null) {
 					regSegImgAcqDistProp.set(regSegImgAcqDistFp.toString());
 				} else {
-					Dialogs.showErrorMessage("Warning", "No output file is selected!");
+//					Dialogs.showErrorMessage("Warning", "No output file is selected!");
 					lastResults = "No output file is selected!";
 					logger.warn(lastResults);
 				}
@@ -646,7 +718,7 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 				if (regSegImgAcqDistFp != null) {
 					regSegImgAcqDistProp.set(regSegImgAcqDistFp.toString());
 				} else {
-					Dialogs.showErrorMessage("Warning", "No output file is selected!");
+//					Dialogs.showErrorMessage("Warning", "No output file is selected!");
 					lastResults = "No output file is selected!";
 					logger.warn(lastResults);
 				}
@@ -661,7 +733,7 @@ public class RegionSegmentationImageAcquisition extends AbstractInteractivePlugi
 				if (regSegImgAcqDistFp != null) {
 					regSegImgAcqDistProp.set(regSegImgAcqDistFp.toString());
 				} else {
-					Dialogs.showErrorMessage("Warning", "No output directory is selected!");
+//					Dialogs.showErrorMessage("Warning", "No output directory is selected!");
 					lastResults = "No output directory is selected!";
 					logger.warn(lastResults);
 				}

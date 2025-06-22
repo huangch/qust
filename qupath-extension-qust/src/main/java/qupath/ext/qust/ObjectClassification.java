@@ -71,7 +71,7 @@ import qupath.lib.plugins.TaskRunner;
 import qupath.lib.plugins.parameters.ParameterList;
 import qupath.lib.regions.RegionRequest;
 import qupath.lib.roi.interfaces.ROI;
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 import qupath.lib.gui.prefs.PathPrefs;
 
 /**
@@ -81,6 +81,8 @@ import qupath.lib.gui.prefs.PathPrefs;
  *
  */
 public class ObjectClassification extends AbstractTileableDetectionPlugin<BufferedImage> {
+	private static QuSTSetup qustSetup = QuSTSetup.getInstance();
+	private static Logger logger = LoggerFactory.getLogger(ObjectClassification.class);
 	private static StringProperty QuSTObjclsModelNameProp = PathPrefs.createPersistentPreference("QuSTObjclsModelName", null);
 	private static BooleanProperty QuSTObjclsDetectionProp = PathPrefs.createPersistentPreference("QuSTObjclsDetection", true);		
 	
@@ -88,24 +90,20 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 
 	private transient CellClassifier detector;
 	
-	private static QuSTSetup qustSetup = QuSTSetup.getInstance();
-	private static Logger logger = LoggerFactory.getLogger(ObjectClassification.class);
+	private int modelFeatureSizePixels;
+	private double modelPixelSizeMicrons;
+	private boolean modelNormalized;
+	private List<String> modelLabelList;
+	private String modelName;
+	private List<PathObject> availabelObjList;
 	
-	private static int modelFeatureSizePixels;
-	private static double modelPixelSizeMicrons;
-	private static boolean modelNormalized;
-	private static List<String> modelLabelList;
-	private static String modelName;
-	private static List<PathObject> availabelObjList;
+	private Semaphore semaphore;
+	private ParameterList params;
+	private double[] normalizer_w = null;
+	private AtomicInteger hackDigit = new AtomicInteger(0);
+	private String imgFmt = qustSetup.getImageFileFormat().trim().charAt(0) == '.'? qustSetup.getImageFileFormat().trim().substring(1): qustSetup.getImageFileFormat().trim();
 	
-	private static Semaphore semaphore;
-	protected ParameterList params;
-	private static double[] normalizer_w = null;
-	private static AtomicInteger hackDigit = new AtomicInteger(0);
-	private static String imgFmt = qustSetup.getImageFileFormat().trim().charAt(0) == '.'? qustSetup.getImageFileFormat().trim().substring(1): qustSetup.getImageFileFormat().trim();
-	
-	static class CellClassifier implements ObjectDetector<BufferedImage> {
-	
+	class CellClassifier implements ObjectDetector<BufferedImage> {
 		protected String lastResultDesc = null;
 		private List<PathObject> pathObjects = Collections.synchronizedList(new ArrayList<PathObject>());;
 		
@@ -317,11 +315,10 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 	private ParameterList buildParameterList(ImageData<BufferedImage> imageData) { 
 			
 		ParameterList params = new ParameterList();
-		// TODO: Use a better way to determining if pixel size is available in microns
 
 		try {			
 			if(!imageData.getServer().getPixelCalibration().hasPixelSizeMicrons()) {
-				Dialogs.showErrorMessage("Error", "Please check the image properties in left panel. Most likely the pixel size is unknown.");
+//				Dialogs.showErrorMessage("Error", "Please check the image properties in left panel. Most likely the pixel size is unknown.");
 				throw new Exception("No pixel size information");
 			}
 	        
@@ -329,6 +326,7 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 					.filter(Files::isRegularFile)
             	    .map(p -> p.getFileName().toString())
             	    .filter(s -> s.endsWith(".pt"))
+            	    .filter(s -> !s.contains(".torchscript."))
             	    .map(s -> s.replaceAll("\\.pt", ""))
             	    .collect(Collectors.toList());
 
@@ -340,15 +338,15 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 					.addBooleanParameter("includeProbability", "Add prediction/probability as a measurement (enables later filtering). Default: false", QuSTObjclsDetectionProp.get(), "Add probability as a measurement (enables later filtering)")
 					.addEmptyParameter("")
 					.addEmptyParameter("Adjust below parameters if GPU resources are limited.")
-					.addIntParameter("batchSize", "Batch Size in classification (default: 128)", 128, null, "Batch size in classification. The larger the faster. However, a larger batch size results larger GPU memory consumption.")		
-					.addIntParameter("maxThread", "Max number of parallel threads (0: using qupath setup)", 0, null, "Max number of parallel threads (0: using qupath setup)");	
+					.addIntParameter("batchSize", "Batch Size in classification (default: 128)", 1024, null, "Batch size in classification. The larger the faster. However, a larger batch size results larger GPU memory consumption.")		
+					.addIntParameter("maxThread", "Max number of parallel threads (0: using qupath setup)", 1, null, "Max number of parallel threads (0: using qupath setup)");	
 					
 		} catch (Exception e) {
 			params = null;
 			
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			Dialogs.showErrorMessage("Error", e.getMessage());
+			logger.error(e.getMessage().toString());
+//			Dialogs.showErrorMessage("Error", e.getMessage().toString());
 		} finally {
 		    System.gc();
 		}
@@ -464,7 +462,7 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 			resultPath.toFile().delete();
 //			FileUtils.deleteDirectory(resultPath.toFile());
 		} catch (Exception e) {
-			Dialogs.showErrorMessage("Error", e.getMessage());
+//			Dialogs.showErrorMessage("Error", e.getMessage());
 			e.printStackTrace();
 		} finally {
 			System.gc();
@@ -528,7 +526,7 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 		} catch (Exception e) {
 			e.printStackTrace();
 			
-			Dialogs.showErrorMessage("Error", e.getMessage());
+//			Dialogs.showErrorMessage("Error", e.getMessage());
 		} finally {
 		    System.gc();
 		}

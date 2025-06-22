@@ -153,14 +153,15 @@ public class QuSTExtension implements QuPathExtension, GitHubProject {
         
         
         
-		Menu menu = qupath.getMenu("Extensions>QuST Analysis Toolbox", true);
+//		Menu menu = qupath.getMenu("Extensions>QuST Analysis Toolbox", true);
 
-		Menu importMenu = MenuTools.addMenuItems(menu, "Import...");
+//		Menu importMenu = MenuTools.addMenuItems(menu, "Import...");
+		Menu importMenu = qupath.getMenu("Extensions>QuST Analysis Toolbox>Import...", true);
 		
-		MenuTools.addMenuItems(
-				importMenu,
-				qupath.createPluginAction("ST Annotation", STAnnotation.class, null)
-				);
+//		MenuTools.addMenuItems(
+//				importMenu,
+//				qupath.createPluginAction("ST Annotation", STAnnotation.class, null)
+//				);
 		
 //		MenuTools.addMenuItems(
 //				importMenu,
@@ -173,17 +174,17 @@ public class QuSTExtension implements QuPathExtension, GitHubProject {
 				);		
 		MenuTools.addMenuItems(
 				importMenu,
-				qupath.createPluginAction("10x Visium Annotation", VisiumAnnotation2.class, null)
+				qupath.createPluginAction("10x Visium Annotation", VisiumAnnotation.class, null)
 				);
 
 		MenuTools.addMenuItems(
 				importMenu,
-				qupath.createPluginAction("10x Xenium Image Registration Parameters", XeniumAnnotationImageRegistrationParameters2.class, null)
+				qupath.createPluginAction("10x Xenium Image Registration Parameters", XeniumAnnotationImageRegistrationParameters.class, null)
 				);
 		
 		MenuTools.addMenuItems(
 				importMenu,
-				qupath.createPluginAction("10x Xenium Annotation", XeniumAnnotation2.class, null)
+				qupath.createPluginAction("10x Xenium Annotation", XeniumAnnotation.class, null)
 				);
 		
 
@@ -198,79 +199,118 @@ public class QuSTExtension implements QuPathExtension, GitHubProject {
 				qupath.createPluginAction("AI-DIA Annotation", AiDiaAnnotation.class, null)
 				);
 		
-		Menu analysisMenu = MenuTools.addMenuItems(menu, "Analysis...");
+//		Menu parationMenu = MenuTools.addMenuItems(menu, "Preparation...");
+		Menu parationMenu = qupath.getMenu("Extensions>QuST Analysis Toolbox>Preparation...", true);
 		
 		MenuTools.addMenuItems(
-				analysisMenu,
+				parationMenu,
 				null,
-				qupath.createPluginAction("Pete's Simple Tissue Detection", SimpleTissueDetection2.class, null)
+				qupath.createPluginAction("Pete's Simple Tissue Detection", PetesSimpleTissueDetection.class, null)
 				);			
 		
 		MenuTools.addMenuItems(
-				analysisMenu,
+				parationMenu,
 				qupath.createPluginAction("StarDist-based Nucleus Detection", StarDistCellNucleusDetection.class, null)
 				);		
 		
 		MenuTools.addMenuItems(
-				analysisMenu,
+				parationMenu,
 				qupath.createPluginAction("Pseudo Spot Generation", PseudoVisiumSpotGeneration.class, null)
 				);
 		
+//		Menu analysisMenu = MenuTools.addMenuItems(menu, "Analysis...");
+		Menu analysisMenu = qupath.getMenu("Extensions>QuST Analysis Toolbox>Analysis...", true);
+
 		MenuTools.addMenuItems(
 				analysisMenu,
-				qupath.createPluginAction("Cell Spatial Profiling", CellSpatialProfiling.class, null)
+				qupath.createPluginAction("Cell Spatial Profiling by Classification - Compute the distance to the edge of a user defined cluster by classification", CellSpatialProfilingByClassification.class, null)
+				);
+
+		MenuTools.addMenuItems(
+				analysisMenu,
+				qupath.createPluginAction("Cell Spatial Profiling by Measurement - Compute the distance to the edge of a user defined cluster by measurement", CellSpatialProfilingByMeasurement.class, null)
 				);
 		
 		MenuTools.addMenuItems(
 				analysisMenu,
-				qupath.createPluginAction("Cell-Cell Interaction Analysis", CellCellInteractionAnalysis.class, null)
+				qupath.createPluginAction("Cell-Cell Interaction Analysis - CCI for single cell spatial transcriptomics", CellCellInteractionAnalysis.class, null)
 				);
 		
 		MenuTools.addMenuItems(
 				analysisMenu,
-				qupath.createPluginAction("Cell Neighbor Analysis", CellNeighborAnalysis.class, null)
+				qupath.createPluginAction("Neighboring Cell Type Composition - Analyzing the composition of the neighboring cells", NeighboringCellTypeComposition.class, null)
 				);
 		
 		MenuTools.addMenuItems(
 				analysisMenu,
-				qupath.createPluginAction("Export Images for Object Classification", ObjectClassificationImageAcquisition.class, null)
+				qupath.createPluginAction("Density-based Cell Function Enrichment Analysis - Neighboring cell function enrichment analysis based on KDE", DensityCellFunctionEnrichment.class, null)
 				);
 		
 		MenuTools.addMenuItems(
 				analysisMenu,
-				qupath.createPluginAction("Object Classification", ObjectClassification.class, null)
+				qupath.createPluginAction("Neighborhood-based Cell Function Enrichment Analysis - Neighboring cell function enrichment analysis based on Delaunay triangulation", NeighborhoodCellFunctionEnrichment.class, null)
 				);
-		
-		MenuTools.addMenuItems(
-				analysisMenu,
-				qupath.createPluginAction("Export Images for Region Segmentation", RegionSegmentationImageAcquisition.class, null)
-				);
-		
-		MenuTools.addMenuItems(
-				analysisMenu,
-				qupath.createPluginAction("Region Segmentation", RegionSegmentation.class, null)
-				);		
 		
 		MenuTools.addMenuItems(
 				analysisMenu,
 				qupath.createPluginAction("DBSCAN-CellX", DBSCANCellX.class, null)
 				);
 		
+//		Menu deeplearningMenu = MenuTools.addMenuItems(menu, "deeplearning...");
+		Menu deeplearningMenu = qupath.getMenu("Extensions>QuST Analysis Toolbox>Classification and Segmentation...", true);
+
 		MenuTools.addMenuItems(
-				analysisMenu,
-				qupath.createPluginAction("Interpreting Spatial Data using LLM based on High Ranking Key Genes", QuSTLLMHKG.class, null)
+				deeplearningMenu,
+				qupath.createPluginAction("Export Images for Object Classification", ObjectClassificationImageAcquisition.class, null)
+				);
+
+		MenuTools.addMenuItems(
+				deeplearningMenu,
+				qupath.createPluginAction("Object Classification", ObjectClassification.class, null)
 				);
 		
+//		MenuTools.addMenuItems(
+//				analysisMenu,
+//				qupath.createPluginAction("Object Classification by DJL - multi-threading", ObjectClassificationDJL_MT.class, null)
+//				);
+//
+//		MenuTools.addMenuItems(
+//				analysisMenu,
+//				qupath.createPluginAction("Object Classification by DJL - producer-comsumer", ObjectClassificationDJL_PC.class, null)
+//				);
 		
 		MenuTools.addMenuItems(
-				analysisMenu,
-				qupath.createPluginAction("Interpreting Spatial Data using LLM based on Comparative Key Genes", QuSTLLMCKG.class, null)
+				deeplearningMenu,
+				qupath.createPluginAction("Object Classification by DJL - producer-comsumer mGPU", ObjectClassificationDJL_PC_mGPU.class, null)
+				);
+		
+		MenuTools.addMenuItems(
+				deeplearningMenu,
+				qupath.createPluginAction("Export Images for Region Segmentation", RegionSegmentationImageAcquisition.class, null)
+				);
+		
+		MenuTools.addMenuItems(
+				deeplearningMenu,
+				qupath.createPluginAction("Region Segmentation", RegionSegmentation.class, null)
 				);		
 		
-		MenuTools.addMenuItems(
-				analysisMenu,
-				qupath.createPluginAction("Discovering Spatial Insights based on Human Languages using LLM", QuSTLLMREQ.class, null)
-				);	
+
+		
+//		MenuTools.addMenuItems(
+//				analysisMenu,
+//				qupath.createPluginAction("Interpreting Spatial Data using LLM based on High Ranking Key Genes", QuSTLLMHKG.class, null)
+//				);
+		
+		
+//		MenuTools.addMenuItems(
+//				analysisMenu,
+//				qupath.createPluginAction("Interpreting Spatial Data using LLM based on Comparative Key Genes", QuSTLLMCKG.class, null)
+//				);		
+		
+//		MenuTools.addMenuItems(
+//				analysisMenu,
+//				qupath.createPluginAction("Discovering Spatial Insights based on Human Languages using LLM", QuSTLLMREQ.class, null)
+//				);	
 		
 //		Action ExportPathDetectionObjectToOMECSVCommandAction = qupath.createImageDataAction(imageData -> ExportPathDetectionObjectToOMECSVCommand.runOMEObjectExport(qupath, imageData));
 //		ExportPathDetectionObjectToOMECSVCommandAction.setText("Export objects in OMERO format to file");
@@ -278,14 +318,17 @@ public class QuSTExtension implements QuPathExtension, GitHubProject {
 //		MenuTools.addMenuItems(
 //				analysisMenu, ExportPathDetectionObjectToOMECSVCommandAction
 //				);
-		
+
+//		Menu exportMenu = MenuTools.addMenuItems(menu, "export...");
+		Menu exportMenu = qupath.getMenu("Extensions>QuST Analysis Toolbox>Export...", true);
+
 		MenuTools.addMenuItems(
-				analysisMenu,
-				qupath.createPluginAction("Export objects in OMERO format to file", DetectionObjectToOMECSV.class, null)
+				exportMenu,
+				qupath.createPluginAction("Export objects to Gzipped OMERO CSV (.ogz) file", DetectionObjectToOMECSV.class, null)
 				);
 		
 		MenuTools.addMenuItems(
-				analysisMenu,
+				exportMenu,
 				qupath.createPluginAction("Export detection object measurements to H5AD file", DetectionMeasurementToH5AD.class, null)
 				);	
 

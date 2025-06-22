@@ -84,9 +84,9 @@ import qupath.lib.roi.interfaces.ROI;
  * @author Pete Bankhead
  *
  */
-public class SimpleTissueDetection2 extends AbstractDetectionPlugin<BufferedImage> {
+public class PetesSimpleTissueDetection extends AbstractDetectionPlugin<BufferedImage> {
 	
-	private static final Logger logger = LoggerFactory.getLogger(SimpleTissueDetection2.class);
+	private static final Logger logger = LoggerFactory.getLogger(PetesSimpleTissueDetection.class);
 	
 	private ParameterList params;
 
@@ -95,7 +95,7 @@ public class SimpleTissueDetection2 extends AbstractDetectionPlugin<BufferedImag
 	/**
 	 * Constructor.
 	 */
-	public SimpleTissueDetection2() {
+	public PetesSimpleTissueDetection() {
 		
 		params = new ParameterList().
 				addIntParameter("threshold", "Threshold", 127, null, 0, 255, "Global threshold to use - defined in the range 0-255");

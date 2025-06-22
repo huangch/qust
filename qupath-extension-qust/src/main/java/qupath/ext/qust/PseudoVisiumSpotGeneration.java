@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javafx.beans.property.StringProperty;
 import qupath.lib.common.GeneralTools;
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 //import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.images.ImageData;
@@ -168,14 +168,14 @@ public class PseudoVisiumSpotGeneration extends AbstractDetectionPlugin<Buffered
 				hierarchy.getSelectionModel().setSelectedObject(null);
 			}
 			catch(Exception e) {	
-				Dialogs.showErrorMessage("Error", e.getMessage());
+//				Dialogs.showErrorMessage("Error", e.getMessage());
 				lastResults = e.getMessage();
 				logger.error(lastResults);
 				return new ArrayList<PathObject>(hierarchy.getRootObject().getChildObjects());
 			}				
 			
 			if (Thread.currentThread().isInterrupted()) {
-				Dialogs.showErrorMessage("Warning", "Interrupted!");
+//				Dialogs.showErrorMessage("Warning", "Interrupted!");
 				lastResults =  "Interrupted!";
 				logger.warn(lastResults);
 				return new ArrayList<PathObject>(hierarchy.getRootObject().getChildObjects());
@@ -230,7 +230,6 @@ public class PseudoVisiumSpotGeneration extends AbstractDetectionPlugin<Buffered
 
 	@Override
 	public Collection<Class<? extends PathObject>> getSupportedParentObjectClasses() {
-		// TODO: Re-allow taking an object as input in order to limit bounds
 		// Temporarily disabled so as to avoid asking annoying questions when run repeatedly
 //		List<Class<? extends PathObject>> list = new ArrayList<>();
 //		list.add(TMACoreObject.class);

@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Point2D;
 
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 import qupath.fx.dialogs.FileChoosers;
 
 import qupath.lib.gui.prefs.PathPrefs;
@@ -66,11 +66,8 @@ import qupath.lib.roi.interfaces.ROI;
 public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	
 	private static Logger logger = LoggerFactory.getLogger(AiDiaAnnotation.class);
-	
 	private StringProperty aidiaDataFileProp = PathPrefs.createPersistentPreference("aidiaDataFile", ""); 
-	
 	private ParameterList params;
-
 	private String lastResults = null;
 	
 	/**
@@ -266,7 +263,7 @@ public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 		        hierarchy.getSelectionModel().setSelectedObject(null);
 			}
 			catch(Exception e) {	
-				Dialogs.showErrorMessage("Error", e.getMessage());
+//				Dialogs.showErrorMessage("Error", e.getMessage());
 				
 				lastResults =  "Something went wrong: "+e.getMessage();
 				logger.error(lastResults);
@@ -274,7 +271,7 @@ public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 			}				
 			
 			if (Thread.currentThread().isInterrupted()) {
-				Dialogs.showErrorMessage("Warning", "Interrupted!");
+//				Dialogs.showErrorMessage("Warning", "Interrupted!");
 				lastResults =  "Interrupted!";
 				logger.warn(lastResults);
 				
@@ -302,7 +299,7 @@ public class AiDiaAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 				aidiaDataFileProp.set(aidiaFileFp.toString());
 			}
 			else {
-				Dialogs.showErrorMessage("Warning", "AI-DIA Data File is not selected!");
+//				Dialogs.showErrorMessage("Warning", "AI-DIA Data File is not selected!");
 				lastResults =  "AI-DIA Data File is not selected!";
 				logger.warn(lastResults);
 			}

@@ -62,7 +62,7 @@ import qupath.lib.projects.Project;
 import qupath.lib.projects.ProjectImageEntry;
 import qupath.lib.regions.RegionRequest;
 import qupath.lib.roi.interfaces.ROI;
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 import qupath.fx.dialogs.FileChoosers;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -127,7 +127,6 @@ public class ObjectClassificationImageAcquisition extends AbstractDetectionPlugi
 			objClsImgAcqAllSamplesProp.set(params.getBooleanParameterValue("allSamples"));
 			objClsImgAcqSamplingNumProp.set(params.getIntParameterValue("samplingNum"));
 			   
-			MacenkoStainingNormalizer normalizer = new MacenkoStainingNormalizer();
 			String saveType = (String)params.getChoiceParameterValue("format");
 			
 			
@@ -199,9 +198,12 @@ public class ObjectClassificationImageAcquisition extends AbstractDetectionPlugi
 				return hierarchy.getAnnotationObjects();
 			}
 			
-			BufferedImage normalizationSamplingImage = normalizer.concatBufferedImages(normalizationSamplingImageList);
-			final double[][] est_W = normalizer.reorderStainsByCosineSimilarity(normalizer.getStainMatrix(normalizationSamplingImage, normalizer.OD_threshold, 1), normalizer.targetStainReferenceMatrix);
-			
+			BufferedImage normalizationSamplingImage = MacenkoStainingNormalizer.concatBufferedImages(normalizationSamplingImageList);
+			double[][][] normalizationSamplingImageRGBAry = MacenkoStainingNormalizer.convertImageToRGBArray(normalizationSamplingImage);
+			double[][][] normalizationSamplingImageSDAAry = MacenkoStainingNormalizer.rgbToSda(normalizationSamplingImageRGBAry, 255, false);
+			double[][] est_W = MacenkoStainingNormalizer.separateStainsMacenkoPca(normalizationSamplingImageSDAAry);
+					
+					
 			int samplingNum = params.getIntParameterValue("samplingNum") == 0
 					|| params.getIntParameterValue("samplingNum") > allPathObjects.size() 
 					|| params.getBooleanParameterValue("allSamples") 
@@ -241,9 +243,24 @@ public class ObjectClassificationImageAcquisition extends AbstractDetectionPlugi
 						BufferedImage imgBuf = new BufferedImage(imgContent.getWidth(), imgContent.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
 						imgBuf.getGraphics().drawImage(imgContent, 0, 0, null);
 						
-						BufferedImage outputImgBuf = getParameterList(imageData).getBooleanParameterValue("normalization")? 
-								normalizer.normalizeToReferenceImage(imgBuf, est_W, normalizer.targetStainReferenceMatrix): imgBuf;
+						BufferedImage outputImgBuf = null;
 						
+			            if (getParameterList(imageData).getBooleanParameterValue("normalization")) {
+			            	double[][][] imgBufRGBAry = MacenkoStainingNormalizer.convertImageToRGBArray(imgBuf);
+			            	double[][][] outputImgBufAry = MacenkoStainingNormalizer.deconvolutionBasedNormalization(
+			            			imgBufRGBAry, 
+			    	    			est_W,  
+			    	    			MacenkoStainingNormalizer.targetStainReferenceMatrix, 
+			    	    			null, 
+			    	    			null, 
+			    	    			null,
+			    	    			null
+			    	    		);
+			            	outputImgBuf = MacenkoStainingNormalizer.convertRGBArrayToImage(outputImgBufAry, BufferedImage.TYPE_3BYTE_BGR);
+			            } else {
+			            	outputImgBuf = imgBuf;
+			            }
+			            
 						BufferedImage imgSampled = params.getBooleanParameterValue("dontResampling") ? outputImgBuf
 								: Scalr.resize(outputImgBuf, params.getIntParameterValue("samplingSize"));
 						
@@ -301,10 +318,26 @@ public class ObjectClassificationImageAcquisition extends AbstractDetectionPlugi
 		        			BufferedImage imgBuf = new BufferedImage(imgContent.getWidth(), imgContent.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
 			        	   
 		        			imgBuf.getGraphics().drawImage(imgContent, 0, 0, null);
-	
-		        			BufferedImage outputImgBuf = getParameterList(imageData).getBooleanParameterValue("normalization")? 
-		        					normalizer.normalizeToReferenceImage(imgBuf, est_W, normalizer.targetStainReferenceMatrix): imgBuf;
 		        			
+		        			BufferedImage outputImgBuf = null;
+		                    
+				            if (getParameterList(imageData).getBooleanParameterValue("normalization")) {
+				            	double[][][] imgBufRGBAry = MacenkoStainingNormalizer.convertImageToRGBArray(imgBuf);
+				            	double[][][] outputImgBufAry = MacenkoStainingNormalizer.deconvolutionBasedNormalization(
+				            			imgBufRGBAry, 
+				    	    			est_W,  
+				    	    			MacenkoStainingNormalizer.targetStainReferenceMatrix, 
+				    	    			null, 
+				    	    			null, 
+				    	    			null,
+				    	    			null
+				    	    		);
+				            	outputImgBuf = MacenkoStainingNormalizer.convertRGBArrayToImage(outputImgBufAry, BufferedImage.TYPE_3BYTE_BGR);
+				            } else {
+				            	outputImgBuf = imgBuf;
+				            }
+		                    
+		                    
 		        			BufferedImage imgSampled = params.getBooleanParameterValue("dontResampling") ? outputImgBuf
 		        					: Scalr.resize(outputImgBuf, params.getIntParameterValue("samplingSize"));
 	
@@ -466,9 +499,24 @@ public class ObjectClassificationImageAcquisition extends AbstractDetectionPlugi
 	        			BufferedImage imgBuf = new BufferedImage(imgContent.getWidth(), imgContent.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
 		        	   
 	        			imgBuf.getGraphics().drawImage(imgContent, 0, 0, null);
-
-	        			BufferedImage outputImgBuf = getParameterList(imageData).getBooleanParameterValue("normalization")? 
-	        					normalizer.normalizeToReferenceImage(imgBuf, est_W, normalizer.targetStainReferenceMatrix): imgBuf;
+	        			BufferedImage outputImgBuf = null;
+	                    
+			            if (getParameterList(imageData).getBooleanParameterValue("normalization")) {
+			            	double[][][] imgBufRGBAry = MacenkoStainingNormalizer.convertImageToRGBArray(imgBuf);
+			            	double[][][] outputImgBufAry = MacenkoStainingNormalizer.deconvolutionBasedNormalization(
+			            			imgBufRGBAry, 
+			    	    			est_W,  
+			    	    			MacenkoStainingNormalizer.targetStainReferenceMatrix, 
+			    	    			null, 
+			    	    			null, 
+			    	    			null,
+			    	    			null
+			    	    		);
+			            	outputImgBuf = MacenkoStainingNormalizer.convertRGBArrayToImage(outputImgBufAry, BufferedImage.TYPE_3BYTE_BGR);
+			            } else {
+			            	outputImgBuf = imgBuf;
+			            }
+	        			
 	        			
 	        			BufferedImage imgSampled = params.getBooleanParameterValue("dontResampling") ? 
 	        					outputImgBuf: Scalr.resize(outputImgBuf, params.getIntParameterValue("samplingSize"));
@@ -549,6 +597,37 @@ public class ObjectClassificationImageAcquisition extends AbstractDetectionPlugi
 		String format = (String)params.getChoiceParameterValue("format");
 		File objClsImgAcqDistFp;
 		
+		
+		
+		
+//		try {
+//			File pngfile = new File("/workspace/qupath-docker/qupath/qust_scripts/hne_example.png");
+//			BufferedImage pngexample = ImageIO.read(pngfile);
+//			double[][][] pngexampleRGBAry = MacenkoStainingNormalizer.convertImageToRGBArray(pngexample);
+//			double[][][] pngexampleSDAAry = MacenkoStainingNormalizer.rgbToSda(pngexampleRGBAry, 255, false);
+//			double[][] pngexampleAry_W = MacenkoStainingNormalizer.separateStainsMacenkoPca(pngexampleSDAAry);
+//	        double[][][] outputImgBufAry = MacenkoStainingNormalizer.deconvolutionBasedNormalization(
+//	        		pngexampleRGBAry, 
+//	    			pngexampleAry_W,  
+//	    			MacenkoStainingNormalizer.targetStainReferenceMatrix, 
+//	    			null, 
+//	    			null, // new String[]{"hematoxylin", "eosin", "null"},
+//	    			null,
+//	    			null
+//	    		);
+//	    	
+//	        BufferedImage outputImgBuf = MacenkoStainingNormalizer.convertRGBArrayToImage(outputImgBufAry, BufferedImage.TYPE_3BYTE_BGR);
+//	        File rstfile = new File("/workspace/qupath-docker/qupath/qust_scripts/hne_example_rst.png");
+//			
+//	        ImageIO.write(outputImgBuf, "png", rstfile);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
+		
+        
+        
 		if(format == "WebDataset") {
 			if (fileName.isBlank()) {
 				QuPathGUI qupath = QuPathGUI.getInstance();
@@ -575,7 +654,7 @@ public class ObjectClassificationImageAcquisition extends AbstractDetectionPlugi
 				if (objClsImgAcqDistFp != null) {
 					objClsImgAcqDistProp.set(objClsImgAcqDistFp.toString());
 				} else {
-					Dialogs.showErrorMessage("Warning", "No output file is selected!");
+//					Dialogs.showErrorMessage("Warning", "No output file is selected!");
 					lastResults = "No output file is selected!";
 					logger.warn(lastResults);
 				}
@@ -609,7 +688,7 @@ public class ObjectClassificationImageAcquisition extends AbstractDetectionPlugi
 				if (objClsImgAcqDistFp != null) {
 					objClsImgAcqDistProp.set(objClsImgAcqDistFp.toString());
 				} else {
-					Dialogs.showErrorMessage("Warning", "No output file is selected!");
+//					Dialogs.showErrorMessage("Warning", "No output file is selected!");
 					lastResults = "No output file is selected!";
 					logger.warn(lastResults);
 				}
@@ -624,7 +703,7 @@ public class ObjectClassificationImageAcquisition extends AbstractDetectionPlugi
 				if (objClsImgAcqDistFp != null) {
 					objClsImgAcqDistProp.set(objClsImgAcqDistFp.toString());
 				} else {
-					Dialogs.showErrorMessage("Warning", "No output directory is selected!");
+//					Dialogs.showErrorMessage("Warning", "No output directory is selected!");
 					lastResults = "No output directory is selected!";
 					logger.warn(lastResults);
 				}

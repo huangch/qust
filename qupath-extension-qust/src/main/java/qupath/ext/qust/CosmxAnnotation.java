@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 import qupath.fx.dialogs.FileChoosers;
 
 import javafx.beans.property.StringProperty;
@@ -361,14 +361,14 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 		        hierarchy.getSelectionModel().setSelectedObject(null);
 			}
 			catch(Exception e) {	
-				Dialogs.showErrorMessage("Error", e.getMessage());
+//				Dialogs.showErrorMessage("Error", e.getMessage());
 				lastResults =  e.getMessage();
 				logger.error(lastResults);
 				return new ArrayList<PathObject>(hierarchy.getRootObject().getChildObjects());
 			}				
 			
 			if (Thread.currentThread().isInterrupted()) {
-				Dialogs.showErrorMessage("Warning", "Interrupted!");
+//				Dialogs.showErrorMessage("Warning", "Interrupted!");
 				lastResults =  "Interrupted!";
 				logger.error(lastResults);
 				
@@ -395,7 +395,7 @@ public class CosmxAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 				cosmxAntnCosmxFldrProp.set(cosmxDir.toString());
 			}
 			else {
-				Dialogs.showErrorMessage("Warning", "No CosMx directory is selected!");
+//				Dialogs.showErrorMessage("Warning", "No CosMx directory is selected!");
 				lastResults =  "No CosMx directory is selected!";
 				logger.warn(lastResults);
 			}

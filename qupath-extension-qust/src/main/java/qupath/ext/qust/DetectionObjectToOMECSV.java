@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.GZIPOutputStream;
@@ -36,7 +38,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 import qupath.fx.dialogs.FileChoosers;
 
 import qupath.lib.gui.QuPathGUI;
@@ -62,7 +64,7 @@ import qupath.lib.geom.Point2;
 import qupath.lib.images.ImageData;
 
 /**
- * Plugin for Exporting DetectionObjects To OMECSV file
+ * QuST extension for Exporting DetectionObjects To gzipped OMERO CSV (OGZ) file
  * 
  * @author Chao Hui Huang
  *
@@ -70,12 +72,12 @@ import qupath.lib.images.ImageData;
 public class DetectionObjectToOMECSV extends AbstractDetectionPlugin<BufferedImage> {
 	
 	private static Logger logger = LoggerFactory.getLogger(DetectionObjectToOMECSV.class);
-	private static ParameterList params = null;
-	private static File outFile = null;
-	private static Collection<PathObject> chosen_objects = new ArrayList<PathObject>();
-	private static String allObjects = "All objects";
-	private static String selectedObjects = "Selected objects";
-	private static String lastResults = null;
+	private Collection<PathObject> chosen_objects = new ArrayList<PathObject>();
+	private String allObjects = "All objects";
+	private String selectedObjects = "Selected objects";
+	private String lastResults = null;
+	private ParameterList params = null;
+	private File outFile = null;
 	
 	/**
 	 * Constructor.
@@ -117,7 +119,7 @@ public class DetectionObjectToOMECSV extends AbstractDetectionPlugin<BufferedIma
 	 * @return success
 	 * @throws IOException 
 	 */
-	private static void writeCSV(String outFile, Collection<PathObject> chosenObjects, String type, ImageData<?> imageData, int downsampling, boolean excludeMeasurements, String lblPrefix) throws IOException {
+	private void writeCSV(String outFile, Collection<PathObject> chosenObjects, String type, ImageData<?> imageData, int downsampling, boolean excludeMeasurements, String lblPrefix) throws IOException {
 		final List<PathObject> pathObjectList = new ArrayList<PathObject>(chosenObjects);
 		
 		final PathObjectHierarchy hierarchy = imageData.getHierarchy();
@@ -247,6 +249,10 @@ public class DetectionObjectToOMECSV extends AbstractDetectionPlugin<BufferedIma
 			
 			outFile = FileChoosers.promptToSaveFile("Export to file", defaultFile,
 					FileChoosers.createExtensionFilter("Gzipped OMERO-compatible Comma-Separated Values (.OGZ)", ".ogz"));
+			
+			Map <String, String> newParam = Map.of("fileName", outFile.toString());
+			ParameterList.updateParameterList(params, newParam, Locale.getDefault());
+			
 		}
 		else {
 			outFile = new File(fileName);
@@ -283,7 +289,7 @@ public class DetectionObjectToOMECSV extends AbstractDetectionPlugin<BufferedIma
 
 	@Override
 	public String getName() {
-		return "LLM";
+		return "QuST extension for Exporting DetectionObjects To gzipped OMERO CSV (OGZ) file";
 	}
 
 	@Override
@@ -293,7 +299,7 @@ public class DetectionObjectToOMECSV extends AbstractDetectionPlugin<BufferedIma
 
 	@Override
 	public String getDescription() {
-		return "Detect one or more regions of interest by applying a global threshold";
+		return "QuST extension for Exporting DetectionObjects To gzipped OMERO CSV (OGZ) file";
 	}
 
 	class AnnotationLoader implements ObjectDetector<BufferedImage> {
@@ -307,7 +313,7 @@ public class DetectionObjectToOMECSV extends AbstractDetectionPlugin<BufferedIma
 			String comboChoice = (String)params.getChoiceParameterValue("exportOptions");
 			if (comboChoice.equals(selectedObjects)) {
 				if (hierarchy.getSelectionModel().noSelection()) {
-					Dialogs.showErrorMessage("No selection", "No selection detected!");
+//					Dialogs.showErrorMessage("No selection", "No selection detected!");
 					return new ArrayList<PathObject>(hierarchy.getRootObject().getChildObjects());
 
 				}
@@ -333,7 +339,7 @@ public class DetectionObjectToOMECSV extends AbstractDetectionPlugin<BufferedIma
 			});
 			
 			if (Thread.currentThread().isInterrupted()) {
-				Dialogs.showErrorMessage("Warning", "Interrupted!");
+//				Dialogs.showErrorMessage("Warning", "Interrupted!");
 				lastResults =  "Interrupted!";
 				logger.warn(lastResults);
 			}

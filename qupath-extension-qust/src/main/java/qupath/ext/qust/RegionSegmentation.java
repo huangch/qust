@@ -69,7 +69,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
 import qupath.imagej.tools.IJTools;
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 //import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.images.ImageData;
@@ -641,7 +641,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 	    }
 	    catch (Exception e) {
 			e.printStackTrace();
-			Dialogs.showErrorMessage("Error", e.getMessage());
+//			Dialogs.showErrorMessage("Error", e.getMessage());
 		}
 	    finally {
 	    	availableRequestList.clear();
@@ -712,7 +712,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 			if(m_modelNormalized) m_normalizer_w = estimate_w(imageData);
 		} catch (Exception e) {
 			e.printStackTrace();
-			Dialogs.showErrorMessage("Error", e.getMessage());
+//			Dialogs.showErrorMessage("Error", e.getMessage());
 		} finally {
 		    System.gc();
 		}	
@@ -789,7 +789,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 		
 		try {
 			if(!imageData.getServer().getPixelCalibration().hasPixelSizeMicrons()) {
-				Dialogs.showErrorMessage("Error", "Please check the image properties in left panel. Most likely the pixel size is unknown.");
+//				Dialogs.showErrorMessage("Error", "Please check the image properties in left panel. Most likely the pixel size is unknown.");
 				throw new Exception("No pixel size information");
 			}
 			
@@ -813,7 +813,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 		} catch (Exception e) {						
 			params = null;
 			e.printStackTrace();
-			Dialogs.showErrorMessage("Error", e.getMessage());
+//			Dialogs.showErrorMessage("Error", e.getMessage());
 		} finally {
 		    System.gc();
 		}

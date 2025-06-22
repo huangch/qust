@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Point2D;
-import qupath.fx.dialogs.Dialogs;
+//import qupath.fx.dialogs.Dialogs;
 import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.images.ImageData;
@@ -53,6 +53,7 @@ import qupath.lib.images.servers.ImageServer;
 import qupath.lib.measurements.MeasurementList;
 import qupath.lib.objects.PathAnnotationObject;
 import qupath.lib.objects.PathObject;
+import qupath.lib.objects.PathRootObject;
 import qupath.lib.objects.TMACoreObject;
 import qupath.lib.objects.classes.PathClass;
 import qupath.lib.objects.hierarchy.PathObjectHierarchy;
@@ -71,9 +72,9 @@ import org.json.JSONObject;
  * @author Chao Hui Huang
  *
  */
-public class XeniumAnnotation2 extends AbstractDetectionPlugin<BufferedImage> {
+public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	
-	private static Logger logger = LoggerFactory.getLogger(XeniumAnnotation2.class);
+	private static Logger logger = LoggerFactory.getLogger(XeniumAnnotation.class);
 	
 	private StringProperty xnumAntnXnumFldrProp = PathPrefs.createPersistentPreference("xnumAntnXnumFldr", ""); 
 	
@@ -84,7 +85,7 @@ public class XeniumAnnotation2 extends AbstractDetectionPlugin<BufferedImage> {
 	/**
 	 * Constructor.
 	 */
-	public XeniumAnnotation2() {	
+	public XeniumAnnotation() {	
 		params = new ParameterList()
 			.addTitleParameter("10X Xenium Data Loader")
 			.addStringParameter("xeniumDir", "Xenium directory", xnumAntnXnumFldrProp.get(), "Xenium Out Directory")
@@ -683,7 +684,7 @@ public class XeniumAnnotation2 extends AbstractDetectionPlugin<BufferedImage> {
 		        hierarchy.getSelectionModel().setSelectedObject(null);
 			}
 			catch(Exception e) {	
-				Dialogs.showErrorMessage("Error", e.getMessage());
+//				Dialogs.showErrorMessage("Error", e.getMessage());
 				
 				lastResults =  "Something went wrong: "+e.getMessage();
 				logger.error(lastResults);
@@ -691,7 +692,7 @@ public class XeniumAnnotation2 extends AbstractDetectionPlugin<BufferedImage> {
 			}				
 			
 			if (Thread.currentThread().isInterrupted()) {
-				Dialogs.showErrorMessage("Warning", "Interrupted!");
+//				Dialogs.showErrorMessage("Warning", "Interrupted!");
 				lastResults =  "Interrupted!";
 				logger.warn(lastResults);
 				
@@ -720,7 +721,7 @@ public class XeniumAnnotation2 extends AbstractDetectionPlugin<BufferedImage> {
 				xnumAntnXnumFldrProp.set(xnumDir.toString());
 			}
 			else {
-				Dialogs.showErrorMessage("Warning", "No Xenium directory is selected!");
+//				Dialogs.showErrorMessage("Warning", "No Xenium directory is selected!");
 				lastResults =  "No Xenium directory is selected!";
 				logger.warn(lastResults);
 			}
@@ -770,13 +771,17 @@ public class XeniumAnnotation2 extends AbstractDetectionPlugin<BufferedImage> {
 
 	@Override
 	public Collection<Class<? extends PathObject>> getSupportedParentObjectClasses() {
-		// TODO: Re-allow taking an object as input in order to limit bounds
 		// Temporarily disabled so as to avoid asking annoying questions when run repeatedly
+		List<Class<? extends PathObject>> list = new ArrayList<>();
+		list.add(TMACoreObject.class);
+		list.add(PathAnnotationObject.class);
+		list.add(PathRootObject.class);
+		return list;		
 
-		return Arrays.asList(
-			PathAnnotationObject.class,
-			TMACoreObject.class
-			);		
+//		return Arrays.asList(
+//				PathAnnotationObject.class,
+//				TMACoreObject.class
+//				);	
 	}
 
 }

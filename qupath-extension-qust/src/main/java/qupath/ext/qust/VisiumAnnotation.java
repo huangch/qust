@@ -92,9 +92,9 @@ import qupath.lib.roi.interfaces.ROI;
 
 
 
-public class VisiumAnnotation2 extends AbstractDetectionPlugin<BufferedImage> {
+public class VisiumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	
-	final private static Logger logger = LoggerFactory.getLogger(VisiumAnnotation2.class);
+	final private static Logger logger = LoggerFactory.getLogger(VisiumAnnotation.class);
 	final private StringProperty vsumAntnVsumFldrProp = PathPrefs.createPersistentPreference("vsumAntnVsumFldr", ""); // 0.583631786649883, -0.003093833507169, 3976.5962855892744, 0.002910311759446, 0.583704549228862, 4045.851508970304
 	private ParameterList params;
 
@@ -106,7 +106,7 @@ public class VisiumAnnotation2 extends AbstractDetectionPlugin<BufferedImage> {
 	/**
 	 * Constructor.
 	 */
-	public VisiumAnnotation2() {
+	public VisiumAnnotation() {
 		params = new ParameterList()
 			.addStringParameter("visiumDir", "Visium output directory", vsumAntnVsumFldrProp.get(), "Visium output directory")
 			.addDoubleParameter("spotDiameter", "Spot diameter", 65, GeneralTools.micrometerSymbol(), "Spot diameter")
@@ -891,12 +891,15 @@ public class VisiumAnnotation2 extends AbstractDetectionPlugin<BufferedImage> {
 
 	@Override
 	public Collection<Class<? extends PathObject>> getSupportedParentObjectClasses() {
-		// TODO: Re-allow taking an object as input in order to limit bounds
 		// Temporarily disabled so as to avoid asking annoying questions when run repeatedly
 		List<Class<? extends PathObject>> list = new ArrayList<>();
 		list.add(TMACoreObject.class);
-
 		list.add(PathRootObject.class);
-		return list;
+		return list;		
+
+//		return Arrays.asList(
+//				PathAnnotationObject.class,
+//				TMACoreObject.class
+//				);
 	}
 }
