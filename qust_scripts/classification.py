@@ -27,6 +27,9 @@ parser.add_argument('--normalizer_w', nargs='+', type=float, help='normalizer w'
 opt = parser.parse_args()
 # print(opt)
 
+print('NVIDIA_VISIBLE_DEVICES: '+os.environ["NVIDIA_VISIBLE_DEVICES"] if "NVIDIA_VISIBLE_DEVICES" in os.environ.keys() else "NVIDIA_VISIBLE_DEVICES is not set")
+print('CUDA_VISIBLE_DEVICES: '+os.environ["CUDA_VISIBLE_DEVICES"] if "CUDA_VISIBLE_DEVICES" in os.environ.keys() else "CUDA_VISIBLE_DEVICES is not set")
+
 # Set device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

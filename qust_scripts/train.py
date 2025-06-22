@@ -30,12 +30,16 @@ parser.add_argument('-pt','--pretrained', type=str, default=None, help='Load pre
 parser.add_argument("-bs", "--batch_size", type=int, default=128, help="size of the batches")
 parser.add_argument("-ne", "--n_epochs", type=int, default=100, help="number of epochs of training")
 parser.add_argument("-nc", "--num_per_class", type=int, default=0, help="number per class for training")
-parser.add_argument("-lr", "--learning_rate", type=float, default=0.0001, help="learning rate")
+parser.add_argument("-lr", "--learning_rate", type=float, default=0.0001, help="learning rate. Default: 0.0001")
+parser.add_argument("-wd", "--weight_decay", type=float, default=0.0001, help="weight decay. Default: 0.0001")
 parser.add_argument("-tb", "--tensorboard", action='store_true', help="tensorboard")
 parser.add_argument("-tp", "--tensorboard_port", type=str, default="6006", help="tensorboard port")
 
 opt = parser.parse_args()
 print(opt)
+
+# CONSTANTS
+NORMALIZATION_SAMPLING_SIZE = 1000
 
 random.seed(1234)
 
@@ -179,7 +183,8 @@ def train(opt):
     #
     # Normalization
     # 
-    sampled_image_filename_list = balanced_df['image_filepath'].sample(1000).tolist()
+    sampled_image_filename_list = balanced_df['image_filepath'].sample(NORMALIZATION_SAMPLING_SIZE).tolist() if len(balanced_df['image_filepath']) > NORMALIZATION_SAMPLING_SIZE else balanced_df['image_filepath'].tolist()
+
     sampled_image_arraylist = []
     #
     image_fileext = None
@@ -828,7 +833,7 @@ def train(opt):
             
     # Define the loss function and optimizer
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=opt.learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=opt.learning_rate, weight_decay=opt.weight_decay)
     scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08) 
                                   
     if opt.tensorboard:
@@ -896,7 +901,7 @@ def train(opt):
             cf_matrix = confusion_matrix(y_true, y_pred)
             df_cm = pd.DataFrame(cf_matrix / np.sum(cf_matrix, axis=1)[:, None], index = [i for i in cls_list],
                                  columns = [i for i in cls_list])
-            fig = plt.figure(figsize = (12,7))
+            fig = plt.figure(figsize = (24,14))
             sns.heatmap(df_cm, annot=True)
             plt.savefig(os.path.join(opt.output_folder, opt.model_name+'-{:}-{:.1f}-confusion_matrix.png'.format(epoch, 100*val_cls_acc)), bbox_inches='tight')
             plt.close(fig)
