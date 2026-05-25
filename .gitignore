@@ -1,6 +1,8 @@
 .env
 .DS_Store
 .vscode
+.gradle
+.settings
 djl.ai/
 extensions/
 objcls_models/
@@ -12,6 +14,4 @@ regseg_models/
 stardist_models/
 DBSCAN-CellX/
 prefs.xml
-qupath-extension-qust.bak/
 qust_scripts/gene2go
-qupath-extension-qust-0.5.0 copy.jar
