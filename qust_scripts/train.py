@@ -158,6 +158,8 @@ def train(opt):
         data_df.loc[data_df.index.isin(cls_uuid_series), 'Classification'] = cls
         data_df.loc[data_df.index.isin(cls_uuid_series), 'label'] = lbl
          
+    data_df.dropna(subset=['label'], inplace=True)
+    
     #
     # Balance classes when needed
     #
@@ -901,7 +903,7 @@ def train(opt):
             cf_matrix = confusion_matrix(y_true, y_pred)
             df_cm = pd.DataFrame(cf_matrix / np.sum(cf_matrix, axis=1)[:, None], index = [i for i in cls_list],
                                  columns = [i for i in cls_list])
-            fig = plt.figure(figsize = (24,14))
+            fig = plt.figure(figsize = (12,7))
             sns.heatmap(df_cm, annot=True)
             plt.savefig(os.path.join(opt.output_folder, opt.model_name+'-{:}-{:.1f}-confusion_matrix.png'.format(epoch, 100*val_cls_acc)), bbox_inches='tight')
             plt.close(fig)

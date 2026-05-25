@@ -9,10 +9,3 @@ argparse
 einops
 scikit-learn
 seaborn
-requests
-scanpy
-goatools
-openai
-python-dotenv
-igraph
-leidenalg
