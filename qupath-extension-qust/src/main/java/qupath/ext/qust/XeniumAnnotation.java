@@ -29,13 +29,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -45,7 +47,6 @@ import org.slf4j.LoggerFactory;
 
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Point2D;
-//import qupath.fx.dialogs.Dialogs;
 import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.images.ImageData;
@@ -64,10 +65,19 @@ import qupath.lib.plugins.TaskRunner;
 import qupath.lib.plugins.parameters.ParameterList;
 import qupath.lib.roi.interfaces.ROI;
 
+import org.apache.avro.generic.GenericRecord;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.parquet.avro.AvroParquetReader;
+import org.apache.parquet.hadoop.ParquetReader;
+import org.apache.parquet.hadoop.util.HadoopInputFile;
 import org.json.JSONObject;
 /**
- * Plugin for loading 10x Visium Annotation 
+ * Plugin for loading 10x Xenium Annotation 
  * 
  * @author Chao Hui Huang
  *
@@ -250,7 +260,6 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 				String jsonTxt = is != null? IOUtils.toString(is, "UTF-8"): null;
 				JSONObject imgRegParamJsonObj = jsonTxt != null? new JSONObject(jsonTxt): null;   
 				
-//				double xnumAnnotImgRegParamManualScale = imgRegParamJsonObj == null? 1: imgRegParamJsonObj.getDouble("xnumAnnotImgRegParamManualScale");
 				int xnumAnnotImgRegParamSrcImgWidth = imgRegParamJsonObj == null? 1: (int)(0.5+imgRegParamJsonObj.getInt("xnumAnnotImgRegParamSrcImgWidth"));
 				int xnumAnnotImgRegParamSrcImgHeight = imgRegParamJsonObj == null? 1: (int)(0.5+imgRegParamJsonObj.getInt("xnumAnnotImgRegParamSrcImgHeight"));
 				boolean xnumAnnotImgRegParamFlipHori = imgRegParamJsonObj == null? false: imgRegParamJsonObj.getBoolean("xnumAnnotImgRegParamFlipHori");
@@ -260,8 +269,6 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 				double[] xnumAnnotImgRegParamSiftMatrix = imgRegParamJsonObj == null? null: IntStream.range(0, 6).mapToDouble(i -> imgRegParamJsonObj.getJSONArray("xnumAnnotImgRegParamSiftMatrix").getDouble(i)).toArray();
 				double xnumAnnotImgRegParamSourceScale = imgRegParamJsonObj == null? 1: imgRegParamJsonObj.getDouble("xnumAnnotImgRegParamSourceScale");
 				double xnumAnnotImgRegParamTargetScale = imgRegParamJsonObj == null? 1: imgRegParamJsonObj.getDouble("xnumAnnotImgRegParamTargetScale");
-//				int xnumAnnotImgRegParamShiftX = imgRegParamJsonObj == null? 0: imgRegParamJsonObj.getInt("xnumAnnotImgRegParamShiftX");
-//				int xnumAnnotImgRegParamShiftY = imgRegParamJsonObj == null? 0: imgRegParamJsonObj.getInt("xnumAnnotImgRegParamShiftY");
 				
 				// Load nonlinear transformation
 				
@@ -372,202 +379,193 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 	             */
 
 				if(xnumAntnXnumFldrProp.get().isBlank()) throw new Exception("singleCellFile is blank");
-				
-				HashMap<String, Integer> cellToClusterHashMap = new HashMap<>();
-				
-				String clusterFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "analysis", "clustering", "gene_expression_graphclust", "clusters.csv").toString();
-				FileReader clusterFileReader = new FileReader(new File(clusterFilePath));
-				BufferedReader clusterReader = new BufferedReader(clusterFileReader);
-				clusterReader.readLine();
-				String clusterNextRecord;
-				
-				while ((clusterNextRecord = clusterReader.readLine()) != null) {
-		        	String[] clusterNextRecordArray = clusterNextRecord.split(",");
-		        	String cellId = clusterNextRecordArray[0].replaceAll("\"", "");
-		        	int clusterId = Integer.parseInt(clusterNextRecordArray[1]);
-		        	cellToClusterHashMap.put(cellId, clusterId);
-				}
-				
-				clusterReader.close();
-				
-				HashMap<String, String> cellToSCLabelHashMap = new HashMap<>();
-				
-				String scLabelFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "analysis", "clustering", "gene_expression_graphclust", "clusters.csv").toString();
-				FileReader scLabelFileReader = new FileReader(new File(scLabelFilePath));
-				BufferedReader scLabelReader = new BufferedReader(scLabelFileReader);
-				scLabelReader.readLine();
-				String scLabelNextRecord;
-				
-				while ((scLabelNextRecord = scLabelReader.readLine()) != null) {
-		        	String[] scLabelNextRecordArray = scLabelNextRecord.split(",");
-		        	String cellId = scLabelNextRecordArray[0].replaceAll("\"", "");;
-		        	String scLabelId = scLabelNextRecordArray[1].replaceAll("\"", "");;
-		        	cellToSCLabelHashMap.put(cellId, scLabelId);
-				}
-				
-				scLabelReader.close();
-				
-				HashMap<String, PathObject> cellToPathObjHashMap = new HashMap<>();
-			
-				String singleCellFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "cells.csv.gz").toString();
-				GZIPInputStream singleCellGzipStream = new GZIPInputStream(new FileInputStream(singleCellFilePath));
-				BufferedReader singleCellGzipReader = new BufferedReader(new InputStreamReader(singleCellGzipStream));
-				singleCellGzipReader.readLine();
-				String singleCellNextRecord;
-				
-		        while ((singleCellNextRecord = singleCellGzipReader.readLine()) != null) {
-		        	String[] singleCellNextRecordArray = singleCellNextRecord.split(",");
-		        	String cellId = singleCellNextRecordArray[0].replaceAll("\"", "");
-		        	
-		        	double transcriptCounts = Double.parseDouble(singleCellNextRecordArray[3]);
-		        	double controlProbeCounts = Double.parseDouble(singleCellNextRecordArray[4]);
-		        	double controlCodewordCounts = Double.parseDouble(singleCellNextRecordArray[5]);
-		        	double totalCounts = Double.parseDouble(singleCellNextRecordArray[6]);
-		        	double cellArea = Double.parseDouble(singleCellNextRecordArray[7]);
-		        	double nucleusArea = Double.parseDouble(singleCellNextRecordArray[8]);
-		        	
-		        	double cx = Double.parseDouble(singleCellNextRecordArray[1]);
-		        	double cy = Double.parseDouble(singleCellNextRecordArray[2]);
-		        	
-		        	double dx = cx/xnumAnnotImgRegParamDapiImgPxlSize;
-		        	double dy = cy/xnumAnnotImgRegParamDapiImgPxlSize;
-		        	
-		        	
-		        	
-		        	
-			        	
-		        	if(xnumAnnotImgRegParamFlipVert) {
-						dy = xnumAnnotImgRegParamSrcImgHeight - dy;
-					}
-					
-					if(xnumAnnotImgRegParamFlipHori) {
-						dx = xnumAnnotImgRegParamSrcImgWidth - dx;
-					}
 
-					if(xnumAnnotImgRegParamRotation.equals("-90") || xnumAnnotImgRegParamRotation.equals("270")) {
-						double x1 = dx;
-						dx = dy;
-						dy = xnumAnnotImgRegParamSrcImgWidth - x1;
-					}
-					else if(xnumAnnotImgRegParamRotation.equals("-180") || xnumAnnotImgRegParamRotation.equals("180")) {
-						dx = xnumAnnotImgRegParamSrcImgWidth - dx;
-						dy = xnumAnnotImgRegParamSrcImgHeight - dy;
-					}
-					else if(xnumAnnotImgRegParamRotation.equals("-270") || xnumAnnotImgRegParamRotation.equals("90")) {
-						double x1 = dx;
-						dx = xnumAnnotImgRegParamSrcImgHeight - dy;
-						dy = x1;	
-					}
+				Map<String, String> cellToSCLabelHashMap = new HashMap<>();
+		        java.nio.file.Path clusterCsv = Paths.get(xnumAntnXnumFldrProp.get(), "analysis", "clustering", "gene_expression_graphclust", "clusters.csv");
+		        java.nio.file.Path analysisTar = Paths.get(xnumAntnXnumFldrProp.get(), "analysis.tar.gz");
+		        
+		        if (Files.exists(clusterCsv)) {
+		            // Read clusters from extracted CSV
+		            try (BufferedReader reader = Files.newBufferedReader(clusterCsv, StandardCharsets.UTF_8)) {
+		                reader.readLine();
+		                String line;
+		                while ((line = reader.readLine()) != null) {
+		                    String[] fields = line.split(",");
+		                    if (fields.length < 2) continue;
+		                    String cellId = fields[0].replace("\"", "");
+		                    String clusterId = fields[1].replace("\"", "");
+		                    cellToSCLabelHashMap.put(cellId, clusterId);
+		                }
+		            }
+		        } else if (Files.exists(analysisTar)) {
+		            // Read clusters.csv from within analysis.tar.gz
+		            try (TarArchiveInputStream tar = new TarArchiveInputStream(new GZIPInputStream(Files.newInputStream(analysisTar)))) {
+		                TarArchiveEntry entry;
+		                while ((entry = tar.getNextTarEntry()) != null) {
+		                    if (!entry.isDirectory() && entry.getName().endsWith("/clusters.csv")) {
+		                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(tar, StandardCharsets.UTF_8))) {
+		                            reader.readLine(); // skip header
+		                            String line;
+		                            while ((line = reader.readLine()) != null) {
+		                                String[] fields = line.split(",");
+		                                if (fields.length < 2) continue;
+		                                // Remove quotes if present
+		                                String cellId = fields[0].replace("\"", "");
+		                                String clusterId = fields[1].replace("\"", "");
+		                                cellToSCLabelHashMap.put(cellId, clusterId);
+		                            }
+		                        }
+		                        break; // stop after reading the target file
+		                    }
+		                }
+		            }
+		        } else {
+		            // Clustering/analysis data not found; not critical, so just continue without cluster classes
+		        	logger.warn("Clustering/analysis data not found; not critical, so just continue without cluster classes");
+		        }
+				
+		        HashMap<String, PathObject> cellToPathObjHashMap = new HashMap<>();
+		        
+		        java.nio.file.Path cellsCsvGz = Paths.get(xnumAntnXnumFldrProp.get(), "cells.csv.gz");
+		        java.nio.file.Path cellsParquet = Paths.get(xnumAntnXnumFldrProp.get(), "cells.parquet");
+		        if (Files.exists(cellsCsvGz)) {
+		        	BufferedReader singleCellGzipReader = 
+	        			new BufferedReader(
+        					new InputStreamReader(
+    							new GZIPInputStream(Files.newInputStream(cellsCsvGz)), 
+    							StandardCharsets.UTF_8
+        					)
+	        			);
+			        
+					singleCellGzipReader.readLine();
+					String singleCellNextRecord;
 					
-					
-					
-					dx /= xnumAnnotImgRegParamSourceScale;
-					dy /= xnumAnnotImgRegParamSourceScale;						
-					
-	        
+			        while ((singleCellNextRecord = singleCellGzipReader.readLine()) != null) {
+			        	String[] singleCellNextRecordArray = singleCellNextRecord.split(",");
+			        	String cellId = singleCellNextRecordArray[0].replaceAll("\"", "");
+			        	
+			        	double transcriptCounts = Double.parseDouble(singleCellNextRecordArray[3]);
+			        	double controlProbeCounts = Double.parseDouble(singleCellNextRecordArray[4]);
+			        	double controlCodewordCounts = Double.parseDouble(singleCellNextRecordArray[5]);
+			        	double totalCounts = Double.parseDouble(singleCellNextRecordArray[6]);
+			        	double cellArea = Double.parseDouble(singleCellNextRecordArray[7]);
+			        	double nucleusArea = Double.parseDouble(singleCellNextRecordArray[8]);
+			        	
+			        	double cx = Double.parseDouble(singleCellNextRecordArray[1]);
+			        	double cy = Double.parseDouble(singleCellNextRecordArray[2]);
+			        	
+			        	double dx = cx/xnumAnnotImgRegParamDapiImgPxlSize;
+			        	double dy = cy/xnumAnnotImgRegParamDapiImgPxlSize;
+				        	
+			        	if(xnumAnnotImgRegParamFlipVert) {
+							dy = xnumAnnotImgRegParamSrcImgHeight - dy;
+						}
 						
-		        	
-		        	
-		       
-		        	
-		        	
-		        	int bx = 0;
-		        	int by = 0;
-		        	
-		        	if(params.getBooleanParameterValue("dontTransform")) {
-		        		bx = (int)Math.round(dx);
-		        		by = (int)Math.round(dy);
-		        	}
-		        	else {
-			        	double ax = xnumAnnotImgRegParamSiftMatrix[0] * dx + xnumAnnotImgRegParamSiftMatrix[1] * dy + xnumAnnotImgRegParamSiftMatrix[2];
-			        	double ay = xnumAnnotImgRegParamSiftMatrix[3] * dx + xnumAnnotImgRegParamSiftMatrix[4] * dy + xnumAnnotImgRegParamSiftMatrix[5];
-						
-			        	if(!params.getBooleanParameterValue("AffineTransformOnly")) {
-				        	int bv = (int)Math.round(ay);
-				        	int bu = (int)Math.round(ax);
-				        	
-							// double tu = (double)(bu * bspline_intervals) / (double)(server.getWidth() - 1) + 1.0F;
-							// double tv = (double)(bv * bspline_intervals) / (double)(server.getHeight() - 1) + 1.0F;
-							
-							// bspline_swx.prepareForInterpolation(tu, tv, false);
-							// double bspline_x_bv_bu = bspline_swx.interpolateI();
-				        	
-							// bspline_swy.prepareForInterpolation(tu, tv, false);
-							// double bspline_y_bv_bu = bspline_swy.interpolateI();  
-				        	
-							// bx = (int)Math.round(scale * bspline_x_bv_bu);
-							// by = (int)Math.round(scale * bspline_y_bv_bu);
-							
-							
-							
-							
-							
-							
-							
+						if(xnumAnnotImgRegParamFlipHori) {
+							dx = xnumAnnotImgRegParamSrcImgWidth - dx;
+						}
 	
-							double x1 = (double)(bu * bspline_intervals) / (double)(((int)((double)server.getWidth()/xnumAnnotImgRegParamTargetScale)+0.5) - 1) + 1.0F;
-							double y1 = (double)(bv * bspline_intervals) / (double)(((int)((double)server.getHeight()/xnumAnnotImgRegParamTargetScale)+0.5) - 1) + 1.0F;
-							
-							
-							bspline_swx.prepareForInterpolation(x1, y1, false);
-							double bspline_x_bv_bu = bspline_swx.interpolateI();
-				        	
-							bspline_swy.prepareForInterpolation(x1, y1, false);
-							double bspline_y_bv_bu = bspline_swy.interpolateI();
-							
-							 bx = (int)Math.round(bspline_x_bv_bu);
-							 by = (int)Math.round(bspline_y_bv_bu);
-							
-							
+						if(xnumAnnotImgRegParamRotation.equals("-90") || xnumAnnotImgRegParamRotation.equals("270")) {
+							double x1 = dx;
+							dx = dy;
+							dy = xnumAnnotImgRegParamSrcImgWidth - x1;
+						}
+						else if(xnumAnnotImgRegParamRotation.equals("-180") || xnumAnnotImgRegParamRotation.equals("180")) {
+							dx = xnumAnnotImgRegParamSrcImgWidth - dx;
+							dy = xnumAnnotImgRegParamSrcImgHeight - dy;
+						}
+						else if(xnumAnnotImgRegParamRotation.equals("-270") || xnumAnnotImgRegParamRotation.equals("90")) {
+							double x1 = dx;
+							dx = xnumAnnotImgRegParamSrcImgHeight - dy;
+							dy = x1;	
+						}
+						
+						dx /= xnumAnnotImgRegParamSourceScale;
+						dy /= xnumAnnotImgRegParamSourceScale;						
+						
+			        	int bx = 0;
+			        	int by = 0;
+			        	
+			        	if(params.getBooleanParameterValue("dontTransform")) {
+			        		bx = (int)Math.round(dx);
+			        		by = (int)Math.round(dy);
 			        	}
 			        	else {
-				        	bx = (int)Math.round(ax);
-			        		by = (int)Math.round(ay);
+				        	double ax = xnumAnnotImgRegParamSiftMatrix[0] * dx + xnumAnnotImgRegParamSiftMatrix[1] * dy + xnumAnnotImgRegParamSiftMatrix[2];
+				        	double ay = xnumAnnotImgRegParamSiftMatrix[3] * dx + xnumAnnotImgRegParamSiftMatrix[4] * dy + xnumAnnotImgRegParamSiftMatrix[5];
+							
+				        	if(!params.getBooleanParameterValue("AffineTransformOnly")) {
+					        	int bv = (int)Math.round(ay);
+					        	int bu = (int)Math.round(ax);
+					        	
+					        	double x1 = (double)(bu * bspline_intervals) / (double)(((int)((double)server.getWidth()/xnumAnnotImgRegParamTargetScale)+0.5) - 1) + 1.0F;
+								double y1 = (double)(bv * bspline_intervals) / (double)(((int)((double)server.getHeight()/xnumAnnotImgRegParamTargetScale)+0.5) - 1) + 1.0F;
+								
+								bspline_swx.prepareForInterpolation(x1, y1, false);
+								double bspline_x_bv_bu = bspline_swx.interpolateI();
+					        	
+								bspline_swy.prepareForInterpolation(x1, y1, false);
+								double bspline_y_bv_bu = bspline_swy.interpolateI();
+								
+								 bx = (int)Math.round(bspline_x_bv_bu);
+								 by = (int)Math.round(bspline_y_bv_bu);
+				        	}
+				        	else {
+					        	bx = (int)Math.round(ax);
+				        		by = (int)Math.round(ay);
+				        	}
 			        	}
-		        	}
-		        	
-					bx *= xnumAnnotImgRegParamTargetScale;
-					by *= xnumAnnotImgRegParamTargetScale;
-					
-//					if(params.getBooleanParameterValue("manualShift")) {
-//						bx += xnumAnnotImgRegParamShiftX;
-//						by += xnumAnnotImgRegParamShiftY;
-//					}
-		        	
-		        	int fx = (int)Math.round(bx / maskDownsampling);
-		        	int fy = (int)Math.round(by / maskDownsampling);
-		        	
-		        	if(fx < 0 || fx >= pathObjectImageMask.getWidth() || fy < 0 || fy >=  pathObjectImageMask.getHeight()) continue;
-		        	
-		        	int v = pathObjectImageMask.getRGB(fx, fy);
-		        	int d0 = v&0xff;
-		        	int d1 = (v>>8)&0xff;
-		        	int d2 = (v>>16)&0xff;
-					int r = d2*0x10000+d1*0x100+d0;
-				    
-		        	if(r == 0) continue; // This location doesn't have a cell.
 			        	
-		        	int pathObjectId = r - 1;  // pathObjectId starts at 1, since 0 means background
+						bx *= xnumAnnotImgRegParamTargetScale;
+						by *= xnumAnnotImgRegParamTargetScale;
+						
+			        	int fx = (int)Math.round(bx / maskDownsampling);
+			        	int fy = (int)Math.round(by / maskDownsampling);
 			        	
-		        	PathObject cellPathObject = pathObjectList.get(pathObjectId);
-		        	cellToPathObjHashMap.put(cellId, cellPathObject);
-		        	
-		        	String scLabelId = cellToSCLabelHashMap.get(cellId);
-		        	
-		        	if(scLabelId != null) {
-		        		PathClass pathCls = PathClass.fromString(scLabelId);
-			        	cellPathObject.setPathClass(pathCls);
-		        	}
-		        	
-		        	double roiX = cellPathObject.getROI().getCentroidX();
-		        	double roiY = cellPathObject.getROI().getCentroidY();
-		        	double newDist = (new Point2D(bx, by).distance(roiX, roiY))*xnumAnnotImgRegParamDapiImgPxlSize;
-		        	MeasurementList pathObjMeasList = cellPathObject.getMeasurementList();
-		        	
-		        	if(pathObjMeasList.containsKey("xenium:cell:cell_id")) {
-		        		double minDist = pathObjMeasList.get("xenium:cell:displacement");
-		        		if(newDist < minDist) {
-		        			cellPathObject.setName(cellId);
+			        	if(fx < 0 || fx >= pathObjectImageMask.getWidth() || fy < 0 || fy >=  pathObjectImageMask.getHeight()) continue;
+			        	
+			        	int v = pathObjectImageMask.getRGB(fx, fy);
+			        	int d0 = v&0xff;
+			        	int d1 = (v>>8)&0xff;
+			        	int d2 = (v>>16)&0xff;
+						int r = d2*0x10000+d1*0x100+d0;
+					    
+			        	if(r == 0) continue; // This location doesn't have a cell.
+				        	
+			        	int pathObjectId = r - 1;  // pathObjectId starts at 1, since 0 means background
+				        	
+			        	PathObject cellPathObject = pathObjectList.get(pathObjectId);
+			        	cellToPathObjHashMap.put(cellId, cellPathObject);
+			        	
+			        	String scLabelId = cellToSCLabelHashMap.get(cellId);
+			        	
+			        	if(scLabelId != null) {
+			        		PathClass pathCls = PathClass.fromString(scLabelId);
+				        	cellPathObject.setPathClass(pathCls);
+			        	}
+			        	
+			        	double roiX = cellPathObject.getROI().getCentroidX();
+			        	double roiY = cellPathObject.getROI().getCentroidY();
+			        	double newDist = (new Point2D(bx, by).distance(roiX, roiY))*xnumAnnotImgRegParamDapiImgPxlSize;
+			        	MeasurementList pathObjMeasList = cellPathObject.getMeasurementList();
+			        	
+			        	if(pathObjMeasList.containsKey("xenium:cell:cell_id")) {
+			        		double minDist = pathObjMeasList.get("xenium:cell:displacement");
+			        		if(newDist < minDist) {
+			        			cellPathObject.setName(cellId);
+			        			pathObjMeasList.put("xenium:cell:displacement", newDist);
+			        			pathObjMeasList.put("xenium:cell:x_centroid", cx);
+			        			pathObjMeasList.put("xenium:cell:y_centroid", cy);
+			        			pathObjMeasList.put("xenium:cell:transcript_counts", transcriptCounts);
+			        			pathObjMeasList.put("xenium:cell:control_probe_counts", controlProbeCounts);
+			        			pathObjMeasList.put("xenium:cell:control_codeword_counts", controlCodewordCounts);
+			        			pathObjMeasList.put("xenium:cell:total_counts", totalCounts);
+			        			pathObjMeasList.put("xenium:cell:cell_area", cellArea);
+			        			pathObjMeasList.put("xenium:cell:nucleus_area", nucleusArea);
+			        		}
+			        	}
+			        	else {
+			        		cellPathObject.setName(cellId);
 		        			pathObjMeasList.put("xenium:cell:displacement", newDist);
 		        			pathObjMeasList.put("xenium:cell:x_centroid", cx);
 		        			pathObjMeasList.put("xenium:cell:y_centroid", cy);
@@ -576,51 +574,184 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 		        			pathObjMeasList.put("xenium:cell:control_codeword_counts", controlCodewordCounts);
 		        			pathObjMeasList.put("xenium:cell:total_counts", totalCounts);
 		        			pathObjMeasList.put("xenium:cell:cell_area", cellArea);
-		        			pathObjMeasList.put("xenium:cell:nucleus_area", nucleusArea);
-		        		}
-		        	}
-		        	else {
-		        		cellPathObject.setName(cellId);
-	        			pathObjMeasList.put("xenium:cell:displacement", newDist);
-	        			pathObjMeasList.put("xenium:cell:x_centroid", cx);
-	        			pathObjMeasList.put("xenium:cell:y_centroid", cy);
-	        			pathObjMeasList.put("xenium:cell:transcript_counts", transcriptCounts);
-	        			pathObjMeasList.put("xenium:cell:control_probe_counts", controlProbeCounts);
-	        			pathObjMeasList.put("xenium:cell:control_codeword_counts", controlCodewordCounts);
-	        			pathObjMeasList.put("xenium:cell:total_counts", totalCounts);
-	        			pathObjMeasList.put("xenium:cell:cell_area", cellArea);
-	        			pathObjMeasList.put("xenium:cell:nucleus_area", nucleusArea);     		        
-		        	}
+		        			pathObjMeasList.put("xenium:cell:nucleus_area", nucleusArea);     		        
+			        	}
+			        	
+			        	pathObjMeasList.close(); 
+		        	}		        	
 		        	
-		        	pathObjMeasList.close(); 
-	        	}		        	
-	        	
-		        singleCellGzipReader.close();
-				
+			        singleCellGzipReader.close();
+		        }
+		        else if (Files.exists(cellsParquet)) {
+		        	// Read from Parquet using AvroParquetReader
+		        	try (ParquetReader<GenericRecord> parquetReader = AvroParquetReader.<GenericRecord>builder(HadoopInputFile.fromPath(new Path(cellsParquet.toString()), new Configuration())).build()) {
+		        		GenericRecord record;
+		        		while ((record = parquetReader.read()) != null) {
+				        	String cellId = record.get("cell_id").toString();
+				        	
+				        	double transcriptCounts = ((Number) record.get("transcript_counts")).doubleValue();
+				        	double controlProbeCounts = ((Number) record.get("control_probe_counts")).doubleValue();
+				        	double controlCodewordCounts = ((Number) record.get("control_codeword_counts")).doubleValue();
+				        	double totalCounts = ((Number) record.get("total_counts")).doubleValue();
+				        	double cellArea = ((Number) record.get("cell_area")).doubleValue();
+				        	double nucleusArea = ((Number) record.get("nucleus_area")).doubleValue();
+				        	
+				        	double cx = ((Number) record.get("x_centroid")).doubleValue();
+				        	double cy = ((Number) record.get("y_centroid")).doubleValue();
+				        	
+				        	double dx = cx/xnumAnnotImgRegParamDapiImgPxlSize;
+				        	double dy = cy/xnumAnnotImgRegParamDapiImgPxlSize;
+					        	
+				        	if(xnumAnnotImgRegParamFlipVert) {
+								dy = xnumAnnotImgRegParamSrcImgHeight - dy;
+							}
+							
+							if(xnumAnnotImgRegParamFlipHori) {
+								dx = xnumAnnotImgRegParamSrcImgWidth - dx;
+							}
+		
+							if(xnumAnnotImgRegParamRotation.equals("-90") || xnumAnnotImgRegParamRotation.equals("270")) {
+								double x1 = dx;
+								dx = dy;
+								dy = xnumAnnotImgRegParamSrcImgWidth - x1;
+							}
+							else if(xnumAnnotImgRegParamRotation.equals("-180") || xnumAnnotImgRegParamRotation.equals("180")) {
+								dx = xnumAnnotImgRegParamSrcImgWidth - dx;
+								dy = xnumAnnotImgRegParamSrcImgHeight - dy;
+							}
+							else if(xnumAnnotImgRegParamRotation.equals("-270") || xnumAnnotImgRegParamRotation.equals("90")) {
+								double x1 = dx;
+								dx = xnumAnnotImgRegParamSrcImgHeight - dy;
+								dy = x1;	
+							}
+							
+							dx /= xnumAnnotImgRegParamSourceScale;
+							dy /= xnumAnnotImgRegParamSourceScale;						
+							
+				        	int bx = 0;
+				        	int by = 0;
+				        	
+				        	if(params.getBooleanParameterValue("dontTransform")) {
+				        		bx = (int)Math.round(dx);
+				        		by = (int)Math.round(dy);
+				        	}
+				        	else {
+					        	double ax = xnumAnnotImgRegParamSiftMatrix[0] * dx + xnumAnnotImgRegParamSiftMatrix[1] * dy + xnumAnnotImgRegParamSiftMatrix[2];
+					        	double ay = xnumAnnotImgRegParamSiftMatrix[3] * dx + xnumAnnotImgRegParamSiftMatrix[4] * dy + xnumAnnotImgRegParamSiftMatrix[5];
+								
+					        	if(!params.getBooleanParameterValue("AffineTransformOnly")) {
+						        	int bv = (int)Math.round(ay);
+						        	int bu = (int)Math.round(ax);
+						        	
+						        	double x1 = (double)(bu * bspline_intervals) / (double)(((int)((double)server.getWidth()/xnumAnnotImgRegParamTargetScale)+0.5) - 1) + 1.0F;
+									double y1 = (double)(bv * bspline_intervals) / (double)(((int)((double)server.getHeight()/xnumAnnotImgRegParamTargetScale)+0.5) - 1) + 1.0F;
+									
+									bspline_swx.prepareForInterpolation(x1, y1, false);
+									double bspline_x_bv_bu = bspline_swx.interpolateI();
+						        	
+									bspline_swy.prepareForInterpolation(x1, y1, false);
+									double bspline_y_bv_bu = bspline_swy.interpolateI();
+									
+									 bx = (int)Math.round(bspline_x_bv_bu);
+									 by = (int)Math.round(bspline_y_bv_bu);
+					        	}
+					        	else {
+						        	bx = (int)Math.round(ax);
+					        		by = (int)Math.round(ay);
+					        	}
+				        	}
+				        	
+							bx *= xnumAnnotImgRegParamTargetScale;
+							by *= xnumAnnotImgRegParamTargetScale;
+							
+				        	int fx = (int)Math.round(bx / maskDownsampling);
+				        	int fy = (int)Math.round(by / maskDownsampling);
+				        	
+				        	if(fx < 0 || fx >= pathObjectImageMask.getWidth() || fy < 0 || fy >=  pathObjectImageMask.getHeight()) continue;
+				        	
+				        	int v = pathObjectImageMask.getRGB(fx, fy);
+				        	int d0 = v&0xff;
+				        	int d1 = (v>>8)&0xff;
+				        	int d2 = (v>>16)&0xff;
+							int r = d2*0x10000+d1*0x100+d0;
+						    
+				        	if(r == 0) continue; // This location doesn't have a cell.
+					        	
+				        	int pathObjectId = r - 1;  // pathObjectId starts at 1, since 0 means background
+					        	
+				        	PathObject cellPathObject = pathObjectList.get(pathObjectId);
+				        	cellToPathObjHashMap.put(cellId, cellPathObject);
+				        	
+				        	String scLabelId = cellToSCLabelHashMap.get(cellId);
+				        	
+				        	if(scLabelId != null) {
+				        		PathClass pathCls = PathClass.fromString(scLabelId);
+					        	cellPathObject.setPathClass(pathCls);
+				        	}
+				        	
+				        	double roiX = cellPathObject.getROI().getCentroidX();
+				        	double roiY = cellPathObject.getROI().getCentroidY();
+				        	double newDist = (new Point2D(bx, by).distance(roiX, roiY))*xnumAnnotImgRegParamDapiImgPxlSize;
+				        	MeasurementList pathObjMeasList = cellPathObject.getMeasurementList();
+				        	
+				        	if(pathObjMeasList.containsKey("xenium:cell:cell_id")) {
+				        		double minDist = pathObjMeasList.get("xenium:cell:displacement");
+				        		if(newDist < minDist) {
+				        			cellPathObject.setName(cellId);
+				        			pathObjMeasList.put("xenium:cell:displacement", newDist);
+				        			pathObjMeasList.put("xenium:cell:x_centroid", cx);
+				        			pathObjMeasList.put("xenium:cell:y_centroid", cy);
+				        			pathObjMeasList.put("xenium:cell:transcript_counts", transcriptCounts);
+				        			pathObjMeasList.put("xenium:cell:control_probe_counts", controlProbeCounts);
+				        			pathObjMeasList.put("xenium:cell:control_codeword_counts", controlCodewordCounts);
+				        			pathObjMeasList.put("xenium:cell:total_counts", totalCounts);
+				        			pathObjMeasList.put("xenium:cell:cell_area", cellArea);
+				        			pathObjMeasList.put("xenium:cell:nucleus_area", nucleusArea);
+				        		}
+				        	}
+				        	else {
+				        		cellPathObject.setName(cellId);
+			        			pathObjMeasList.put("xenium:cell:displacement", newDist);
+			        			pathObjMeasList.put("xenium:cell:x_centroid", cx);
+			        			pathObjMeasList.put("xenium:cell:y_centroid", cy);
+			        			pathObjMeasList.put("xenium:cell:transcript_counts", transcriptCounts);
+			        			pathObjMeasList.put("xenium:cell:control_probe_counts", controlProbeCounts);
+			        			pathObjMeasList.put("xenium:cell:control_codeword_counts", controlCodewordCounts);
+			        			pathObjMeasList.put("xenium:cell:total_counts", totalCounts);
+			        			pathObjMeasList.put("xenium:cell:cell_area", cellArea);
+			        			pathObjMeasList.put("xenium:cell:nucleus_area", nucleusArea);     		        
+				        	}
+				        	
+				        	pathObjMeasList.close(); 
+			        	}
+		        	}
+		        }
+		        
 				/*
 	             * Read feature matrix data
 	             */
-					
-				String barcodeFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix", "barcodes.tsv.gz").toString();
-				String featureFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix", "features.tsv.gz").toString();
-				String matrixFilePath = java.nio.file.Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix", "matrix.mtx.gz").toString();
-				
-				GZIPInputStream barcodeGzipStream = new GZIPInputStream(new FileInputStream(barcodeFilePath));
-				try (BufferedReader barcodeGzipReader = new BufferedReader(new InputStreamReader(barcodeGzipStream))) {
+			
+				java.nio.file.Path cellFeatureMatrixTarGzFilePath  = Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix.tar.gz");
+		        java.nio.file.Path barcodeTsv  = Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix", "barcodes.tsv.gz");
+		        java.nio.file.Path featureTsv  = Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix", "features.tsv.gz");
+		        java.nio.file.Path matrixMtx   = Paths.get(xnumAntnXnumFldrProp.get(), "cell_feature_matrix", "matrix.mtx.gz");
+		        
+		        if (Files.exists(barcodeTsv) && Files.exists(featureTsv) && Files.exists(matrixMtx)) {
 					List<String> barcodeList = new ArrayList<>();
 					
-					String barcodeNextRecord;
-					while ((barcodeNextRecord = barcodeGzipReader.readLine()) != null) {
-						barcodeList.add(barcodeNextRecord);
-					}
-					
+			        try (BufferedReader barcodeGzipReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(barcodeTsv)), StandardCharsets.UTF_8))) {	
+						String barcodeNextRecord;
+						while ((barcodeNextRecord = barcodeGzipReader.readLine()) != null) {
+							barcodeList.add(barcodeNextRecord.trim());
+						}
+			        }
+
 					List<String> featureIdList = new ArrayList<>();
 					List<String> featureNameList = new ArrayList<>();
 					List<String> featureTypeList = new ArrayList<>();
-					
-					GZIPInputStream featureGzipStream = new GZIPInputStream(new FileInputStream(featureFilePath));
-					try (BufferedReader featureGzipReader = new BufferedReader(new InputStreamReader(featureGzipStream))) {
-						String featureNextRecord;
+
+					try (BufferedReader featureGzipReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(featureTsv)), StandardCharsets.UTF_8))) {
+		                String featureNextRecord;
 						while ((featureNextRecord = featureGzipReader.readLine()) != null) {
 							String[] featureNextRecordArray = featureNextRecord.split("\t");
 							featureIdList.add(featureNextRecordArray[0]);
@@ -629,13 +760,12 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 						}
 					}
 					
-					GZIPInputStream matrixGzipStream = new GZIPInputStream(new FileInputStream(matrixFilePath));
-					try (BufferedReader matrixGzipReader = new BufferedReader(new InputStreamReader(matrixGzipStream), '\t')) {
+					int[][] matrix = new int[featureNameList.size()][barcodeList.size()];
+					
+					try (BufferedReader matrixGzipReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(matrixMtx)), StandardCharsets.UTF_8))) {
 						matrixGzipReader.readLine();
 						matrixGzipReader.readLine();
 						matrixGzipReader.readLine();
-						
-						int[][] matrix = new int[featureNameList.size()][barcodeList.size()];
 						
 						String matrixNextRecord;
 						while ((matrixNextRecord = matrixGzipReader.readLine()) != null) {
@@ -646,32 +776,160 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 							
 							matrix[f][b] = v;
 						}
-						
-						IntStream.range(0, barcodeList.size()).parallel().forEach(b -> {
-//						for(int b = 0; b < barcodeList.size(); b ++) {
-							if(cellToPathObjHashMap.containsKey(barcodeList.get(b))) {
-						    	PathObject c = cellToPathObjHashMap.get(barcodeList.get(b));
-						    	MeasurementList pathObjMeasList = c.getMeasurementList();
-						    	
-						    	for(int f = 0; f < featureNameList.size(); f ++) {	
-						    		if(!params.getBooleanParameterValue("inclBlankCodeword") && featureTypeList.get(f).compareTo("Blank Codeword")==0) continue;
-						    		if(!params.getBooleanParameterValue("inclUnassignedCodeword") && featureTypeList.get(f).compareTo("Unassigned Codeword")==0) continue;
-						    		if(!params.getBooleanParameterValue("inclDeprecatedCodeword") && featureTypeList.get(f).compareTo("Deprecated Codeword")==0) continue;
-						    		if(!params.getBooleanParameterValue("inclIntergenicRegion") && featureTypeList.get(f).compareTo("Genomic Control")==0) continue;
-									if(!params.getBooleanParameterValue("inclGeneExpr") && featureTypeList.get(f).compareTo("Gene Expression")==0) continue;
-									if(!params.getBooleanParameterValue("inclNegCtrlCodeword") && featureTypeList.get(f).compareTo("Negative Control Codeword")==0) continue;
-									if(!params.getBooleanParameterValue("inclNegCtrlProbe") && featureTypeList.get(f).compareTo("Negative Control Probe")==0) continue;
-						    		
-									pathObjMeasList.put("transcript:"+featureNameList.get(f), matrix[f][b]);  
-						    			 
-						    	}
-						    	
-						    	pathObjMeasList.close();
-							}
-						});
-//						}
 					}
-				}
+						
+					IntStream.range(0, barcodeList.size()).parallel().forEach(b -> {
+//					for(int b = 0; b < barcodeList.size(); b ++) {
+						if(cellToPathObjHashMap.containsKey(barcodeList.get(b))) {
+					    	PathObject c = cellToPathObjHashMap.get(barcodeList.get(b));
+					    	MeasurementList pathObjMeasList = c.getMeasurementList();
+					    	
+					    	for(int f = 0; f < featureNameList.size(); f ++) {	
+					    		if(!params.getBooleanParameterValue("inclBlankCodeword") && featureTypeList.get(f).compareTo("Blank Codeword")==0) continue;
+					    		if(!params.getBooleanParameterValue("inclUnassignedCodeword") && featureTypeList.get(f).compareTo("Unassigned Codeword")==0) continue;
+					    		if(!params.getBooleanParameterValue("inclDeprecatedCodeword") && featureTypeList.get(f).compareTo("Deprecated Codeword")==0) continue;
+					    		if(!params.getBooleanParameterValue("inclIntergenicRegion") && featureTypeList.get(f).compareTo("Genomic Control")==0) continue;
+								if(!params.getBooleanParameterValue("inclGeneExpr") && featureTypeList.get(f).compareTo("Gene Expression")==0) continue;
+								if(!params.getBooleanParameterValue("inclNegCtrlCodeword") && featureTypeList.get(f).compareTo("Negative Control Codeword")==0) continue;
+								if(!params.getBooleanParameterValue("inclNegCtrlProbe") && featureTypeList.get(f).compareTo("Negative Control Probe")==0) continue;
+					    		
+								pathObjMeasList.put("transcript:"+featureNameList.get(f), matrix[f][b]);  
+					    			 
+					    	}
+					    	
+					    	pathObjMeasList.close();
+						}
+					});
+//					}
+		        } else if(Files.exists(cellFeatureMatrixTarGzFilePath)) {
+					List<String> barcodeList = new ArrayList<>();
+					List<String> featureIdList = new ArrayList<>();
+					List<String> featureNameList = new ArrayList<>();
+					List<String> featureTypeList = new ArrayList<>();		   
+					
+		            // -------- PASS 1: read barcodes.tsv.gz and features.tsv.gz --------
+		            try (FileInputStream fis = new FileInputStream(cellFeatureMatrixTarGzFilePath.toFile());
+		                 GZIPInputStream gzipIn = new GZIPInputStream(fis);
+		                 TarArchiveInputStream tarIn = new TarArchiveInputStream(gzipIn)) {
+
+		                TarArchiveEntry entry;
+		                while ((entry = tarIn.getNextTarEntry()) != null) {
+		                    if (entry.isDirectory()) continue;
+		                    final String name = entry.getName();
+
+		                    if (name.endsWith("barcodes.tsv.gz")) {
+		                    	BoundedInputStream bounded = new BoundedInputStream(tarIn, entry.getSize());
+		                    	bounded.setPropagateClose(false);
+		                    	
+		                    	try (bounded; 
+		                    		 GZIPInputStream gz = new GZIPInputStream(bounded);
+		                    		 BufferedReader br = new BufferedReader(new InputStreamReader(gz, StandardCharsets.UTF_8))) {
+		                    		
+		                    		String line;
+		                            while ((line = br.readLine()) != null) {
+		                                barcodeList.add(line.trim());
+		                            }
+		                    	}
+		                        
+		                    } else if (name.endsWith("features.tsv.gz")) {
+		                    	BoundedInputStream bounded = new BoundedInputStream(tarIn, entry.getSize());
+		                    	bounded.setPropagateClose(false);
+		                    	
+		                    	try (bounded; 
+		                    		 GZIPInputStream gz = new GZIPInputStream(bounded);
+		                    		 BufferedReader br = new BufferedReader(new InputStreamReader(gz, StandardCharsets.UTF_8))) {
+
+			                            String line;
+			                            while ((line = br.readLine()) != null) {
+			                                // feature_id \t feature_name \t feature_type
+			                                String[] arr = line.split("\t", -1);
+			                                // guard for short rows
+			                                String id   = arr.length > 0 ? arr[0] : "";
+			                                String name2 = arr.length > 1 ? arr[1] : "";
+			                                String type = arr.length > 2 ? arr[2] : "";
+			                                featureIdList.add(id);
+			                                featureNameList.add(name2);
+			                                featureTypeList.add(type);
+			                            }
+			                        }
+		                    }
+		                    // keep scanning; tarIn is still open because of CloseShieldInputStream
+		                }
+		            }
+
+		            // allocate matrix after we know sizes
+		            int[][] matrix = new int[featureNameList.size()][barcodeList.size()];
+
+		            // -------- PASS 2: read matrix.mtx.gz and fill matrix --------
+		            try (FileInputStream fis = new FileInputStream(cellFeatureMatrixTarGzFilePath.toFile());
+		                 GZIPInputStream gzipIn = new GZIPInputStream(fis);
+		                 TarArchiveInputStream tarIn = new TarArchiveInputStream(gzipIn)) {
+
+		                TarArchiveEntry entry;
+		                while ((entry = tarIn.getNextTarEntry()) != null) {
+		                    if (entry.isDirectory()) continue;
+		                    final String name = entry.getName();
+
+		                    if (name.endsWith("matrix.mtx.gz")) {
+		                    	BoundedInputStream bounded = new BoundedInputStream(tarIn, entry.getSize());
+		                    	bounded.setPropagateClose(false);
+		                    	
+		                    	try (bounded; 
+		                    		 GZIPInputStream gz = new GZIPInputStream(bounded);
+		                    		 BufferedReader br = new BufferedReader(new InputStreamReader(gz, StandardCharsets.UTF_8))) {
+
+		                            // MTX header: skip comments starting with '%'
+		                            String line;
+		                            while ((line = br.readLine()) != null && line.startsWith("%")) {
+		                                // skip header/comment lines
+		                            }
+		                            // The first non-comment line is usually "nRows nCols nNonZero"
+		                            // We don't strictly need it because we already allocated
+		                            // by features x barcodes, but we consumed it to align the reader.
+
+		                            // Read triplets: row col value (1-based indices)
+		                            while ((line = br.readLine()) != null) {
+		                                line = line.trim();
+		                                if (line.isEmpty()) continue;
+		                                String[] arr = line.split("\\s+");
+		                                if (arr.length < 3) continue;
+		                                int f = Integer.parseInt(arr[0]) - 1; // feature index
+		                                int b = Integer.parseInt(arr[1]) - 1; // barcode index
+		                                int v = Integer.parseInt(arr[2]);
+		                                if (f >= 0 && f < matrix.length && b >= 0 && b < matrix[0].length) {
+		                                    matrix[f][b] = v;
+		                                }
+		                            }
+		                        }
+		                    }
+		                }
+		            }
+		            
+
+		            IntStream.range(0, barcodeList.size()).parallel().forEach(b -> {
+//					for(int b = 0; b < barcodeList.size(); b ++) {
+						if(cellToPathObjHashMap.containsKey(barcodeList.get(b))) {
+					    	PathObject c = cellToPathObjHashMap.get(barcodeList.get(b));
+					    	MeasurementList pathObjMeasList = c.getMeasurementList();
+					    	
+					    	for(int f = 0; f < featureNameList.size(); f ++) {	
+					    		if(!params.getBooleanParameterValue("inclBlankCodeword") && featureTypeList.get(f).compareTo("Blank Codeword")==0) continue;
+					    		if(!params.getBooleanParameterValue("inclUnassignedCodeword") && featureTypeList.get(f).compareTo("Unassigned Codeword")==0) continue;
+					    		if(!params.getBooleanParameterValue("inclDeprecatedCodeword") && featureTypeList.get(f).compareTo("Deprecated Codeword")==0) continue;
+					    		if(!params.getBooleanParameterValue("inclIntergenicRegion") && featureTypeList.get(f).compareTo("Genomic Control")==0) continue;
+								if(!params.getBooleanParameterValue("inclGeneExpr") && featureTypeList.get(f).compareTo("Gene Expression")==0) continue;
+								if(!params.getBooleanParameterValue("inclNegCtrlCodeword") && featureTypeList.get(f).compareTo("Negative Control Codeword")==0) continue;
+								if(!params.getBooleanParameterValue("inclNegCtrlProbe") && featureTypeList.get(f).compareTo("Negative Control Probe")==0) continue;
+					    		
+								pathObjMeasList.put("transcript:"+featureNameList.get(f), matrix[f][b]);  
+					    			 
+					    	}
+					    	
+					    	pathObjMeasList.close();
+						}
+					});
+//					}
+		        }
 				
 				if(params.getBooleanParameterValue("removeUnlabeledCells")) {
 					for(PathObject c: pathObjectList) {
@@ -693,6 +951,7 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 			
 			if (Thread.currentThread().isInterrupted()) {
 //				Dialogs.showErrorMessage("Warning", "Interrupted!");
+				
 				lastResults =  "Interrupted!";
 				logger.warn(lastResults);
 				
@@ -702,31 +961,26 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 			return resultPathObjectList;
 		}
 		
-		
 		@Override
 		public String getLastResultsDescription() {
 			return lastResults;
 		}
-		
-		
 	}
 
 	@Override
 	protected void preprocess(TaskRunner taskRunner, ImageData<BufferedImage> imageData) {
 		if(params.getStringParameterValue("xeniumDir").isBlank()) {
-		
+
 			File xnumDir = FileChoosers.promptForDirectory("Xenium directory", new File(xnumAntnXnumFldrProp.get()));
 			
 			if (xnumDir != null) {
 				xnumAntnXnumFldrProp.set(xnumDir.toString());
-			}
-			else {
+			} else {
 //				Dialogs.showErrorMessage("Warning", "No Xenium directory is selected!");
 				lastResults =  "No Xenium directory is selected!";
 				logger.warn(lastResults);
 			}
-		}
-		else {
+		} else {
 			xnumAntnXnumFldrProp.set(params.getStringParameterValue("xeniumDir"));
 		}
 	};
@@ -746,18 +1000,15 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 		return lastResults;
 	}
 
-
 	@Override
 	public String getDescription() {
 		return "Detect one or more regions of interest by applying a global threshold";
 	}
 
-
 	@Override
 	protected void addRunnableTasks(ImageData<BufferedImage> imageData, PathObject parentObject, List<Runnable> tasks) {
 		tasks.add(DetectionPluginTools.createRunnableTask(new AnnotationLoader(), getParameterList(imageData), imageData, parentObject));
 	}
-
 
 	@Override
 	protected Collection<? extends PathObject> getParentObjects(ImageData<BufferedImage> imageData) {	
@@ -767,7 +1018,6 @@ public class XeniumAnnotation extends AbstractDetectionPlugin<BufferedImage> {
 		
 		return hierarchy.getSelectionModel().getSelectedObjects().stream().filter(p -> p.isTMACore()).collect(Collectors.toList());
 	}
-
 
 	@Override
 	public Collection<Class<? extends PathObject>> getSupportedParentObjectClasses() {

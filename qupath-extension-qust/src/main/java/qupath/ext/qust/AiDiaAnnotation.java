@@ -11,7 +11,7 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License 
- * along with ST-AnD.  If not, see <https://www.gnu.org/licenses/>.
+ * along with QuST.  If not, see <https://www.gnu.org/licenses/>.
  * #L%
  */
 
@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Point2D;
 
-//import qupath.fx.dialogs.Dialogs;
 import qupath.fx.dialogs.FileChoosers;
 
 import qupath.lib.gui.prefs.PathPrefs;

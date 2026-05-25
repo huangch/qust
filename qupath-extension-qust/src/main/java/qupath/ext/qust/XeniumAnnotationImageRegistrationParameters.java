@@ -111,7 +111,7 @@ public class XeniumAnnotationImageRegistrationParameters extends AbstractDetecti
 		
 		@Override
 		public Collection<PathObject> runDetection(ImageData<BufferedImage> imageData, ParameterList params, ROI pathROI) throws IOException {
-			xnumAnnotImgRegParamOutDirProp.set(params.getStringParameterValue("xnumAnnotImgRegParamOutDir"));
+//			xnumAnnotImgRegParamOutDirProp.set(params.getStringParameterValue("xnumAnnotImgRegParamOutDir"));
 			xnumAnnotImgRegParamSrcImgWidthProp.set(params.getIntParameterValue("xnumAnnotImgRegParamSrcImgWidth"));
 			xnumAnnotImgRegParamSrcImgHeightProp.set(params.getIntParameterValue("xnumAnnotImgRegParamSrcImgHeight"));
 //			xnumAnnotImgRegParamManualScaleProp.set(params.getDoubleParameterValue("xnumAnnotImgRegParamManualScale"));
@@ -130,7 +130,6 @@ public class XeniumAnnotationImageRegistrationParameters extends AbstractDetecti
 			ArrayList<PathObject> resultPathObjectList = new ArrayList<PathObject>(hierarchy.getRootObject().getChildObjects());
 			
 			try {
-				String xnumAnnotImgRegParamOutDir = params.getStringParameterValue("xnumAnnotImgRegParamOutDir");
 				int xnumAnnotImgRegParamSrcImgWidth = params.getIntParameterValue("xnumAnnotImgRegParamSrcImgWidth");
 				int xnumAnnotImgRegParamSrcImgHeight = params.getIntParameterValue("xnumAnnotImgRegParamSrcImgHeight");
 				double xnumAnnotImgRegParamDapiImgPxlSize = params.getDoubleParameterValue("xnumAnnotImgRegParamDapiImgPxlSize");
@@ -174,7 +173,7 @@ public class XeniumAnnotationImageRegistrationParameters extends AbstractDetecti
 	            
 	            try {
 	                // Constructs a FileWriter given a file name, using the platform's default charset
-	            	String xnumOutFldr = xnumAnnotImgRegParamOutDir;
+	            	String xnumOutFldr = xnumAnnotImgRegParamOutDirProp.get();
 	            	String affineMtxFilePath = Paths.get(xnumOutFldr, "registration_params.json").toString();
 	                FileWriter file = new FileWriter(affineMtxFilePath);
 	                file.write(jsonObj.toString());

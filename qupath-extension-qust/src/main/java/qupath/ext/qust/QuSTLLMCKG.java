@@ -311,7 +311,7 @@ public class QuSTLLMCKG extends AbstractDetectionPlugin<BufferedImage> {
 		        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), QuSTLLMCKG.class.getSimpleName());
 			
 		        // This is the list of commands after the 'python' call
-		        String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "llm.py").toString();
+		        String script_path = Paths.get(qustSetup.getScriptPath(), "llm.py").toString();
 				
 				List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", script_path, "ckg", dataPathString, resultPathString));
 			

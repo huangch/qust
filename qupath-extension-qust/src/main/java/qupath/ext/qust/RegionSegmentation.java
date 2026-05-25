@@ -336,7 +336,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 			        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName());
 				
 			        // This is the list of commands after the 'python' call
-			        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
+			        final String script_path = Paths.get(qustSetup.getScriptPath(), "classification.py").toString();
 			        List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", script_path, "eval", resultPathString));
 			        
 			        QuSTArguments.add("--model_file");
@@ -608,7 +608,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 	        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName());
 		
 	        // This is the list of commands after the 'python' call
-	        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
+	        final String script_path = Paths.get(qustSetup.getScriptPath(), "classification.py").toString();
 	        List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", script_path, "estimate_w", resultPathString));
 	        
 	        QuSTArguments.add("--image_path");
@@ -675,7 +675,7 @@ public class RegionSegmentation extends AbstractTileableDetectionPlugin<Buffered
 			veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), ObjectClassification.class.getSimpleName());
 		
 	        // This is the list of commands after the 'python' call
-	        final String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
+	        final String script_path = Paths.get(qustSetup.getScriptPath(), "classification.py").toString();
 			List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", script_path, "param", resultPathString));
 			QuSTArguments.add("--model_file");
 	        QuSTArguments.add("" + modelPathStr);

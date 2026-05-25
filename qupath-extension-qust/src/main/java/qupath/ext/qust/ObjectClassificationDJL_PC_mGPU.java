@@ -987,8 +987,8 @@ public class ObjectClassificationDJL_PC_mGPU extends AbstractTileableDetectionPl
         try {
             modelName = (String)getParameterList(imageData).getChoiceParameterValue("modelName");
             String modelLocationStr = qustSetup.getObjclsModelLocationPath();
-            String modelParamPathStr = Paths.get(modelLocationStr, modelName+".json").toString();
-            String modelWeightPathStr = Paths.get(modelLocationStr, modelName+".pt").toString();
+            String modelParamPathStr = Paths.get(modelLocationStr, modelName+".torchscript.json").toString();
+            String modelWeightPathStr = Paths.get(modelLocationStr, modelName+".torchscript.pt").toString();
             
             FileReader resultFileReader = new FileReader(new File(modelParamPathStr));
             BufferedReader bufferedReader = new BufferedReader(resultFileReader);

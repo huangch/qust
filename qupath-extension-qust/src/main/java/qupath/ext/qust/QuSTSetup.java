@@ -9,9 +9,9 @@ import qupath.ext.qust.VirtualEnvironmentRunner.EnvType;
 import qupath.lib.gui.prefs.PathPrefs;
 
 public class QuSTSetup {
-	private EnvType QuSTEnvType;
-    private String QuSTEnvNameOrPath;
-    private String QuSTScriptPath;
+	private EnvType qustEnvType;
+    private String qustEnvNameOrPath;
+    private String qustScriptPath;
     private String stardistModelLocationPath;
     private String cciDatasetLocationPath;
     private String objclsModelLocationPath;
@@ -22,51 +22,50 @@ public class QuSTSetup {
     private static QuSTSetup instance = new QuSTSetup();
 
     public QuSTSetup() {
-    	final StringProperty stardistModelLocationPathProp = PathPrefs.createPersistentPreference("stardistModelLocationPath", "");
+    	StringProperty stardistModelLocationPathProp = PathPrefs.createPersistentPreference("stardistModelLocationPath", "");
     	stardistModelLocationPath = stardistModelLocationPathProp.get();
     	
-    	final StringProperty cciDatasetLocationPathProp = PathPrefs.createPersistentPreference("cciDatasetLocationPath", "");
+    	StringProperty qustScriptPathProp = PathPrefs.createPersistentPreference("qustScriptPath", "");
+    	qustScriptPath = qustScriptPathProp.get();
+    	
+    	StringProperty cciDatasetLocationPathProp = PathPrefs.createPersistentPreference("cciDatasetLocationPath", "");
     	cciDatasetLocationPath = cciDatasetLocationPathProp.get();
     	
-    	final StringProperty objclsModelLocationPathProp = PathPrefs.createPersistentPreference("objclsModelLocationPath", "");
+    	StringProperty objclsModelLocationPathProp = PathPrefs.createPersistentPreference("objclsModelLocationPath", "");
     	objclsModelLocationPath = objclsModelLocationPathProp.get();
     	
-    	final StringProperty regsegModelLocationPathProp = PathPrefs.createPersistentPreference("regsegModelLocationPath", "");
+    	StringProperty regsegModelLocationPathProp = PathPrefs.createPersistentPreference("regsegModelLocationPath", "");
     	regsegModelLocationPath = regsegModelLocationPathProp.get();    	
     	
-    	final StringProperty imageFileFormatProp = PathPrefs.createPersistentPreference("imageFileFormat", "");
+    	StringProperty imageFileFormatProp = PathPrefs.createPersistentPreference("imageFileFormat", "png");
     	imageFileFormat = imageFileFormatProp.get();    	
 
-    	final IntegerProperty normalizationSampleSizeProp = PathPrefs.createPersistentPreference("normalizationSampleSize", 1000);
+    	IntegerProperty normalizationSampleSizeProp = PathPrefs.createPersistentPreference("normalizationSampleSize", 100);
     	normalizationSampleSize = normalizationSampleSizeProp.get();
     	
-    	// Create the options we need
-        ObjectProperty<EnvType> QuSTEnvTypeProp = PathPrefs.createPersistentPreference("QuSTEnvType", EnvType.EXE, EnvType.class);
-        StringProperty envPathProp = PathPrefs.createPersistentPreference("QuSTEnvPath", "");
-
-        //Set options to current values
-        QuSTEnvType = QuSTEnvTypeProp.get();
-        QuSTEnvNameOrPath = envPathProp.get();
+        ObjectProperty<EnvType> qustEnvTypeProp = PathPrefs.createPersistentPreference("qustEnvType", EnvType.EXE, EnvType.class);
+        qustEnvType = qustEnvTypeProp.get();
+        
+        StringProperty envPathProp = PathPrefs.createPersistentPreference("qustEnvPath", "");
+        qustEnvNameOrPath = envPathProp.get();
     }
     
     
     public EnvType getEnvironmentType() {
-        return QuSTEnvType;
+        return this.qustEnvType;
     }
-
     
-    public void setEnvironmentType(EnvType QuSTEnvType) {
-        this.QuSTEnvType = QuSTEnvType;
+    public void setEnvironmentType(EnvType qustEnvType) {
+        this.qustEnvType = qustEnvType;
     }
 
     
     public String getEnvironmentNameOrPath() {
-        return QuSTEnvNameOrPath;
+        return this.qustEnvNameOrPath;
     }
 
-
-    public void setEnvironmentNameOrPath(String QuSTEnvNameOrPath) {
-        this.QuSTEnvNameOrPath = QuSTEnvNameOrPath;
+    public void setEnvironmentNameOrPath(String qustEnvNameOrPath) {
+        this.qustEnvNameOrPath = qustEnvNameOrPath;
     }
 
     
@@ -76,7 +75,7 @@ public class QuSTSetup {
 
     
     public String getStardistModelLocationPath() {
-        return stardistModelLocationPath;
+        return this.stardistModelLocationPath;
     }
 
     
@@ -85,13 +84,13 @@ public class QuSTSetup {
     }
 
     
-    public String getSptx2ScriptPath() {
-        return QuSTScriptPath;
+    public String getScriptPath() {
+        return this.qustScriptPath;
     }
 
     
-    public void setSptx2ScriptPath(String QuSTScriptPath) {
-        this.QuSTScriptPath = QuSTScriptPath;
+    public void setScriptPath(String QuSTScriptPath) {
+        this.qustScriptPath = QuSTScriptPath;
     }
     
     

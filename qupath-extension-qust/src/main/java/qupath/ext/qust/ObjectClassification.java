@@ -71,7 +71,6 @@ import qupath.lib.plugins.TaskRunner;
 import qupath.lib.plugins.parameters.ParameterList;
 import qupath.lib.regions.RegionRequest;
 import qupath.lib.roi.interfaces.ROI;
-//import qupath.fx.dialogs.Dialogs;
 import qupath.lib.gui.prefs.PathPrefs;
 
 /**
@@ -101,51 +100,53 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 	private ParameterList params;
 	private double[] normalizer_w = null;
 	private AtomicInteger hackDigit = new AtomicInteger(0);
-	private String imgFmt = qustSetup.getImageFileFormat().trim().charAt(0) == '.'? qustSetup.getImageFileFormat().trim().substring(1): qustSetup.getImageFileFormat().trim();
+	
+	private String imgFmt = qustSetup.getImageFileFormat().isBlank()? "png":
+		qustSetup.getImageFileFormat().trim().charAt(0) == '.'? qustSetup.getImageFileFormat().trim().substring(1):
+			qustSetup.getImageFileFormat().trim();
 	
 	class CellClassifier implements ObjectDetector<BufferedImage> {
 		protected String lastResultDesc = null;
-		private List<PathObject> pathObjects = Collections.synchronizedList(new ArrayList<PathObject>());;
+		private List<PathObject> pathObjects = Collections.synchronizedList(new ArrayList<PathObject>());
 		
 		@Override
 		public Collection<PathObject> runDetection(ImageData<BufferedImage> imageData, ParameterList params, ROI pathROI) throws IOException {
-			try {
-				QuSTObjclsModelNameProp.set((String)params.getChoiceParameterValue("modelName"));
-				QuSTObjclsDetectionProp.set(params.getBooleanParameterValue("includeProbability"));
+			QuSTObjclsModelNameProp.set((String)params.getChoiceParameterValue("modelName"));
+			QuSTObjclsDetectionProp.set(params.getBooleanParameterValue("includeProbability"));
+			
+			if (pathROI == null) throw new IOException("Object classification requires a ROI!");
+			if(availabelObjList == null || availabelObjList.size() == 0) throw new IOException("No objects are selected!");
+			
+			ImageServer<BufferedImage> server = (ImageServer<BufferedImage>) imageData.getServer();
+			String serverPath = server.getPath();			
+			RegionRequest tileRegion = RegionRequest.createInstance(server.getPath(), 1.0, pathROI);
+			
+			availabelObjList.parallelStream().forEach( objObject -> {
+				ROI objRoi = objObject.getROI();
+				int x = (int)(0.5+objRoi.getCentroidX());
+				int y = (int)(0.5+objRoi.getCentroidY());
 				
-				if (pathROI == null) throw new IOException("Object classification requires a ROI!");
-				if(availabelObjList == null || availabelObjList.size() == 0) throw new IOException("No objects are selected!");
-				
-				ImageServer<BufferedImage> server = (ImageServer<BufferedImage>) imageData.getServer();
-				String serverPath = server.getPath();			
-				RegionRequest tileRegion = RegionRequest.createInstance(server.getPath(), 1.0, pathROI);
-				
-//		    	pathObjects = Collections.synchronizedList(new ArrayList<PathObject>());
-		    	
-	    	
-				availabelObjList.parallelStream().forEach( objObject -> {
-					ROI objRoi = objObject.getROI();
-					int x = (int)(0.5+objRoi.getCentroidX());
-					int y = (int)(0.5+objRoi.getCentroidY());
-					
-					if(tileRegion.contains(x, y, 0, 0)) {
-						synchronized(pathObjects) {
-							pathObjects.add(objObject);
-						}
+				if(tileRegion.contains(x, y, 0, 0)) {
+					synchronized(pathObjects) {
+						pathObjects.add(objObject);
 					}
-				});	
+				}
+			});	
 				
+			Path imageSetPath = null;
+			Path resultPath = null;
+			
+			try {
 				if(pathObjects.size() > 0) {
 					// Create a temporary directory for imageset
 					String uuid = UUID.randomUUID().toString().replace("-", "")+hackDigit.getAndIncrement()+tileRegion.getMinX()+tileRegion.getMinY();
 					
-					Path imageSetPath = Files.createTempDirectory("QuST-classification_imageset-" + uuid + "-");
+					imageSetPath = Files.createTempDirectory("QuST-classification_imageset-" + uuid + "-");
 					String imageSetPathString = imageSetPath.toAbsolutePath().toString();
-//                    imageSetPath.toFile().deleteOnExit();
+                    imageSetPath.toFile().deleteOnExit();
         			
-                    Path resultPath = Files.createTempFile("QuST-classification_result-" + uuid + "-", ".json");
+                    resultPath = Files.createTempFile("QuST-classification_result-" + uuid + "-", ".json");
                     String resultPathString = resultPath.toAbsolutePath().toString();
-//                    resultPath.toFile().deleteOnExit();
 
         			String modelLocationStr = qustSetup.getObjclsModelLocationPath();
         			String modelPathStr = Paths.get(modelLocationStr, modelName+".pt").toString();
@@ -190,7 +191,7 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 			        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), ObjectClassification.class.getSimpleName());
 				
 			        // This is the list of commands after the 'python' call
-			        String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
+			        String script_path = Paths.get(qustSetup.getScriptPath(), "classification.py").toString();
 			        List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", script_path, "eval", resultPathString));
 			        
 			        QuSTArguments.add("--model_file");
@@ -217,8 +218,8 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 			        
 			        // Finally, we can run the command
 			        String[] logs = veRunner.runCommand();
-			        for (String log : logs) logger.info(log);
-			        // logger.info("Object classification command finished running");
+//			        for (String log : logs) logger.info(log);
+//			        logger.info("Object classification command finished running");
 					
 					if(semaphore != null) semaphore.release();
 					
@@ -262,16 +263,6 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 						}
 					});
 //					}
-					
-					
-					if(imageSetPath != null) {
-//	                	imageSetPath.toFile().delete();
-	                	FileUtils.deleteDirectory(imageSetPath.toFile());
-	                }
-	                if(resultPath != null) {
-	                	resultPath.toFile().delete();		
-//	                	FileUtils.deleteDirectory(resultPath.toFile());
-	                }
 				}
 		    }
 			catch (Exception e) {				    	
@@ -279,16 +270,14 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 				
 			}
 		    finally {
-//                if(imageSetPath != null) {
-////                	imageSetPath.toFile().delete();
-//                	FileUtils.deleteDirectory(imageSetPath.toFile());
-//                }
-//                if(resultPath != null) {
-////                	resultPath.toFile().delete();		
-//                	FileUtils.deleteDirectory(resultPath.toFile());
-//                }
-                
-                System.gc();
+				if(imageSetPath != null) {
+                	FileUtils.deleteDirectory(imageSetPath.toFile());
+                }
+                if(resultPath != null) {
+                	resultPath.toFile().delete();		
+                }
+
+		    	System.gc();
 		    }
 
 			return pathObjects;
@@ -432,7 +421,7 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 	        veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), RegionSegmentation.class.getSimpleName());
 		
 	        // This is the list of commands after the 'python' call
-	        String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
+	        String script_path = Paths.get(qustSetup.getScriptPath(), "classification.py").toString();
 	        List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", script_path, "estimate_w", resultPathString));
 	        
 	        QuSTArguments.add("--image_path");
@@ -489,7 +478,9 @@ public class ObjectClassification extends AbstractTileableDetectionPlugin<Buffer
 			veRunner = new VirtualEnvironmentRunner(qustSetup.getEnvironmentNameOrPath(), qustSetup.getEnvironmentType(), ObjectClassification.class.getSimpleName());
 		
 	        // This is the list of commands after the 'python' call
-			String script_path = Paths.get(qustSetup.getSptx2ScriptPath(), "classification.py").toString();
+			logger.info(qustSetup.toString());
+			logger.info(qustSetup.getScriptPath().toString());
+			String script_path = Paths.get(qustSetup.getScriptPath(), "classification.py").toString();
 			
 			List<String> QuSTArguments = new ArrayList<>(Arrays.asList("-W", "ignore", script_path, "param", resultPathString));
 			

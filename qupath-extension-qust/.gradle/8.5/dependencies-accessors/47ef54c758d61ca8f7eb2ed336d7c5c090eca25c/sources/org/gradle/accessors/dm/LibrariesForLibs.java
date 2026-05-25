@@ -44,7 +44,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for controlsfx (org.controlsfx:controlsfx)
      * with versionRef 'controlsFX'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getControlsfx() {
             return create("controlsfx");
@@ -53,7 +53,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for deepJavaLibrary (ai.djl:api)
      * with versionRef 'deepJavaLibrary'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getDeepJavaLibrary() {
             return create("deepJavaLibrary");
@@ -62,7 +62,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for gson (com.google.code.gson:gson)
      * with versionRef 'gson'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getGson() {
             return create("gson");
@@ -71,7 +71,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for guava (com.google.guava:guava)
      * with versionRef 'guava'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getGuava() {
             return create("guava");
@@ -80,7 +80,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for imagej (net.imagej:ij)
      * with versionRef 'imagej'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getImagej() {
             return create("imagej");
@@ -89,7 +89,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for javacpp (org.bytedeco:javacpp)
      * with versionRef 'javacpp'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getJavacpp() {
             return create("javacpp");
@@ -98,7 +98,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for jfreesvg (org.jfree:org.jfree.svg)
      * with versionRef 'jfreeSvg'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getJfreesvg() {
             return create("jfreesvg");
@@ -107,7 +107,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for jfxtras (org.jfxtras:jfxtras-menu)
      * with versionRef 'jfxtras'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getJfxtras() {
             return create("jfxtras");
@@ -116,7 +116,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for jna (net.java.dev.jna:jna)
      * with versionRef 'jna'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getJna() {
             return create("jna");
@@ -125,7 +125,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for jts (org.locationtech.jts:jts-core)
      * with versionRef 'jts'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getJts() {
             return create("jts");
@@ -134,7 +134,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for logback (ch.qos.logback:logback-classic)
      * with versionRef 'logback'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getLogback() {
             return create("logback");
@@ -143,7 +143,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for picocli (info.picocli:picocli)
      * with versionRef 'picocli'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getPicocli() {
             return create("picocli");
@@ -152,7 +152,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for richtextfx (org.fxmisc.richtext:richtextfx)
      * with versionRef 'richtextfx'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getRichtextfx() {
             return create("richtextfx");
@@ -161,7 +161,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for slf4j (org.slf4j:slf4j-api)
      * with versionRef 'slf4j'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getSlf4j() {
             return create("slf4j");
@@ -170,7 +170,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         /**
          * Creates a dependency provider for snakeyaml (org.yaml:snakeyaml)
      * with versionRef 'snakeyaml'.
-         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+         * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
          */
         public Provider<MinimalExternalModuleDependency> getSnakeyaml() {
             return create("snakeyaml");
@@ -274,7 +274,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for spec (io.github.qupath:qupath-bioimageio-spec)
          * with versionRef 'bioimageIoSpec'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getSpec() {
                 return create("bioimageio.spec");
@@ -289,7 +289,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for commonmark (org.commonmark:commonmark)
          * with versionRef 'commonmark'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> asProvider() {
                 return create("commonmark");
@@ -298,7 +298,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for yaml (org.commonmark:commonmark-ext-yaml-front-matter)
          * with versionRef 'commonmark'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getYaml() {
                 return create("commonmark.yaml");
@@ -313,7 +313,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for math (org.apache.commons:commons-math3)
          * with versionRef 'commonsMath3'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getMath() {
                 return create("commons.math");
@@ -322,7 +322,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for text (org.apache.commons:commons-text)
          * with versionRef 'commonsText'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getText() {
                 return create("commons.text");
@@ -337,7 +337,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for cuda (org.bytedeco:cuda-platform)
          * with versionRef 'cuda'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> asProvider() {
                 return create("cuda");
@@ -346,7 +346,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for redist (org.bytedeco:cuda-platform-redist)
          * with versionRef 'cuda'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getRedist() {
                 return create("cuda.redist");
@@ -361,7 +361,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for core (org.apache.groovy:groovy)
          * with versionRef 'groovy'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getCore() {
                 return create("groovy.core");
@@ -370,7 +370,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for jsr223 (org.apache.groovy:groovy-jsr223)
          * with versionRef 'groovy'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getJsr223() {
                 return create("groovy.jsr223");
@@ -379,7 +379,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for xml (org.apache.groovy:groovy-xml)
          * with versionRef 'groovy'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getXml() {
                 return create("groovy.xml");
@@ -394,7 +394,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for ionicons4 (org.kordamp.ikonli:ikonli-ionicons4-pack)
          * with versionRef 'ikonli'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getIonicons4() {
                 return create("ikonli.ionicons4");
@@ -403,7 +403,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for javafx (org.kordamp.ikonli:ikonli-javafx)
          * with versionRef 'ikonli'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getJavafx() {
                 return create("ikonli.javafx");
@@ -418,7 +418,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for junit (org.junit.jupiter:junit-jupiter)
          * with versionRef 'junit'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> asProvider() {
                 return create("junit");
@@ -427,7 +427,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for platform (org.junit.platform:junit-platform-launcher)
          * with no version specified
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getPlatform() {
                 return create("junit.platform");
@@ -442,7 +442,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for logviewer (io.github.qupath:logviewer-ui-main)
          * with versionRef 'logviewer'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> asProvider() {
                 return create("logviewer");
@@ -451,7 +451,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for console (io.github.qupath:logviewer-ui-textarea)
          * with versionRef 'logviewer'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getConsole() {
                 return create("logviewer.console");
@@ -460,7 +460,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for logback (io.github.qupath:logviewer-logging-logback)
          * with versionRef 'logviewer'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getLogback() {
                 return create("logviewer.logback");
@@ -469,7 +469,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for rich (io.github.qupath:logviewer-ui-richtextfx)
          * with versionRef 'logviewer'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getRich() {
                 return create("logviewer.rich");
@@ -484,7 +484,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for opencv (org.bytedeco:opencv-platform)
          * with versionRef 'opencv'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> asProvider() {
                 return create("opencv");
@@ -493,7 +493,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for gpu (org.bytedeco:opencv-platform-gpu)
          * with versionRef 'opencv'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getGpu() {
                 return create("opencv.gpu");
@@ -508,7 +508,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a dependency provider for fxtras (io.github.qupath:qupath-fxtras)
          * with versionRef 'qupath.fxtras'.
-             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This dependency was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<MinimalExternalModuleDependency> getFxtras() {
                 return create("qupath.fxtras");
@@ -525,7 +525,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: bioformats (7.0.1)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getBioformats() { return getVersion("bioformats"); }
 
@@ -533,7 +533,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: bioimageIoSpec (0.1.0)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getBioimageIoSpec() { return getVersion("bioimageIoSpec"); }
 
@@ -541,7 +541,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: commonmark (0.21.0)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getCommonmark() { return getVersion("commonmark"); }
 
@@ -549,7 +549,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: commonsMath3 (3.6.1)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getCommonsMath3() { return getVersion("commonsMath3"); }
 
@@ -557,7 +557,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: commonsText (1.10.0)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getCommonsText() { return getVersion("commonsText"); }
 
@@ -565,7 +565,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: controlsFX (11.1.2)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getControlsFX() { return getVersion("controlsFX"); }
 
@@ -573,7 +573,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: cuda (11.8-8.6-1.5.8)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getCuda() { return getVersion("cuda"); }
 
@@ -581,7 +581,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: deepJavaLibrary (0.24.0)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getDeepJavaLibrary() { return getVersion("deepJavaLibrary"); }
 
@@ -589,7 +589,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: groovy (4.0.15)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getGroovy() { return getVersion("groovy"); }
 
@@ -597,7 +597,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: gson (2.10.1)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getGson() { return getVersion("gson"); }
 
@@ -605,7 +605,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: guava (32.1.3-jre)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getGuava() { return getVersion("guava"); }
 
@@ -613,7 +613,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: ikonli (12.3.1)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getIkonli() { return getVersion("ikonli"); }
 
@@ -621,7 +621,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: imagej (1.54f)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getImagej() { return getVersion("imagej"); }
 
@@ -629,7 +629,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: javacpp (1.5.8)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getJavacpp() { return getVersion("javacpp"); }
 
@@ -637,7 +637,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: javacppgradle (1.5.9)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getJavacppgradle() { return getVersion("javacppgradle"); }
 
@@ -645,7 +645,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: javafx (20)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getJavafx() { return getVersion("javafx"); }
 
@@ -653,7 +653,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: jdk (17)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getJdk() { return getVersion("jdk"); }
 
@@ -661,7 +661,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: jfreeSvg (5.0.5)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getJfreeSvg() { return getVersion("jfreeSvg"); }
 
@@ -669,7 +669,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: jfxtras (17-r1)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getJfxtras() { return getVersion("jfxtras"); }
 
@@ -677,7 +677,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: jna (5.13.0)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getJna() { return getVersion("jna"); }
 
@@ -685,7 +685,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: jts (1.19.0)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getJts() { return getVersion("jts"); }
 
@@ -693,7 +693,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: junit (5.9.2)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getJunit() { return getVersion("junit"); }
 
@@ -701,7 +701,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: logback (1.3.11)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getLogback() { return getVersion("logback"); }
 
@@ -709,7 +709,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: logviewer (0.1.1)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getLogviewer() { return getVersion("logviewer"); }
 
@@ -717,7 +717,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: opencv (4.6.0-1.5.8)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getOpencv() { return getVersion("opencv"); }
 
@@ -725,7 +725,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: openslide (4.0.0)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getOpenslide() { return getVersion("openslide"); }
 
@@ -733,7 +733,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: picocli (4.7.5)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getPicocli() { return getVersion("picocli"); }
 
@@ -741,7 +741,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: richtextfx (0.11.2)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getRichtextfx() { return getVersion("richtextfx"); }
 
@@ -749,7 +749,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: slf4j (2.0.9)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getSlf4j() { return getVersion("slf4j"); }
 
@@ -757,7 +757,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * Returns the version associated to this alias: snakeyaml (2.2)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getSnakeyaml() { return getVersion("snakeyaml"); }
 
@@ -775,10 +775,10 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
         public QupathVersionAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
 
             /**
-             * Returns the version associated to this alias: qupath.fxtras (0.1.3)
+             * Returns the version associated to this alias: qupath.fxtras (0.1.4)
              * If the version is a rich version and that its not expressible as a
              * single version string, then an empty string is returned.
-             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This version was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<String> getFxtras() { return getVersion("qupath.fxtras"); }
 
@@ -796,7 +796,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              *    <li>org.apache.groovy:groovy-jsr223</li>
              *    <li>org.apache.groovy:groovy-xml</li>
              * </ul>
-             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<ExternalModuleDependencyBundle> getGroovy() {
                 return createBundle("groovy");
@@ -808,7 +808,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              *    <li>org.kordamp.ikonli:ikonli-javafx</li>
              *    <li>org.kordamp.ikonli:ikonli-ionicons4-pack</li>
              * </ul>
-             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<ExternalModuleDependencyBundle> getIkonli() {
                 return createBundle("ikonli");
@@ -820,7 +820,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              *    <li>org.slf4j:slf4j-api</li>
              *    <li>ch.qos.logback:logback-classic</li>
              * </ul>
-             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<ExternalModuleDependencyBundle> getLogging() {
                 return createBundle("logging");
@@ -834,7 +834,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              *    <li>io.github.qupath:logviewer-ui-richtextfx</li>
              *    <li>io.github.qupath:logviewer-logging-logback</li>
              * </ul>
-             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<ExternalModuleDependencyBundle> getLogviewer() {
                 return createBundle("logviewer");
@@ -846,7 +846,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              *    <li>org.commonmark:commonmark</li>
              *    <li>org.commonmark:commonmark-ext-yaml-front-matter</li>
              * </ul>
-             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<ExternalModuleDependencyBundle> getMarkdown() {
                 return createBundle("markdown");
@@ -857,7 +857,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              * <ul>
              *    <li>org.yaml:snakeyaml</li>
              * </ul>
-             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<ExternalModuleDependencyBundle> getYaml() {
                 return createBundle("yaml");
@@ -882,7 +882,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              *    <li>org.bytedeco:javacpp</li>
              *    <li>org.bytedeco:opencv-platform</li>
              * </ul>
-             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<ExternalModuleDependencyBundle> asProvider() {
                 return createBundle("opencv");
@@ -896,7 +896,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              *    <li>org.bytedeco:cuda-platform</li>
              *    <li>org.bytedeco:cuda-platform-redist</li>
              * </ul>
-             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<ExternalModuleDependencyBundle> getCuda() {
                 return createBundle("opencv.cuda");
@@ -909,7 +909,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
              *    <li>org.bytedeco:opencv-platform-gpu</li>
              *    <li>org.bytedeco:cuda-platform</li>
              * </ul>
-             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This bundle was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<ExternalModuleDependencyBundle> getGpu() {
                 return createBundle("opencv.gpu");
@@ -925,21 +925,21 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a plugin provider for javacpp to the plugin id 'org.bytedeco.gradle-javacpp-platform'
              * with versionRef 'javacppgradle'.
-             * This plugin was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This plugin was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<PluginDependency> getJavacpp() { return createPlugin("javacpp"); }
 
             /**
              * Creates a plugin provider for javafx to the plugin id 'org.openjfx.javafxplugin'
              * with version '0.1.0'.
-             * This plugin was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This plugin was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<PluginDependency> getJavafx() { return createPlugin("javafx"); }
 
             /**
              * Creates a plugin provider for jpackage to the plugin id 'org.beryx.runtime'
              * with version '1.13.0'.
-             * This plugin was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This plugin was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<PluginDependency> getJpackage() { return createPlugin("jpackage"); }
 
@@ -959,7 +959,7 @@ public class LibrariesForLibs extends AbstractExternalDependencyFactory {
             /**
              * Creates a plugin provider for license.report to the plugin id 'com.github.jk1.dependency-license-report'
              * with version '2.5'.
-             * This plugin was declared in catalog io.github.qupath:qupath-catalog:0.5.0
+             * This plugin was declared in catalog io.github.qupath:qupath-catalog:0.5.1
              */
             public Provider<PluginDependency> getReport() { return createPlugin("license.report"); }
 

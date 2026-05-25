@@ -29,10 +29,10 @@ import java.util.stream.IntStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -40,7 +40,6 @@ import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import hdf.hdf5lib.H5;
 import hdf.hdf5lib.HDF5Constants;
@@ -57,12 +56,12 @@ import qupath.lib.plugins.parameters.ParameterList;
 import qupath.lib.projects.Project;
 import qupath.lib.projects.ProjectImageEntry;
 import qupath.lib.roi.interfaces.ROI;
-//import qupath.fx.dialogs.Dialogs;
 import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.images.ImageData;
 import qupath.lib.measurements.MeasurementList;
-import qupath.lib.gui.QuPathGUI;
+//import qupath.lib.gui.QuPathGUI;
+import qupath.lib.scripting.QP;
 
 /**
  * Plugins for exporting detection measurements to h5ad.
@@ -86,15 +85,15 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 	 */
 	public DetectionMeasurementToH5AD() throws Exception {
 		// Get ImageData
-		QuPathGUI qupath = QuPathGUI.getInstance();
-		ImageData<BufferedImage> imageData = qupath.getImageData();
+//		QuPathGUI qupath = QuPathGUI.getInstance();
+//		ImageData<BufferedImage> imageData = qupath.getImageData();
 		
-		if (imageData == null)
-			return;
+//		if (imageData == null)
+//			return;
 		
 		// Get hierarchy
-		PathObjectHierarchy hierarchy = imageData.getHierarchy();
-     
+//		PathObjectHierarchy hierarchy = imageData.getHierarchy();
+		PathObjectHierarchy hierarchy = QP.getCurrentImageData().getHierarchy();
 		String defaultObjects = hierarchy.getSelectionModel().noSelection() ? allObjects : selectedObjects;
 		
         params = new ParameterList()
@@ -127,7 +126,18 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 			int len;
 			while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
 		}
+		
 		System.load(temp.getAbsolutePath());
+		
+		File tempH5File = null;
+		long tempH5Id = -1;
+		tempH5File = File.createTempFile("libhdf5_java", ".tmp");
+        // Register the file for deletion when the JVM exits normally
+		tempH5File.deleteOnExit();
+        
+		tempH5Id = H5.H5Fcreate(tempH5File.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC, 
+        		HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+		H5.H5Fclose(tempH5Id);
 	}
 	
 	private static void H5ADwrite_attribute_str(long field_id, String attribute_name, String attribute_value) throws UnsupportedEncodingException {
@@ -195,6 +205,8 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 	 * @throws IOException 
 	 */
 	private void writeH5AD(String outFilePath, ImageData<?> imageData) throws RuntimeException, IOException {
+		loadNativeLibrary();
+		
 		List<String> measIdList = chosenObjects.get(0).getMeasurementList().getMeasurementNames();
 
 		PathObjectConnections connections = (PathObjectConnections) imageData.getProperty("OBJECT_CONNECTIONS");
@@ -519,20 +531,20 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 		String fileName = params.getStringParameterValue("fileName");
 
 		if (fileName.isBlank()) {
-			QuPathGUI qupath = QuPathGUI.getInstance();
+//			QuPathGUI qupath = QuPathGUI.getInstance();
 			
 			// Get default name & output directory
-			Project<BufferedImage> project = qupath.getProject();
-			String defaultName = imageData.getServer().getMetadata().getName();
+//			Project<BufferedImage> project = qupath.getProject();
+//			PathObjectHierarchy hierarchy = QP.getCurrentImageData().getHierarchy();
+			String defaultName = QP.getCurrentImageData().getServer().getMetadata().getName();
 			
-			if (project != null) {
-				ProjectImageEntry<BufferedImage> entry = project.getEntry(imageData);
-				if (entry != null)
-					defaultName = entry.getImageName();
-			}
+			
+			
+			// defaultName = QP.getCurrentImageData().getServer().getMetadata().getName()
+			
 			
 			defaultName = GeneralTools.stripExtension(defaultName);
-			File defaultDirectory = project == null || project.getPath() == null ? null : project.getPath().toFile();
+			File defaultDirectory = null; // project == null || project.getPath() == null ? null : project.getPath().toFile();
 			while (defaultDirectory != null && !defaultDirectory.isDirectory())
 				defaultDirectory = defaultDirectory.getParentFile();
 			File defaultFile = new File(defaultDirectory, defaultName);
@@ -559,7 +571,7 @@ public class DetectionMeasurementToH5AD extends AbstractDetectionPlugin<Buffered
 				else if (outFile.exists()) 
 					outFile.delete();
 				
-				loadNativeLibrary();
+				
 				writeH5AD(outFile.getAbsolutePath(), imageData);
 			}
 		} catch (IOException e) {

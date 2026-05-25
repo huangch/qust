@@ -36,11 +36,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javafx.beans.property.StringProperty;
-import javafx.beans.property.IntegerProperty;
-
-//import qupath.fx.dialogs.Dialogs;
-import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.objects.PathAnnotationObject;
 import qupath.lib.objects.PathObject;
 import qupath.lib.objects.PathObjectConnections;
@@ -66,12 +61,6 @@ public class CellSpatialProfilingByClassification extends AbstractDetectionPlugi
 	
 	final private static Logger logger = LoggerFactory.getLogger(CellSpatialProfilingByClassification.class);
 	
-//	private StringProperty sptAnalTgtClsProp = PathPrefs.createPersistentPreference("sptAnalTgtCls", ""); 
-//	private StringProperty sptAnalOptClsProp = PathPrefs.createPersistentPreference("sptAnalOptCls", ""); 
-//	private StringProperty sptAnalTypeProp = PathPrefs.createPersistentPreference("sptAnalType", "detection"); 
-//	private StringProperty sptAnalIdProp = PathPrefs.createPersistentPreference("sptAnalId", "default"); 
-	
-//	private IntegerProperty sptAnalLayersProp = PathPrefs.createPersistentPreference("sptAnalLayer", 1000); 
 	private ParameterList params;
 	
 	private String lastResults = null;
@@ -96,7 +85,6 @@ public class CellSpatialProfilingByClassification extends AbstractDetectionPlugi
         if(sltdAnnotNum > 0 && sltdDetNum == 0) {
         	profilingType = 1;
         }
-
 
 		hierarchy.getDetectionObjects().parallelStream().forEach(d -> {
 			PathClass dpthCls = profilingType == 0? d.getPathClass():
@@ -130,12 +118,10 @@ public class CellSpatialProfilingByClassification extends AbstractDetectionPlugi
 		});
 		
 		String posClsList = String.join(",", selectedPathClassList);
-//		String negClsList = String.join(",", availPathClassList);
 		
 		params = new ParameterList()
 			.addTitleParameter("Cell Spatial Profiling - Compute the distance to the edge of the user-defined cluster")
 			.addStringParameter("tgtCls", "Targeting Class(es)", posClsList, "Targeting Class(es)")
-//			.addStringParameter("optCls", "Opponent Class(es)", negClsList, "Opponent Class(es)")
 			.addChoiceParameter("type", "Profiling by", profilingTypeList.get(profilingType), profilingTypeList, "Profiling options")
 			.addStringParameter("id", "Profile ID", "untitled", "Profile ID")
 			.addIntParameter("layers", "Maximal layers of detection (0 for all)", 0, null, "Maximal layers of detection")			
@@ -146,11 +132,6 @@ public class CellSpatialProfilingByClassification extends AbstractDetectionPlugi
 		
 		@Override
 		public Collection<PathObject> runDetection(ImageData<BufferedImage> imageData, ParameterList params, ROI pathROI) throws IOException {
-//		   sptAnalTgtClsProp.set(params.getStringParameterValue("tgtCls"));
-//		   sptAnalOptClsProp.set(params.getStringParameterValue("optCls"));
-//		   sptAnalTypeProp.set((String)params.getChoiceParameterValue("type"));
-//		   sptAnalIdProp.set(params.getStringParameterValue("id"));
-//		   sptAnalLayersProp.set(params.getIntParameterValue("layers"));
 		   PathObjectHierarchy hierarchy = imageData.getHierarchy();
 		   try {
 		       PathObjectConnections connections = (PathObjectConnections) imageData.getProperty("OBJECT_CONNECTIONS");
@@ -177,15 +158,6 @@ public class CellSpatialProfilingByClassification extends AbstractDetectionPlugi
 		           .filter(s -> !s.isEmpty())
 		           .collect(Collectors.toSet());
 		       
-		       
-//		       Set<String> optClsSet = Arrays.stream(params.getStringParameterValue("optCls").split(","))
-//		           .map(String::strip)
-//		           .filter(s -> !s.isEmpty() && !tgtClsSet.contains(s))
-//		           .collect(Collectors.toSet());
-				
-		        // Synchronizing ArrayList in Java  
-//		        List<String> availPathClassList = Collections.synchronizedList(new ArrayList<String>());  
-		        
 		       Set<String> optClsSet = Collections.synchronizedSet(new HashSet<String>());  
 		       
 				hierarchy.getDetectionObjects().parallelStream().forEach(d -> {
@@ -200,30 +172,7 @@ public class CellSpatialProfilingByClassification extends AbstractDetectionPlugi
 						}		
 					}
 				});
-				
-				
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
-		    		   
+				   
 		       // Clear existing measurements in parallel
 		       allDetectionPathObjectList.parallelStream().forEach(d -> {
 		           MeasurementList dMeasList = d.getMeasurementList();
