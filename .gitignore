@@ -9,6 +9,14 @@ objcls_models/
 qupath-extension-djl/
 qupath-extension-stardist/
 qupath-extension-wsinfer/
+qupath-extension-wsinfer/build/
+qupath-extension-wsinfer/bin/
+qupath-extension-qust/build/
+qupath-extension-qust/bin/
+qupath-extension-qust/.gradle/
+qupath-extension-qust/.settings/
+qupath-extension-qust/.classpath
+qupath-extension-qust/.project
 qupath-main/
 regseg_models/
 stardist_models/
