@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>40.0.0</version>
+		<relativePath />
+	</parent>
+
+	<groupId>sc.fiji</groupId>
+	<artifactId>ST2WSI_Registration</artifactId>
+	<version>0.6.0</version>
+
+	<name>ST2WSI_Registration</name>
+	<description>Spatial Transcriptomics to Whole Slide Image Registration plugin for Fiji. Registers DAPI images from spatial transcriptomics platforms to H&amp;E whole slide images using SIFT-based affine alignment and bUnwarpJ elastic registration.</description>
+	<url>https://github.com/huangch/qust/tree/main/registration</url>
+	<inceptionYear>2024</inceptionYear>
+	<organization>
+		<name>QuST</name>
+		<url>https://github.com/huangch/qust</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>GNU General Public License v3.0 or later</name>
+			<url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<properties>
+		<package-name>st2wsi_registration</package-name>
+		<license.licenseName>gpl_v3</license.licenseName>
+		<license.copyrightOwners>QuST developers.</license.copyrightOwners>
+		<project.license>GPL-3.0-or-later</project.license>
+
+		<!-- NB: Deploy releases to the SciJava Maven repository. -->
+		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
+	</properties>
+
+	<developers>
+		<developer>
+			<id>huangch</id>
+			<name>Chao-Hui Huang</name>
+			<roles>
+				<role>lead</role>
+				<role>developer</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>Ignacio Arganda-Carreras</name>
+			<url>https://imagej.net/User:Iarganda</url>
+			<roles><role>founder</role></roles>
+			<properties><id>iarganda</id></properties>
+		</contributor>
+		<contributor>
+			<name>Jan Kybic</name>
+			<roles><role>founder</role></roles>
+			<properties><id>jkybic</id></properties>
+		</contributor>
+		<contributor>
+			<name>Albert Cardona</name>
+			<url>https://imagej.net/User:Albertcardona</url>
+			<roles><role>founder</role></roles>
+			<properties><id>acardona</id></properties>
+		</contributor>
+		<contributor>
+			<name>Johannes Schindelin</name>
+			<url>https://imagej.net/User:Schindelin</url>
+			<properties><id>dscho</id></properties>
+		</contributor>
+		<contributor>
+			<name>Mark Hiner</name>
+			<url>https://imagej.net/User:Hinerm</url>
+			<properties><id>hinerm</id></properties>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>Image.sc Forum</name>
+			<archive>https://forum.image.sc/tags/fiji</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:https://github.com/huangch/qust</connection>
+		<developerConnection>scm:git:git@github.com:huangch/qust</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/huangch/qust</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/huangch/qust/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>GitHub Actions</system>
+		<url>https://github.com/huangch/qust/actions</url>
+	</ciManagement>
+
+
+	<repositories>
+		<repository>
+			<id>scijava.public</id>
+			<url>https://maven.scijava.org/content/groups/public</url>
+		</repository>
+		<repository>
+			<id>ome.artifactory</id>
+			<url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<!-- ImageJ dependencies -->
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>mpicbg</groupId>
+			<artifactId>mpicbg_</artifactId>
+		</dependency>
+		<dependency>
+                        <groupId>sc.fiji</groupId>
+                        <artifactId>bUnwarpJ_</artifactId>
+                        <version>2.6.12</version>
+                </dependency>
+		<dependency>
+		    <groupId>org.json</groupId>
+		    <artifactId>json</artifactId>
+		    <version>20250517</version>  <!-- Use the latest version -->
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>fiji</artifactId>
+			<!--<version>2.16.1-SNAPSHOT</version>-->
+		</dependency>
+		<dependency>
+			<groupId>ome</groupId>
+			<artifactId>formats-gpl</artifactId>
+			<!--<version>7.3.0</version>
+			<scope>provided</scope>-->
+		</dependency>
+	</dependencies>
+</project>

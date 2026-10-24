@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use QuST, please cite the paper below and the QuPath publication."
+title: "QuST: integrative whole slide image and spatial transcriptomics analysis with QuPath"
+type: software
+authors:
+  - family-names: Huang
+    given-names: Chao-Hui
+  - family-names: Lichtarge
+    given-names: Sara
+  - family-names: Fernandez
+    given-names: Diane
+license: GPL-3.0-or-later
+repository-code: "https://github.com/huangch/qust"
+preferred-citation:
+  type: article
+  title: "Integrative whole slide image and spatial transcriptomics analysis with QuST and QuPath"
+  authors:
+    - family-names: Huang
+      given-names: Chao-Hui
+    - family-names: Lichtarge
+      given-names: Sara
+    - family-names: Fernandez
+      given-names: Diane
+  journal: "npj Precision Oncology"
+  volume: 9
+  start: 70
+  year: 2025
+  doi: "10.1038/s41698-025-00841-9"

@@ -1,0 +1,20 @@
+build/
+dist/
+.gradle/
+target/
+bin/
+.classpath
+.project
+.settings/
+.idea/
+.vscode/
+*.iml
+__pycache__/
+*.pyc
+.DS_Store
+
+# local reference material (papers are not redistributed)
+ref/
+
+# model folders (*_models/: StarDist, object and region classification, ...) are not part of the repository
+*_models/

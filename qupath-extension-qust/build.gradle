@@ -1,0 +1,92 @@
+plugins {
+    id 'java-library'
+    id 'org.openjfx.javafxplugin'
+    id 'com.gradleup.shadow'
+}
+
+// Resolved from the standalone settings.gradle or, when included in the QuPath source tree, from QuPath's own build
+ext.qupathVersion = gradle.ext.has('qupathVersion')
+        ? gradle.ext.qupathVersion
+        : gradle.ext['qupath.app.version']
+
+base {
+    description = 'QuPath extension for integrative whole slide image and spatial transcriptomics analysis (QuST)'
+    archivesName = 'qupath-extension-qust'
+    version = '0.6.0'
+    group = 'io.github.huangch'
+}
+
+javafx {
+    version = libs.versions.javafx.get()
+    modules = ['javafx.base', 'javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.swing']
+    // JavaFX is provided by QuPath
+    configuration = 'compileOnly'
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+java {
+    toolchain {
+        // JDK 25 for QuPath 0.7 and later; build for QuPath 0.5.x with -PqupathVersion=0.5.1 -PjavaVersion=17
+        languageVersion = JavaLanguageVersion.of(providers.gradleProperty('javaVersion').getOrElse('25').toInteger())
+    }
+}
+
+dependencies {
+    // Provided by QuPath at runtime
+    compileOnly "io.github.qupath:qupath-gui-fx:${qupathVersion}"
+    compileOnly "io.github.qupath:qupath-core:${qupathVersion}"
+    compileOnly "io.github.qupath:qupath-core-processing:${qupathVersion}"
+    compileOnly libs.qupath.fxtras
+    compileOnly libs.bundles.logging
+    compileOnly libs.imagej
+    compileOnly libs.jts
+    compileOnly libs.gson
+    compileOnly libs.controlsfx
+    compileOnly libs.commons.math
+    compileOnly "org.apache.commons:commons-compress:1.27.1"
+    compileOnly "commons-io:commons-io:2.16.1"
+
+    // Bundled into the extension jar
+    implementation "com.opencsv:opencsv:5.5.2"
+    implementation "org.imgscalr:imgscalr-lib:4.2"
+    implementation "org.json:json:20231013"
+    // ST2WSI Registration (the algorithm of the Fiji plugin): SIFT and bUnwarpJ. ImageJ itself comes from QuPath.
+    implementation("mpicbg:mpicbg:1.6.0") { exclude group: 'net.imagej' }
+    implementation("sc.fiji:bUnwarpJ_:2.6.12") { exclude group: 'net.imagej' }
+    // Xenium cells.parquet reader (the shaded Hadoop client keeps the jar free of Hadoop's transitive dependencies)
+    implementation "org.apache.parquet:parquet-avro:1.13.1"
+    implementation "org.apache.parquet:parquet-hadoop:1.13.1"
+    implementation "org.apache.avro:avro:1.11.1"
+    implementation "org.apache.hadoop:hadoop-client-api:3.3.6"
+    runtimeOnly "org.apache.hadoop:hadoop-client-runtime:3.3.6"
+}
+
+processResources {
+    from("${rootDir}/../LICENSE") {
+        into 'META-INF/licenses/'
+    }
+}
+
+jar {
+    manifest {
+        attributes('Implementation-Title': 'QuST',
+                   'Implementation-Version': archiveVersion,
+                   'Automatic-Module-Name': 'io.github.huangch.qupath.extension.qust')
+    }
+}
+
+shadowJar {
+    archiveClassifier = ''
+    mergeServiceFiles()
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'module-info.class', 'META-INF/versions/*/module-info.class'
+    // logging comes from QuPath
+    dependencies {
+        exclude(dependency('org.slf4j:.*'))
+        exclude(dependency('ch.qos.logback:.*'))
+    }
+}
+
+// The shaded jar is the deliverable: build/libs/qupath-extension-qust-<version>.jar
+tasks.named('jar') { archiveClassifier = 'thin' }
+tasks.named('assemble') { dependsOn tasks.shadowJar }

@@ -1,0 +1,26 @@
+pluginManagement {
+    plugins {
+        id 'org.openjfx.javafxplugin' version '0.1.0'
+        id 'com.gradleup.shadow' version '8.3.6'
+    }
+}
+
+rootProject.name = 'qupath-extension-qust'
+
+// QuPath release to build against; override with -PqupathVersion=<version>
+gradle.ext.qupathVersion = providers.gradleProperty('qupathVersion').getOrElse('0.7.0')
+
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url 'https://maven.scijava.org/content/repositories/releases' }
+        maven { url 'https://maven.scijava.org/content/repositories/snapshots' }
+    }
+
+    versionCatalogs {
+        libs {
+            from("io.github.qupath:qupath-catalog:${gradle.ext.qupathVersion}")
+        }
+    }
+}

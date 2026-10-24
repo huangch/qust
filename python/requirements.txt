@@ -1,0 +1,19 @@
+torch
+torchvision
+tensorboard
+pillow
+tqdm
+einops
+scikit-learn
+seaborn
+matplotlib
+vit-pytorch
+
+# DBSCAN-CellX (upstream) calls DataFrame.append, which was removed in pandas 2
+numpy<2
+pandas<2
+dbscan-cellx @ git+https://github.com/GrawLab/DBSCAN-CellX.git#subdirectory=dbscan-cellx
+
+# Stain normalization of the H&E patches. If pip finds no wheel for your platform, use
+#   pip install histomicstk --find-links https://girder.github.io/large_image_wheels
+histomicstk
